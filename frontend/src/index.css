@@ -48,3 +48,18 @@ body {
     width: 100%;
     overflow-x: hidden;
 }
+
+.appBar {
+    position: static;
+    padding : 0 var(--space-md);
+    width: 100%;
+    z-index: 1000;
+}
+
+.navigationBar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+}
