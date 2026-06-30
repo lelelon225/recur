@@ -125,4 +125,25 @@ body {
         transform: translateY(0);
     }
 }
+
+.floatingActionButton {
+    position: fixed;
+    background: var(--color-primary);
+    bottom: 20px;
+    right: 20px;
+    z-index: 1001;
+}
+
+.floatingActionButton .MuiFab-root {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    box-shadow: var(--shadow);
+    transition: box-shadow 0.3s ease-in-out;
+}
+
+.floatingActionButton .MuiFab-root:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    transition: box-shadow 0.3s ease-in-out;
+}
 /*#endregion Layout */

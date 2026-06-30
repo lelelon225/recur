@@ -1,62 +1,62 @@
 import TaskCard from "../molecules/taskCard";
 import { Box, Container } from "@mui/material";
-
-interface Task {
-  title: string;
-  description: string;
-  start: string;
-  end: string;
-  progress: number;
-}
+import { getAllTasks, type Task } from "../../services/taskService";
+import { useEffect, useState } from "react";
+import LoadingTime from "../atoms/LoadingTime";
+import InfoCard from "../organisms/InfoCard";
+import Fab from "../atoms/FloatingActionButton";
+import AddTaskForm from "../organisms/AddTaskForm";
 
 function HomePage() {
-  const tasks: Task[] = [
-    {
-      title: "Design System Setup",
-      description: "Create and document the design system components.",
-      start: "9:00 AM",
-      end: "12:00 PM",
-      progress: 85,
-    },
-    {
-      title: "API Integration",
-      description: "Integrate REST API endpoints with frontend.",
-      start: "1:00 PM",
-      end: "5:00 PM",
-      progress: 60,
-    },
-    {
-      title: "Testing",
-      description: "Write unit and integration tests for components.",
-      start: "10:00 AM",
-      end: "3:00 PM",
-      progress: 40,
-    },
-    {
-      title: "Documentation",
-      description: "Complete project documentation and readme.",
-      start: "2:00 PM",
-      end: "4:00 PM",
-      progress: 25,
-    },
-    {
-      title: "Code Review",
-      description: "Review pull requests and provide feedback.",
-      start: "11:00 AM",
-      end: "12:30 PM",
-      progress: 100,
-    },
-    {
-      title: "Performance Optimization",
-      description: "Optimize bundle size and render performance.",
-      start: "9:00 AM",
-      end: "11:00 AM",
-      progress: 50,
-    },
-  ];
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [showAddTaskForm, setShowAddTaskForm] = useState(false);
+
+  function showForm() {
+    setShowAddTaskForm(true);
+  }
+
+  async function fetchTasks() {
+    try {
+        const fetchedTasks = await getAllTasks();
+        setTasks(fetchedTasks);
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Unbekannter Fehler beim Abrufen der Aufgaben"
+      );
+    } finally {
+      setTimeout(() => {
+        setLoading(false);
+      }, 500); 
+    }
+  }
+
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+
+  if (tasks.length === 0 && !loading) {
+    return (
+     <InfoCard variant="info" title="Keine Aufgaben gefunden" discription="Es wurden keine Aufgaben in der Datenbank gefunden. Bitte erstellen Sie eine neue Aufgabe." />
+    );
+  }
+
+  if (loading) {
+    return <LoadingTime loading={loading} />;
+  }
+
+  if (error) {
+    return <InfoCard variant="error" title="Fehler beim Abrufen der Aufgaben" discription={error} />;
+  }
 
   return (
+    <>
     <Container maxWidth="lg">
+    {showAddTaskForm && <AddTaskForm  onClose={() => setShowAddTaskForm(false)} />}
+
       <Box
         className="HomePage"
         sx={{
@@ -72,18 +72,21 @@ function HomePage() {
           gap: "16px",
         }}
       >
-        {tasks.map((task, index) => (
+        {tasks.map((task) => (
           <TaskCard
-            key={index}
-            title={task.title}
+            key={task.id}
+            name={task.name}
+            category={task.category}
             description={task.description}
-            start={task.start}
-            end={task.end}
+            date_created={task.date_created}
+            date_until={task.date_until}
             progress={task.progress}
           />
         ))}
+        <Fab onClick={showForm} />
       </Box>
     </Container>
+  </>
   );
 }
 export default HomePage;

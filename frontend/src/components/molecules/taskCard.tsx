@@ -3,16 +3,11 @@ import TaskTitle from "../atoms/taskTitle";
 import TaskDescription from "../atoms/taskDescription";
 import TaskTimeFrame from "../atoms/taskTimeFrame";
 import { Box } from "@mui/material";
+import {type Task } from "../../services/taskService";
 
-interface TaskCardProps {
-  title: string;
-  description: string;
-  start: string;
-  end: string;
-  progress: number;
-}
 
-function TaskCard({ title, description, start, end, progress }: TaskCardProps) {
+
+function TaskCard({ name, description, date_created, date_until, progress }: Task) {
   return (
     <Box
       sx={{
@@ -23,11 +18,11 @@ function TaskCard({ title, description, start, end, progress }: TaskCardProps) {
         display: "flex",
         alignItems: "center",
         gap: "16px",
-        hover: {
+        minHeight: "150px",
+        "&:hover": {
           boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
           transition: "box-shadow 0.3s ease-in-out",
         },
-
       }}
     >
       <CircularProgressWithLabel value={progress} />
@@ -39,9 +34,9 @@ function TaskCard({ title, description, start, end, progress }: TaskCardProps) {
           gap: "8px",
         }}
       >
-        <TaskTitle title={title} />
+        <TaskTitle title={name} />
         <TaskDescription description={description} />
-        <TaskTimeFrame start={start} end={end} />
+        <TaskTimeFrame start={date_created} end={date_until} />
       </Box>
     </Box>
   );

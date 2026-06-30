@@ -4,13 +4,12 @@ export interface Task {
   id: string;
   name: string;
   category: string;
-  progress: number;
+  progress: number;       
   goal: string;
-  description: string;
-  createdAt: Date;
-  updatedAt: Date;
+  description: string | null;
+  date_until: string | null;   
+  date_created: string | null; 
 }
-
 function getAllTasks(): Promise<Task[]> {
   return api
     .get("/task")
@@ -23,7 +22,7 @@ function getAllTasks(): Promise<Task[]> {
 }
 
 function createTask(
-  task: Omit<Task, "id" | "createdAt" | "updatedAt">
+  task: Omit<Task, "id" | "date_created" | "date_until">
 ): Promise<Task> {
   return api
     .post("/task", task)
@@ -37,7 +36,7 @@ function createTask(
 
 function patchTask(
   id: string,
-  task: Partial<Omit<Task, "id" | "createdAt" | "updatedAt">>
+  task: Partial<Omit<Task, "id" | "date_created" | "date_until">>
 ): Promise<Task> {
   return api
     .patch(`/task/${id}`, task)
