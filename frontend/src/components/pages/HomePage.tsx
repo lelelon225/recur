@@ -60,13 +60,15 @@ function HomePage() {
       <Box
         className="HomePage"
         sx={{
-          marginTop: "50px",
           display: "grid",
           gridTemplateColumns: {
             xs: "1fr",
             sm: "repeat(2, 1fr)",
             md: "repeat(3, 1fr)",
           },
+          justifyContent: "center",
+          alignItems: "center",
+          margin: "auto",
           gap: "16px",
         }}
       >
