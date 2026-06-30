@@ -23,12 +23,11 @@ function TaskCard({ title, description, start, end, progress }: TaskCardProps) {
         display: "flex",
         alignItems: "center",
         gap: "16px",
-        minWidth: "300px",
-        maxWidth: "300px",
         hover: {
           boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
           transition: "box-shadow 0.3s ease-in-out",
         },
+
       }}
     >
       <CircularProgressWithLabel value={progress} />

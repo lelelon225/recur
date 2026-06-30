@@ -11,6 +11,12 @@ function App() {
         </DefaultLayout>
       } />
 
+      <Route path="/*" element={
+        <DefaultLayout>
+          <h1>404 - Page Not Found</h1>
+        </DefaultLayout>
+      } />
+
 
     </Routes>
   )
