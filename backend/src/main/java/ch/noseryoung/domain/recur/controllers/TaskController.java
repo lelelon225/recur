@@ -43,8 +43,8 @@ public class TaskController {
                 return taskService.deleteTask(id);
         };
 
-        @DeleteMapping({"/All", "/All/"})
+        @DeleteMapping({"/all", "/all/"})
         public ResponseEntity<Task> deleteAllTasks() {
                 return taskService.deleteAllTasks();
         };
-}
+} 
