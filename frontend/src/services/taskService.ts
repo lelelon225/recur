@@ -22,13 +22,17 @@ function getAllTasks(): Promise<Task[]> {
     });
 }
 
-
-function createTask(
-  task: Omit<Task, "id" | "date_created" >
-): Promise<Task> {
+function createTask(task: Omit<Task, "id" | "date_created">): Promise<Task> {
   return api
     .post("/task", task)
-    .then((response) => response.data as Task)
+    .then((response) => {
+      const task = response.data as any;
+      return {
+        ...task,
+        createdAt: new Date(task.createdAt),
+        dateUntil: new Date(task.dateUntil),
+      } as Task;
+    })
     .catch((err) => {
       throw new Error(
         err.response?.data?.message || "Fehler beim Erstellen der Aufgabe"
@@ -83,4 +87,11 @@ function deleteAllTasks(): Promise<void> {
     });
 }
 
-export { getAllTasks, createTask, patchTask, patchTaskFavorite, deleteTask, deleteAllTasks };
+export {
+  getAllTasks,
+  createTask,
+  patchTask,
+  patchTaskFavorite,
+  deleteTask,
+  deleteAllTasks,
+};
