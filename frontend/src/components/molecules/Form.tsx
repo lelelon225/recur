@@ -1,6 +1,6 @@
 import React from "react";
 import { Form as FormikForm } from "formik";
-import { TextField, Button } from "@mui/material";
+import { TextField } from "@mui/material";
 import { type Task } from "../../services/taskService";
 
 type FormProps = {
@@ -32,13 +32,6 @@ function Form ({ onSubmit, values, handleChange, className }: FormProps) {
                 name="category"
             />
             <TextField
-                label="Progress"
-                type="number"
-                value={values.progress}
-                onChange={handleChange}
-                name="progress"
-            />
-            <TextField
                 label="Goal"
                 value={values.goal}
                 onChange={handleChange}
@@ -47,13 +40,13 @@ function Form ({ onSubmit, values, handleChange, className }: FormProps) {
             <TextField
                 label="Date Until"
                 type="date"
-                value={values.date_until || ""}
+                value={values.dateUntil || ""}
                 onChange={handleChange}
-                name="date_until"
+                name="dateUntil"
                 InputLabelProps={{
                     shrink: true,
                 }}
-            />
+                />
         </FormikForm>
     );
 }

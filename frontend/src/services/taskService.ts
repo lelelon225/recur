@@ -4,11 +4,11 @@ export interface Task {
   id: string;
   name: string;
   category: string;
-  progress: number;       
+  progress: number;
   goal: string;
   description: string | null;
-  date_until: string | null;   
-  date_created: string | null; 
+  dateUntil: string | null;
+  dateCreated: string | null;
   isFavorite?: boolean;
 }
 function getAllTasks(): Promise<Task[]> {

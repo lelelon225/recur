@@ -1,5 +1,6 @@
 import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
 import FavoriteOutlinedIcon from "@mui/icons-material/FavoriteOutlined";
+import IconButton from "@mui/material/IconButton";
 
 function TaskFavorite({
   isFavorite,
@@ -11,13 +12,13 @@ function TaskFavorite({
 
 
   return (
-    <div onClick={onClick}>
+    <IconButton  onClick={onClick}>
       {isFavorite ? (
         <FavoriteOutlinedIcon color="error" />
       ) : (
-        <FavoriteBorderOutlinedIcon />
+        <FavoriteBorderOutlinedIcon sx={{ color: "white" }} />
       )}
-    </div>
+    </IconButton>
   );
 }
 

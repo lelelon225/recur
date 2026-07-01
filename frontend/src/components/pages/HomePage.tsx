@@ -94,8 +94,8 @@ function HomePage() {
             name={task.name}
             category={task.category}
             description={task.description}
-            date_created={task.date_created}
-            date_until={task.date_until}
+            dateCreated={task.dateCreated}
+            dateUntil={task.dateUntil}
             progress={task.progress}
             isFavorite={task.isFavorite}
             onToggleFavorite={() => handleToggleFavorite(task.id)}

@@ -20,7 +20,7 @@ const validationSchema = yup.object().shape({
     .max(100, "Fortschritt darf höchstens 100 sein")
     .required("Fortschritt ist erforderlich"),
   goal: yup.string().required("Ziel ist erforderlich"),
-  date_until: yup.date().nullable(),
+  dateUntil: yup.date().nullable(),
 });
 
 function AddTaskForm({ onClose }: AddTaskFormProps) {
@@ -51,7 +51,7 @@ function AddTaskForm({ onClose }: AddTaskFormProps) {
   };
 
   return (
-    <Dialog open={true} onClose={handleClose}>
+    <Dialog open={true} onClose={handleClose} loading={loading} submitDisabled={submitDisabled}>
       <Formik<Task>
         initialValues={{
           name: "",
@@ -59,7 +59,7 @@ function AddTaskForm({ onClose }: AddTaskFormProps) {
           category: "",
           progress: 0,
           goal: "",
-          date_until: null,
+          dateUntil: null,
         }}
         onSubmit={handleSubmit}
         validationSchema={validationSchema}
