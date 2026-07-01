@@ -9,5 +9,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 @Repository
 public interface TaskRepository extends JpaRepository<Task, UUID> {
+    public List<Task> findByIsArchived(Boolean isArchived);
+
+    public List<Task> findByIsFavorite(Boolean isFavorite);
+
+    Optional<Task> findByIdAndIsArchived(UUID id, Boolean isArchived);
 
 }

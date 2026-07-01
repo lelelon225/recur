@@ -31,40 +31,13 @@ public class TaskService {
         }
 
         public ResponseEntity<Task> patchTask(UUID id, Task task) {
-                Task existing = taskRepository.findById(id).orElse(null);
-                if (existing == null) {
-                        return ResponseEntity.status(404).body(task);
+                Task existingTask = taskRepository.findById(id).orElse(null);
+                if (existingTask == null) {
+                        return ResponseEntity.status(404).build();
                 }
-                if (task.getName() != null) {
-                        existing.setName(task.getName());
-                }
-                if (task.getCategory() != null) {
-                        existing.setCategory(task.getCategory());
-                }
-                if (task.getProgress() != null) {
-                        existing.setProgress(task.getProgress());
-                }
-                if (task.getGoal() != null) {
-                        existing.setGoal(task.getGoal());
-                }
-                if (task.getDescription() != null) {
-                        existing.setDescription(task.getDescription());
-                }
-                if (task.getDateUntil() != null) {
-                        existing.setDateUntil(task.getDateUntil());
-                }
-                if (task.getDateCreated() != null) {
-                        existing.setDateCreated(task.getDateCreated());
-                }
-                if (task.getIsFavorite() != null) {
-                        existing.setIsFavorite(task.getIsFavorite());
-                }
-                if (task.getIsArchived() != null) {
-                        existing.setIsArchived(task.getIsArchived());
-                }
-
-                taskRepository.save(existing);
-                return ResponseEntity.status(200).body(existing);
+                task.setId(id);
+                taskRepository.save(task);
+                return ResponseEntity.status(200).body(task);
         }
 
         public ResponseEntity<Task> deleteTask(UUID id) {
@@ -72,8 +45,10 @@ public class TaskService {
                 if (task == null) {
                         return ResponseEntity.status(404).build();
                 }
-                if (!task.getIsArchived()) {
-                        return ResponseEntity.status(400).body(null);
+                for (Task t : taskRepository.findByIsArchived(true)) {
+                        if (t.getId().equals(id)) {
+                                return ResponseEntity.status(403).build();
+                        }
                 }
                 taskRepository.deleteById(id);
                 return ResponseEntity.status(200).build();
@@ -82,5 +57,15 @@ public class TaskService {
         public ResponseEntity<Task> deleteAllTasks() {
                 taskRepository.deleteAll();
                 return ResponseEntity.status(200).build();
+        }
+
+        public ResponseEntity<Collection<Task>> getArchivedTasks() {
+                Collection<Task> tasks = taskRepository.findByIsArchived(true);
+                return ResponseEntity.status(200).body(tasks);
+        }
+
+        public ResponseEntity<Collection<Task>> getFavoriteTasks() {
+                Collection<Task> tasks = taskRepository.findByIsFavorite(true);
+                return ResponseEntity.status(200).body(tasks);
         }
 }
