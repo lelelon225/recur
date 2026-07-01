@@ -1,49 +1,60 @@
-import CircularProgressWithLabel from "../atoms/progressIndicator";
-import TaskTitle from "../atoms/taskTitle";
-import TaskDescription from "../atoms/taskDescription";
-import TaskTimeFrame from "../atoms/taskTimeFrame";
-import { Box } from "@mui/material";
+import { Box, Grid } from "@mui/material";
+import {type Task } from "../../services/taskService";
+import ProgressIndicator from "../atoms/ProgressIndicator";
+import TaskTitle from "../atoms/TaskTitle";
+import TaskDescription from "../atoms/TaskDescription";
+import TaskTimeFrame from "../atoms/TaskTimeFrame";
+import TaskFavorite from "../atoms/TaskFavourite";
+import TaskCardMenu from "../atoms/TaskCardMenu";
 
-interface TaskCardProps {
-  title: string;
-  description: string;
-  start: string;
-  end: string;
-  progress: number;
-}
 
-function TaskCard({ title, description, start, end, progress }: TaskCardProps) {
+type TaskCardProps = {
+  classname?: string;
+  onToggleFavorite?: () => void;
+  onToggleMenu?: () => void;
+} & Task;
+
+
+
+function TaskCard({ name, description, dateCreated, dateUntil, progress, isFavorite, classname, onToggleFavorite, onToggleMenu }: TaskCardProps) {
+
+    const handleToggle = () => {
+    onToggleFavorite?.();
+  };
+
+  const handleToggleMenu = () => {
+    onToggleMenu?.();
+  }
+
   return (
-    <Box
-      sx={{
-        border: "1px solid #ccc",
-        borderRadius: "8px",
-        padding: "16px",
-        marginBottom: "16px",
-        display: "flex",
-        alignItems: "center",
-        gap: "16px",
-        hover: {
-          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-          transition: "box-shadow 0.3s ease-in-out",
-        },
-
-      }}
-    >
-      <CircularProgressWithLabel value={progress} />
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          flex: 1,
-          gap: "8px",
-        }}
-      >
-        <TaskTitle title={title} />
+    <Box className={classname}>
+      <Grid container sx={{ justifyContent: "space-between", alignItems: "flex-start", margin: "8px 0 8px 0" }}>
+        <Grid>
+          <ProgressIndicator value={progress} />
+        </Grid>
+        <Grid>
+          <TaskCardMenu onToggleMenu={handleToggleMenu} />
+        </Grid>
+      </Grid>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+          }}
+        >
+          <TaskTitle title={name} />
+          
+        </Box>
         <TaskDescription description={description} />
-        <TaskTimeFrame start={start} end={end} />
+        <Grid container sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", margin: "8px 0 8px 0" }}>
+            <Grid>
+              <TaskTimeFrame start={dateCreated} end={dateUntil} />
+            </Grid>
+            <Grid>
+              <TaskFavorite isFavorite={isFavorite} onClick={handleToggle} />
+            </Grid>
+        </Grid>
       </Box>
-    </Box>
   );
 }
 

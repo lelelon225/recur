@@ -4,11 +4,11 @@ import CircularProgress, {
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 
-function CircularProgressWithLabel(
+function ProgressIndicator(
   props: CircularProgressProps & { value: number },
 ) {
   return (
-    <Box sx={{ position: "relative", display: "inline-flex" }}>
+    <Box sx={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
       <CircularProgress
         variant="determinate"
         aria-label="Upload photos"
@@ -29,11 +29,11 @@ function CircularProgressWithLabel(
         <Typography
           variant="caption"
           component="div"
-          sx={{ color: "text.secondary" }}
+          sx={{ color: "white", fontSize: "1.0rem" }}
         >{`${Math.round(props.value)}%`}</Typography>
       </Box>
     </Box>
   );
 }
 
-export default CircularProgressWithLabel;
+export default ProgressIndicator;
