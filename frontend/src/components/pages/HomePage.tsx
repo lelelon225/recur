@@ -1,12 +1,15 @@
 import { Box, Container } from "@mui/material";
-import { getAllTasks, type Task } from "../../services/taskService";
+import {
+  getAllTasks,
+  patchTaskFavorite,
+  type Task,
+} from "../../services/taskService";
 import { useEffect, useState } from "react";
 import InfoCard from "../organisms/InfoCard";
 import Fab from "../atoms/FloatingActionButton";
 import AddTaskForm from "../organisms/AddTaskForm";
 import LoadingTime from "../atoms/LoadingTime";
 import TaskCard from "../molecules/TaskCard";
-import { patchTaskFavorite } from "../../services/taskService";
 
 function HomePage() {
   const [showAddTaskForm, setShowAddTaskForm] = useState(false);
@@ -18,16 +21,22 @@ function HomePage() {
     setShowAddTaskForm(true);
   }
 
-  function handleToggleFavorite(taskId: number) {
-    const updatedTasks = tasks.map((task) => {
-      if (task.id === taskId) {
-        const updatedTask = { ...task, isFavorite: !task.isFavorite };
-        patchTaskFavorite(taskId, updatedTask.isFavorite);
-        return updatedTask;
-      }
-      return task;
+  function handleToggleFavorite(taskId: string) {
+    const previousTasks = tasks;
+    const nextIsFavorite = !tasks.find((t) => t.id === taskId)?.isFavorite;
+
+    // Optimistic update
+    setTasks((current) =>
+      current.map((task) =>
+        task.id === taskId ? { ...task, isFavorite: nextIsFavorite } : task
+      )
+    );
+
+    patchTaskFavorite(taskId, nextIsFavorite).catch(() => {
+      // Roll back on failure
+      setTasks(previousTasks);
+      setError("Fehler beim Aktualisieren des Favoritenstatus");
     });
-    setTasks(updatedTasks);
   }
 
   async function fetchTasks() {
@@ -71,7 +80,7 @@ function HomePage() {
     );
   }
 
-  if (tasks.length === 0 && !loading) {
+  if (tasks.length === 0) {
     return (
       <InfoCard
         variant="info"

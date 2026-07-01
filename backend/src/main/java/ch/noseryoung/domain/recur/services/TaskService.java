@@ -68,4 +68,24 @@ public class TaskService {
                 Collection<Task> tasks = taskRepository.findByIsFavorite(true);
                 return ResponseEntity.status(200).body(tasks);
         }
+
+        public ResponseEntity<Task> patchTaskFavorite(UUID id, Boolean isFavorite) {
+                Task existingTask = taskRepository.findById(id).orElse(null);
+                if (existingTask == null) {
+                        return ResponseEntity.status(404).build();
+                }
+                existingTask.setIsFavorite(isFavorite);
+                taskRepository.save(existingTask);
+                return ResponseEntity.status(200).body(existingTask);
+        }
+
+        public ResponseEntity<Task> patchTaskArchived(UUID id, Boolean isArchived) {
+                Task existingTask = taskRepository.findById(id).orElse(null);
+                if (existingTask == null) {
+                        return ResponseEntity.status(404).build();
+                }
+                existingTask.setIsArchived(isArchived);
+                taskRepository.save(existingTask);
+                return ResponseEntity.status(200).body(existingTask);
+        }
 }
