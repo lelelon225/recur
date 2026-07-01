@@ -1,9 +1,13 @@
 import api from "./api";
 
+export type TaskFrequency = "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY" | "ONCE";
+export type TaskCategory = "WORK" | "PERSONAL" | "SCHOOL" | "OTHER";
+
 export interface Task {
   id: string;
   name: string;
-  category: string;
+  category: TaskCategory;
+  frequency: TaskFrequency;
   progress: number;
   goal: string;
   description: string | null;
@@ -11,6 +15,8 @@ export interface Task {
   dateCreated: string | null;
   isFavorite?: boolean;
 }
+
+
 function getAllTasks(): Promise<Task[]> {
   return api
     .get("/task")
