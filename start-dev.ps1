@@ -17,15 +17,15 @@ if (-not $dockerRunning) {
 
     $dockerReady = $false
     $attempts = 0
-    while (-not $dockerReady -and $attempts -lt 60) {
-        Start-Sleep -Seconds 2
-        try {
-            docker info | Out-Null
-            if ($LASTEXITCODE -eq 0) { $dockerReady = $true }
-        } catch {
-            $attempts++
-        }
+while (-not $dockerReady -and $attempts -lt 60) {
+    Start-Sleep -Seconds 2
+    docker info | Out-Null
+    if ($LASTEXITCODE -eq 0) {
+        $dockerReady = $true
+    } else {
+        $attempts++
     }
+}
 
     if (-not $dockerReady) {
         Write-Host "Docker konnte nicht gestartet werden. Bitte starte Docker manuell und führe das Skript erneut aus." -ForegroundColor Red
