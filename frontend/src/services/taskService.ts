@@ -9,6 +9,7 @@ export interface Task {
   description: string | null;
   date_until: string | null;   
   date_created: string | null; 
+  isFavorite?: boolean;
 }
 function getAllTasks(): Promise<Task[]> {
   return api
@@ -49,6 +50,17 @@ function patchTask(
     });
 }
 
+function patchTaskFavorite(id: string, isFavorite: boolean): Promise<Task> {
+  return api
+    .patch(`/task/${id}`, { isFavorite })
+    .then((response) => response.data as Task)
+    .catch((err) => {
+      throw new Error(
+        err.response?.data?.message || "Fehler beim Aktualisieren der Aufgabe"
+      );
+    });
+}
+
 function deleteTask(id: string): Promise<void> {
   return api
     .delete(`/task/${id}`)
@@ -71,4 +83,4 @@ function deleteAllTasks(): Promise<void> {
     });
 }
 
-export { getAllTasks, createTask, patchTask, deleteTask, deleteAllTasks };
+export { getAllTasks, createTask, patchTask, patchTaskFavorite, deleteTask, deleteAllTasks };

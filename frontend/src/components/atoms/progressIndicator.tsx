@@ -4,7 +4,7 @@ import CircularProgress, {
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 
-function CircularProgressWithLabel(
+function ProgressIndicator(
   props: CircularProgressProps & { value: number },
 ) {
   return (
@@ -36,4 +36,4 @@ function CircularProgressWithLabel(
   );
 }
 
-export default CircularProgressWithLabel;
+export default ProgressIndicator;

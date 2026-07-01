@@ -1,5 +1,6 @@
 package ch.noseryoung.domain.recur.models;
 
+import java.time.Instant;
 import java.util.*;
 import lombok.*;
 import jakarta.persistence.*;
@@ -34,8 +35,14 @@ public class Task {
         private String description;
 
         @Column(name = "date_until")
-        private Date dateUntil;
+        private Instant dateUntil;
 
         @Column(name = "date_created")
-        private Date dateCreated;
+        private Instant dateCreated;
+
+        @Column(name = "is_favorite")
+        private Boolean isFavorite;
+
+        @Column(name = "is_archived")
+        private Boolean isArchived;
 }

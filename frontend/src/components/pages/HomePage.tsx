@@ -1,4 +1,3 @@
-import TaskCard from "../molecules/taskCard";
 import { Box, Container } from "@mui/material";
 import { getAllTasks, type Task } from "../../services/taskService";
 import { useEffect, useState } from "react";
@@ -6,6 +5,8 @@ import InfoCard from "../organisms/InfoCard";
 import Fab from "../atoms/FloatingActionButton";
 import AddTaskForm from "../organisms/AddTaskForm";
 import LoadingTime from "../atoms/LoadingTime";
+import TaskCard from "../molecules/TaskCard";
+import { patchTaskFavorite } from "../../services/taskService";
 
 
 function HomePage() {
@@ -17,6 +18,18 @@ function HomePage() {
 
   function showForm() {
     setShowAddTaskForm(true);
+  }
+
+  function handleToggleFavorite(taskId: number) {
+    const updatedTasks = tasks.map((task) => {
+      if (task.id === taskId) {
+        const updatedTask = { ...task, isFavorite: !task.isFavorite };
+        patchTaskFavorite(taskId, updatedTask.isFavorite);
+        return updatedTask;
+      }
+      return task;
+    });
+    setTasks(updatedTasks);
   }
 
   async function fetchTasks() {
@@ -84,6 +97,8 @@ function HomePage() {
             date_created={task.date_created}
             date_until={task.date_until}
             progress={task.progress}
+            isFavorite={task.isFavorite}
+            onToggleFavorite={() => handleToggleFavorite(task.id)}
           />
         ))}
         <Fab onClick={showForm} />
