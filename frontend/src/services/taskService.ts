@@ -21,8 +21,9 @@ function getAllTasks(): Promise<Task[]> {
     });
 }
 
+
 function createTask(
-  task: Omit<Task, "id" | "date_created" | "date_until">
+  task: Omit<Task, "id" | "date_created" >
 ): Promise<Task> {
   return api
     .post("/task", task)
@@ -36,7 +37,7 @@ function createTask(
 
 function patchTask(
   id: string,
-  task: Partial<Omit<Task, "id" | "date_created" | "date_until">>
+  task: Partial<Omit<Task, "id" | "date_created">>
 ): Promise<Task> {
   return api
     .patch(`/task/${id}`, task)

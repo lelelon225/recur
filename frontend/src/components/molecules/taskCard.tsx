@@ -6,25 +6,15 @@ import { Box } from "@mui/material";
 import {type Task } from "../../services/taskService";
 
 
+type TaskCardProps = {
+  classname?: string;
+} & Task;
 
-function TaskCard({ name, description, date_created, date_until, progress }: Task) {
+
+
+function TaskCard({ name, description, date_created, date_until, progress, classname }: TaskCardProps) {
   return (
-    <Box
-      sx={{
-        border: "1px solid #ccc",
-        borderRadius: "8px",
-        padding: "16px",
-        marginBottom: "16px",
-        display: "flex",
-        alignItems: "center",
-        gap: "16px",
-        minHeight: "150px",
-        "&:hover": {
-          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-          transition: "box-shadow 0.3s ease-in-out",
-        },
-      }}
-    >
+    <Box className={classname}>
       <CircularProgressWithLabel value={progress} />
       <Box
         sx={{

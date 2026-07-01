@@ -5,9 +5,11 @@ type DialogProps = {
     onClose: () => void;
     children: React.ReactNode;
     onSubmit?: () => void;
+    loading?: boolean;
+    submitDisabled?: boolean;
 };
 
-function Dialog({ open, onClose, children, onSubmit }: DialogProps) {
+function Dialog({ open, onClose, children, onSubmit, loading, submitDisabled }: DialogProps) {
     return (
         <MuiDialog
         fullWidth
@@ -22,14 +24,13 @@ function Dialog({ open, onClose, children, onSubmit }: DialogProps) {
                 {children}
             </DialogContentText>
         </DialogContent>
-            <Button autoFocus onClick={onClose}>
+        <DialogActions>
+            <Button autoFocus onClick={onClose} variant="outlined" color="primary">
                 Close
             </Button>
-        <DialogActions>
-            <Button autoFocus onClick={onSubmit}>
+            <Button autoFocus onClick={onSubmit} variant="contained" color="primary" loading={loading} disabled={submitDisabled}>
                 Submit
             </Button>
-
         </DialogActions>
       </MuiDialog>
     );

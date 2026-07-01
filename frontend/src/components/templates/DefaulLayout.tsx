@@ -12,6 +12,8 @@ type DefaultLayoutProps = {
 
 function DefaultLayout({ children }: DefaultLayoutProps) {
   const navigate = useNavigate();
+
+
  
   return (
     <div className="default-layout">

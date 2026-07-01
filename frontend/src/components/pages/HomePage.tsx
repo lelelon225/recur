@@ -2,16 +2,18 @@ import TaskCard from "../molecules/taskCard";
 import { Box, Container } from "@mui/material";
 import { getAllTasks, type Task } from "../../services/taskService";
 import { useEffect, useState } from "react";
-import LoadingTime from "../atoms/LoadingTime";
 import InfoCard from "../organisms/InfoCard";
 import Fab from "../atoms/FloatingActionButton";
 import AddTaskForm from "../organisms/AddTaskForm";
+import LoadingTime from "../atoms/LoadingTime";
+
 
 function HomePage() {
+  const [showAddTaskForm, setShowAddTaskForm] = useState(false);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showAddTaskForm, setShowAddTaskForm] = useState(false);
+  
 
   function showForm() {
     setShowAddTaskForm(true);
@@ -38,18 +40,18 @@ function HomePage() {
     fetchTasks();
   }, []);
 
-  if (tasks.length === 0 && !loading) {
-    return (
-     <InfoCard variant="info" title="Keine Aufgaben gefunden" discription="Es wurden keine Aufgaben in der Datenbank gefunden. Bitte erstellen Sie eine neue Aufgabe." />
-    );
-  }
-
-  if (loading) {
+    if (loading) {
     return <LoadingTime loading={loading} />;
   }
 
   if (error) {
     return <InfoCard variant="error" title="Fehler beim Abrufen der Aufgaben" discription={error} />;
+  }
+
+  if (tasks.length === 0 && !loading) {
+    return (
+      <InfoCard variant="info" title="Keine Aufgaben gefunden" discription="Es wurden keine Aufgaben in der Datenbank gefunden. Bitte erstellen Sie eine neue Aufgabe." />
+    );
   }
 
   return (
@@ -58,7 +60,7 @@ function HomePage() {
     {showAddTaskForm && <AddTaskForm  onClose={() => setShowAddTaskForm(false)} />}
 
       <Box
-        className="HomePage"
+        className="homePage"
         sx={{
           display: "grid",
           gridTemplateColumns: {
@@ -74,6 +76,7 @@ function HomePage() {
       >
         {tasks.map((task) => (
           <TaskCard
+            classname="taskCard"
             key={task.id}
             name={task.name}
             category={task.category}
