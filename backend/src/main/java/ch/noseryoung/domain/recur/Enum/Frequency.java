@@ -4,5 +4,6 @@ public enum Frequency {
     ONCE,
     DAILY,
     WEEKLY,
-    MONTHLY
+    MONTHLY,
+    YEARLY
 }
