@@ -83,13 +83,20 @@ Write-Host "Backend is ready!" -ForegroundColor Green
 
 
 $frontendReady = $false
-while (-not $frontendReady) {
+$frontendAttempts = 0
+while (-not $frontendReady -and $frontendAttempts -lt 60) {
     try {
         $response = Invoke-WebRequest -Uri "http://localhost:5173" -UseBasicParsing -TimeoutSec 2
         if ($response.StatusCode -eq 200) { $frontendReady = $true }
     } catch {
+        $frontendAttempts++
         Start-Sleep -Seconds 2
     }
+}
+
+if (-not $frontendReady) {
+    Write-Host "Frontend konnte nicht gestartet werden. Bitte prüfe die Logs und versuche es erneut." -ForegroundColor Red
+    exit 1
 }
 Write-Host "Frontend is ready!" -ForegroundColor Green
 
