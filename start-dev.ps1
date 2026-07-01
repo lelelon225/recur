@@ -1,6 +1,6 @@
 Set-Location $PSScriptRoot
 
-Write-Host "Checke ob Docker läuft" -ForegroundColor Cyan
+Write-Host "Prüfe, ob Docker läuft" -ForegroundColor Cyan
 $dockerRunning = $false
 try {
     docker info | Out-Null
