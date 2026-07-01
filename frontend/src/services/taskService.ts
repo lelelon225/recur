@@ -6,11 +6,11 @@ export interface Task {
   category: string;
   progress: number;
   goal: string;
-  description: string;
-  createdAt: Date;
-  updatedAt: Date;
+  description: string | null;
+  dateUntil: string | null;
+  dateCreated: string | null;
+  isFavorite?: boolean;
 }
-
 function getAllTasks(): Promise<Task[]> {
   return api
     .get("/task")
@@ -22,8 +22,9 @@ function getAllTasks(): Promise<Task[]> {
     });
 }
 
+
 function createTask(
-  task: Omit<Task, "id" | "createdAt" | "updatedAt">
+  task: Omit<Task, "id" | "date_created" >
 ): Promise<Task> {
   return api
     .post("/task", task)
@@ -37,10 +38,21 @@ function createTask(
 
 function patchTask(
   id: string,
-  task: Partial<Omit<Task, "id" | "createdAt" | "updatedAt">>
+  task: Partial<Omit<Task, "id" | "date_created">>
 ): Promise<Task> {
   return api
     .patch(`/task/${id}`, task)
+    .then((response) => response.data as Task)
+    .catch((err) => {
+      throw new Error(
+        err.response?.data?.message || "Fehler beim Aktualisieren der Aufgabe"
+      );
+    });
+}
+
+function patchTaskFavorite(id: string, isFavorite: boolean): Promise<Task> {
+  return api
+    .patch(`/task/${id}`, { isFavorite })
     .then((response) => response.data as Task)
     .catch((err) => {
       throw new Error(
@@ -71,4 +83,4 @@ function deleteAllTasks(): Promise<void> {
     });
 }
 
-export { getAllTasks, createTask, patchTask, deleteTask, deleteAllTasks };
+export { getAllTasks, createTask, patchTask, patchTaskFavorite, deleteTask, deleteAllTasks };

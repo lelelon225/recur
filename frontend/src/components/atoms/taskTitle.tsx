@@ -2,7 +2,7 @@ import Typography from "@mui/material/Typography";
 
 function TaskTitle({ title }: { title: string }) {
   return (
-    <Typography variant="h5" component="h2" gutterBottom>
+    <Typography sx={{ fontWeight: "bold" }} variant="h4" component="h4" gutterBottom>
       {title}
     </Typography>
   );
