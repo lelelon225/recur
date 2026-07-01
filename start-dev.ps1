@@ -58,17 +58,24 @@ Set-Location ..
 Write-Host "Warte bis Frontend und Backend hochgefahren sind" -ForegroundColor Cyan
 
 $backendReady = $false
-while (-not $backendReady) {
+$backendAttempts = 0
+while (-not $backendReady -and $backendAttempts -lt 60) {
     try {
         $response = Invoke-WebRequest -Uri "http://localhost:8080/" -UseBasicParsing -TimeoutSec 2
         $backendReady = $true
     } catch {
-        if ($_.Exception.Response.StatusCode.value__ -gt 0) {
+        $backendAttempts++
+        if ($_.Exception.Response -and $_.Exception.Response.StatusCode.value__ -gt 0) {
             $backendReady = $true
         } else {
             Start-Sleep -Seconds 2
         }
     }
+}
+
+if (-not $backendReady) {
+    Write-Host "Backend konnte nicht gestartet werden. Bitte prüfe die Logs und versuche es erneut." -ForegroundColor Red
+    exit 1
 }
 
 
