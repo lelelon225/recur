@@ -1,0 +1,3 @@
+id, name, category, progress, goal, description, date_until, date_created
+a3f1250a-89c0-4f19-bb03-bef2675ab093,Task 1,"HA",0.01,"Mathe HA machen","Seite 2-9",,
+e98f4842-d09f-42ab-b0a5-5759b47b5014,Task 2,"Test",1.00,"Test testen","Seite 8-15",,
