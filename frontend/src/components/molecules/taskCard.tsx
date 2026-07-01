@@ -1,6 +1,8 @@
+import { useState } from "react";
 import CircularProgressWithLabel from "../atoms/progressIndicator";
 import TaskTitle from "../atoms/taskTitle";
 import TaskDescription from "../atoms/taskDescription";
+import TaskFavorite from "../atoms/taskFavorite";
 import TaskTimeFrame from "../atoms/taskTimeFrame";
 import { Box } from "@mui/material";
 
@@ -10,9 +12,26 @@ interface TaskCardProps {
   start: string;
   end: string;
   progress: number;
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
 }
 
-function TaskCard({ title, description, start, end, progress }: TaskCardProps) {
+function TaskCard({
+  title,
+  description,
+  start,
+  end,
+  progress,
+  isFavorite = false,
+  onToggleFavorite,
+}: TaskCardProps) {
+  const [favorite, setFavorite] = useState(isFavorite);
+
+  const handleToggle = () => {
+    setFavorite((prev) => !prev);
+    onToggleFavorite?.();
+  };
+
   return (
     <Box
       sx={{
@@ -27,7 +46,6 @@ function TaskCard({ title, description, start, end, progress }: TaskCardProps) {
           boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
           transition: "box-shadow 0.3s ease-in-out",
         },
-
       }}
     >
       <CircularProgressWithLabel value={progress} />
@@ -39,7 +57,15 @@ function TaskCard({ title, description, start, end, progress }: TaskCardProps) {
           gap: "8px",
         }}
       >
-        <TaskTitle title={title} />
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+          }}
+        >
+          <TaskTitle title={title} />
+          <TaskFavorite isFavorite={favorite} onClick={handleToggle} />
+        </Box>
         <TaskDescription description={description} />
         <TaskTimeFrame start={start} end={end} />
       </Box>
