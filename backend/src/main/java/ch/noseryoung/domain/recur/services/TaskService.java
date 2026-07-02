@@ -45,10 +45,8 @@ public class TaskService {
                 if (task == null) {
                         return ResponseEntity.status(404).build();
                 }
-                for (Task t : taskRepository.findByIsArchived(true)) {
-                        if (t.getId().equals(id)) {
-                                return ResponseEntity.status(403).build();
-                        }
+                if (!Boolean.TRUE.equals(task.getIsArchived())) {
+                        return ResponseEntity.status(403).build();
                 }
                 taskRepository.deleteById(id);
                 return ResponseEntity.status(200).build();

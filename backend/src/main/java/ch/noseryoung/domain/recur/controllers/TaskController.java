@@ -29,6 +29,16 @@ public class TaskController {
                 return taskService.getTask(id);
         };
 
+        @GetMapping({ "/favorite", "/favorite/" })
+        public ResponseEntity<Collection<Task>> getFavoriteTasks() {
+                return taskService.getFavoriteTasks();
+        };
+
+        @GetMapping({ "/archived", "/archived/" })
+        public ResponseEntity<Collection<Task>> getArchivedTasks() {
+                return taskService.getArchivedTasks();
+        };
+
         @PostMapping({ "", "/" })
         public ResponseEntity<Task> createTask(@Valid @RequestBody Task task) {
                 return taskService.createTask(task);

@@ -1,5 +1,11 @@
 import { Box, Container } from "@mui/material";
-import { getAllTasks, patchTaskFavorite, type Task } from "../../services/taskService";
+import {
+  getAllTasks,
+  patchTaskFavorite,
+  patchTaskArchived,
+  deleteTask,
+  type Task,
+} from "../../services/taskService";
 import { useEffect, useState } from "react";
 import InfoCard from "../organisms/InfoCard";
 import Fab from "../atoms/FloatingActionButton";
@@ -19,31 +25,53 @@ function HomePage() {
 
   function handleToggleFavorite(taskId: string) {
     const previousTasks = tasks;
-    const nextIsFavorite = !tasks.find((t) => t.id === taskId)?.isFavorite;
-
-    // Optimistic update
-    setTasks((current) =>
-      current.map((task) =>
-        task.id === taskId ? { ...task, isFavorite: nextIsFavorite } : task
-      )
+    const updatedTasks = tasks.map((task) =>
+      task.id === taskId ? { ...task, isFavorite: !task.isFavorite } : task,
     );
+    setTasks(updatedTasks);
 
-    patchTaskFavorite(taskId, nextIsFavorite).catch(() => {
-      // Roll back on failure
+    const toggledTask = updatedTasks.find((task) => task.id === taskId);
+    if (!toggledTask) {
+      return;
+    }
+
+    patchTaskFavorite(taskId, toggledTask.isFavorite ?? false).catch((err) => {
       setTasks(previousTasks);
-      setError("Fehler beim Aktualisieren des Favoritenstatus");
+      console.error("Fehler beim Aktualisieren des Favoritenstatus", err);
+    });
+  }
+
+  function handleToggleArchive(taskId: string) {
+    const previousTasks = tasks;
+    const updatedTasks = tasks.filter((task) => task.id !== taskId);
+    setTasks(updatedTasks);
+
+    patchTaskArchived(taskId, true).catch((err) => {
+      setTasks(previousTasks);
+      console.error("Fehler beim Archivieren der Aufgabe", err);
+    });
+  }
+
+  function handleDelete(taskId: string) {
+    const previousTasks = tasks;
+    const updatedTasks = tasks.filter((task) => task.id !== taskId);
+    setTasks(updatedTasks);
+
+    deleteTask(taskId).catch((err) => {
+      setTasks(previousTasks);
+      console.error("Fehler beim Löschen der Aufgabe", err);
     });
   }
 
   async function fetchTasks() {
     try {
       const fetchedTasks = await getAllTasks();
-      setTasks(fetchedTasks);
+      setTasks(fetchedTasks.filter((task) => !task.isArchived));
     } catch (error) {
       setError(
         error instanceof Error
           ? error.message
-          : "Unbekannter Fehler beim Abrufen der Aufgaben"
+          : "Unbekannter Fehler beim Abrufen der Aufgaben",
       );
     } finally {
       setTimeout(() => {
@@ -62,7 +90,11 @@ function HomePage() {
 
   if (error) {
     return (
-      <InfoCard variant="error" title="Fehler beim Abrufen der Aufgaben" discription={error} />
+      <InfoCard
+        variant="error"
+        title="Fehler beim Abrufen der Aufgaben"
+        discription={error}
+      />
     );
   }
 
@@ -79,7 +111,9 @@ function HomePage() {
   return (
     <>
       <Container maxWidth="lg">
-        {showAddTaskForm && <AddTaskForm onClose={() => setShowAddTaskForm(false)} />}
+        {showAddTaskForm && (
+          <AddTaskForm onClose={() => setShowAddTaskForm(false)} />
+        )}
 
         <Box
           className="homePage"
@@ -107,7 +141,10 @@ function HomePage() {
               dateUntil={task.dateUntil}
               progress={task.progress}
               isFavorite={task.isFavorite}
+              isArchived={task.isArchived}
               onToggleFavorite={() => handleToggleFavorite(task.id)}
+              onToggleArchive={() => handleToggleArchive(task.id)}
+              onDelete={() => handleDelete(task.id)}
             />
           ))}
           <Fab onClick={showForm} />
