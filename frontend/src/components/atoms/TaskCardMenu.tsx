@@ -9,9 +9,18 @@ import type { Task } from "../../services/taskService";
 type TaskCardMenuProps = {
   task: Task;
   onToggleMenu: () => void;
+  onToggleArchive?: () => void;
+  onDelete?: () => void;
+  isArchived?: boolean;
 };
 
-function TaskCardMenu({ task, onToggleMenu }: TaskCardMenuProps) {
+function TaskCardMenu({
+  task,
+  onToggleMenu,
+  onToggleArchive,
+  onDelete,
+  isArchived,
+}: TaskCardMenuProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [editOpen, setEditOpen] = useState(false);
   const open = Boolean(anchorEl);
@@ -24,18 +33,20 @@ function TaskCardMenu({ task, onToggleMenu }: TaskCardMenuProps) {
     setAnchorEl(null);
   };
 
-  const handleToggle = () => {
+  const handleToggleArchive = () => {
+    onToggleArchive?.();
+    handleClose();
+  };
+
+  const handleToggleEdit = () => {
     onToggleMenu();
+    console.log("Edit clicked");
     handleClose();
   };
 
-  const handleEdit = () => {
-    setEditOpen(true);
+  const handleDelete = () => {
+    onDelete?.();
     handleClose();
-  };
-
-  const handleEditClose = () => {
-    setEditOpen(false);
   };
 
   return (
@@ -54,8 +65,23 @@ function TaskCardMenu({ task, onToggleMenu }: TaskCardMenuProps) {
         <MenuIcon sx={{ padding: 0, color: "white" }} />
       </IconButton>
       <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
-        <MenuItem onClick={handleEdit}>Edit</MenuItem>
-        <MenuItem onClick={handleToggle}>Delete</MenuItem>
+        {isArchived
+          ? [
+              <MenuItem key="unarchive" onClick={handleToggleArchive}>
+                Unarchive
+              </MenuItem>,
+              <MenuItem key="delete" onClick={handleDelete}>
+                Delete
+              </MenuItem>,
+            ]
+          : [
+              <MenuItem key="edit" onClick={handleToggleEdit}>
+                Edit
+              </MenuItem>,
+              <MenuItem key="archive" onClick={handleToggleArchive}>
+                Archive
+              </MenuItem>,
+            ]}
       </Menu>
 
       {editOpen && <EditTaskForm task={task} onClose={handleEditClose} />}

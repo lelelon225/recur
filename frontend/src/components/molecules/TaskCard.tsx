@@ -1,21 +1,48 @@
 import { Box, Grid } from "@mui/material";
-import { type Task } from "../../services/taskService";
 import ProgressIndicator from "../atoms/ProgressIndicator";
-import TaskTitle from "../atoms/TaskTitle";
 import TaskDescription from "../atoms/TaskDescription";
+import TaskTitle from "../atoms/TaskTitle";
 import TaskTimeFrame from "../atoms/TaskTimeFrame";
+import { type Task } from "../../services/taskService";
 import TaskFavorite from "../atoms/TaskFavourite";
 import TaskCardMenu from "../atoms/TaskCardMenu";
 
 type TaskCardProps = {
-  task: Task;
   classname?: string;
   onToggleFavorite?: () => void;
-};
+  onToggleMenu?: () => void;
+  onToggleArchive?: () => void;
+  onDelete?: () => void;
+} & Task;
 
-function TaskCard({ task, classname, onToggleFavorite }: TaskCardProps) {
+function TaskCard({
+  name,
+  description,
+  dateCreated,
+  dateUntil,
+  progress,
+  isFavorite,
+  isArchived,
+  classname,
+  onToggleFavorite,
+  onToggleMenu,
+  onToggleArchive,
+  onDelete,
+}: TaskCardProps) {
   const handleToggle = () => {
     onToggleFavorite?.();
+  };
+
+  const handleToggleMenu = () => {
+    onToggleMenu?.();
+  };
+
+  const handleToggleArchive = () => {
+    onToggleArchive?.();
+  };
+
+  const handleDelete = () => {
+    onDelete?.();
   };
 
   return (
@@ -32,11 +59,21 @@ function TaskCard({ task, classname, onToggleFavorite }: TaskCardProps) {
           <ProgressIndicator value={task.progress} />
         </Grid>
         <Grid>
-          <TaskCardMenu task={task} onToggleMenu={() => {}} />
+          <TaskCardMenu
+            onToggleMenu={handleToggleMenu}
+            onToggleArchive={handleToggleArchive}
+            onDelete={handleDelete}
+            isArchived={isArchived}
+          />
         </Grid>
       </Grid>
-      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-        <TaskTitle title={task.name} />
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+        }}
+      >
+        <TaskTitle title={name} />
       </Box>
       <TaskDescription description={task.description} />
       <Grid
