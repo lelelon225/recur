@@ -28,6 +28,17 @@ function getAllTasks(): Promise<Task[]> {
     });
 }
 
+function getFavoriteTasks(): Promise<Task[]> {
+  return api
+    .get("/task/favorite")
+    .then((response) => response.data as Task[])
+    .catch((err) => {
+      throw new Error(
+        err.response?.data?.message || "Fehler beim Abrufen der Favoriten"
+      );
+    });
+}
+
 function createTask(task: Omit<Task, "id" | "date_created">): Promise<Task> {
   return api
     .post("/task", task)
@@ -95,6 +106,7 @@ function deleteAllTasks(): Promise<void> {
 
 export {
   getAllTasks,
+  getFavoriteTasks,
   createTask,
   patchTask,
   patchTaskFavorite,
