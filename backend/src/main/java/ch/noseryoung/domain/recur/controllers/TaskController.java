@@ -3,48 +3,73 @@ package ch.noseryoung.domain.recur.controllers;
 import ch.noseryoung.domain.recur.models.Task;
 import ch.noseryoung.domain.recur.services.TaskService;
 
-
 import java.util.*;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.beans.factory.annotation.Autowired;
 
 @RestController
 @RequestMapping("/task")
 @CrossOrigin(origins = "http://localhost:5173")
 public class TaskController {
-        
-        @Autowired
-        private TaskService taskService;
 
-        @GetMapping({"", "/"})
+        private final TaskService taskService;
+
+        public TaskController(TaskService taskService) {
+                this.taskService = taskService;
+        }
+
+        @GetMapping({ "", "/" })
         public ResponseEntity<Collection<Task>> getTasks() {
                 return taskService.getTasks();
         };
 
-        @GetMapping({"/{id}", "/{id}/"})
+        @GetMapping({ "/{id}", "/{id}/" })
         public ResponseEntity<Task> getTask(@PathVariable UUID id) {
                 return taskService.getTask(id);
         };
 
-        @PostMapping({"", "/"})
+        @GetMapping({ "/favorite", "/favorite/" })
+        public ResponseEntity<Collection<Task>> getFavoriteTasks() {
+                return taskService.getFavoriteTasks();
+        };
+
+        @GetMapping({ "/archived", "/archived/" })
+        public ResponseEntity<Collection<Task>> getArchivedTasks() {
+                return taskService.getArchivedTasks();
+        };
+
+        @PostMapping({ "", "/" })
         public ResponseEntity<Task> createTask(@Valid @RequestBody Task task) {
                 return taskService.createTask(task);
         };
 
-        @PatchMapping({"/{id}", "/{id}/"})
+        @PatchMapping({ "/{id}", "/{id}/" })
         public ResponseEntity<Task> patchTask(@PathVariable UUID id, @Valid @RequestBody Task task) {
                 return taskService.patchTask(id, task);
         };
 
-        @DeleteMapping({"/{id}", "/{id}/"})
+        @PatchMapping({ "/{id}/favorite", "/{id}/favorite/" })
+        public ResponseEntity<Task> patchTaskFavorite(@PathVariable UUID id,
+                        @RequestBody Map<String, Boolean> requestBody) {
+                Boolean isFavorite = requestBody.get("isFavorite");
+                return taskService.patchTaskFavorite(id, isFavorite);
+        }
+
+        @PatchMapping({ "/{id}/archived", "/{id}/archived/" })
+        public ResponseEntity<Task> patchTaskArchived(@PathVariable UUID id,
+                        @RequestBody Map<String, Boolean> requestBody) {
+                Boolean isArchived = requestBody.get("isArchived");
+                return taskService.patchTaskArchived(id, isArchived);
+        }
+
+        @DeleteMapping({ "/{id}", "/{id}/" })
         public ResponseEntity<Task> deleteTask(@PathVariable UUID id) {
                 return taskService.deleteTask(id);
         };
 
-        @DeleteMapping({"/all", "/all/"})
+        @DeleteMapping({ "/all", "/all/" })
         public ResponseEntity<Task> deleteAllTasks() {
                 return taskService.deleteAllTasks();
         };
-} 
+}

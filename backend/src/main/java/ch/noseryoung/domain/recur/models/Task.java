@@ -1,8 +1,12 @@
 package ch.noseryoung.domain.recur.models;
 
+import java.time.Instant;
 import java.util.*;
 import lombok.*;
 import jakarta.persistence.*;
+
+import ch.noseryoung.domain.recur.Enum.Category;
+import ch.noseryoung.domain.recur.Enum.Frequency;
 
 @Builder
 @Getter
@@ -19,23 +23,37 @@ public class Task {
         private UUID id;
 
         @Column(name = "name")
-        private String name; 
+        private String name;
 
+        @Enumerated(EnumType.STRING)
         @Column(name = "category")
-        private String category;
-        
-        @Column(name = "progress")
-        private Double progress;
+        private Category category;
 
-        @Column(name = "goal")
-        private String goal;
+        @Enumerated(EnumType.STRING)
+        @Column(name = "frequency")
+        private Frequency frequency;
 
         @Column(name = "description")
         private String description;
 
         @Column(name = "date_until")
-        private Date dateUntil;
+        private Instant dateUntil;
+
+        @Column(name = "progress")
+        private Double progress;
 
         @Column(name = "date_created")
-        private Date dateCreated;
+        private Instant dateCreated;
+
+        @Column(name = "days_in_span")
+        private Integer daysInSpan;
+
+        @Column(name = "amount_did")
+        private Integer amountDid;
+
+        @Column(name = "is_favorite")
+        private Boolean isFavorite;
+
+        @Column(name = "is_archived")
+        private Boolean isArchived;
 }

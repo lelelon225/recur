@@ -1,8 +1,8 @@
 import Typography from "@mui/material/Typography";
 
-function TaskDescription({ description }: { description: string }) {
+function TaskDescription({ description }: { description: string | null }) {
   return (
-    <Typography variant="body1" color="text.secondary">
+    <Typography variant="h6" color="text.secondary">
       {description}
     </Typography>
   );
