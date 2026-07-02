@@ -19,19 +19,19 @@ function HomePage() {
 
   function handleToggleFavorite(taskId: string) {
     const previousTasks = tasks;
-    const nextIsFavorite = !tasks.find((t) => t.id === taskId)?.isFavorite;
-
-    // Optimistic update
-    setTasks((current) =>
-      current.map((task) =>
-        task.id === taskId ? { ...task, isFavorite: nextIsFavorite } : task
-      )
+    const updatedTasks = tasks.map((task) =>
+      task.id === taskId ? { ...task, isFavorite: !task.isFavorite } : task,
     );
+    setTasks(updatedTasks);
 
-    patchTaskFavorite(taskId, nextIsFavorite).catch(() => {
-      // Roll back on failure
+    const toggledTask = updatedTasks.find((task) => task.id === taskId);
+    if (!toggledTask) {
+      return;
+    }
+
+    patchTaskFavorite(taskId, toggledTask.isFavorite ?? false).catch((err) => {
       setTasks(previousTasks);
-      setError("Fehler beim Aktualisieren des Favoritenstatus");
+      console.error("Fehler beim Aktualisieren des Favoritenstatus", err);
     });
   }
 
@@ -43,7 +43,7 @@ function HomePage() {
       setError(
         error instanceof Error
           ? error.message
-          : "Unbekannter Fehler beim Abrufen der Aufgaben"
+          : "Unbekannter Fehler beim Abrufen der Aufgaben",
       );
     } finally {
       setTimeout(() => {
@@ -62,7 +62,11 @@ function HomePage() {
 
   if (error) {
     return (
-      <InfoCard variant="error" title="Fehler beim Abrufen der Aufgaben" discription={error} />
+      <InfoCard
+        variant="error"
+        title="Fehler beim Abrufen der Aufgaben"
+        discription={error}
+      />
     );
   }
 
@@ -79,7 +83,9 @@ function HomePage() {
   return (
     <>
       <Container maxWidth="lg">
-        {showAddTaskForm && <AddTaskForm onClose={() => setShowAddTaskForm(false)} />}
+        {showAddTaskForm && (
+          <AddTaskForm onClose={() => setShowAddTaskForm(false)} />
+        )}
 
         <Box
           className="homePage"

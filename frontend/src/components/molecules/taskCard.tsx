@@ -1,19 +1,17 @@
 import { Box, Grid } from "@mui/material";
-import { type Task } from "../../services/taskService";
 import ProgressIndicator from "../atoms/ProgressIndicator";
-import TaskTitle from "../atoms/TaskTitle";
 import TaskDescription from "../atoms/TaskDescription";
+import TaskTitle from "../atoms/TaskTitle";
 import TaskTimeFrame from "../atoms/TaskTimeFrame";
+import { type Task } from "../../services/taskService";
 import TaskFavorite from "../atoms/TaskFavourite";
 import TaskCardMenu from "../atoms/TaskCardMenu";
 
-type TaskCardProps = Pick<Task,
-  "name" | "category" | "description" | "dateCreated" | "dateUntil" | "progress" | "isFavorite"
-> & {
+type TaskCardProps = {
   classname?: string;
   onToggleFavorite?: () => void;
   onToggleMenu?: () => void;
-};
+} & Task;
 
 function TaskCard({
   name,
@@ -36,7 +34,14 @@ function TaskCard({
 
   return (
     <Box className={classname}>
-      <Grid container sx={{ justifyContent: "space-between", alignItems: "flex-start", margin: "8px 0 8px 0" }}>
+      <Grid
+        container
+        sx={{
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          margin: "8px 0 8px 0",
+        }}
+      >
         <Grid>
           <ProgressIndicator value={progress} />
         </Grid>
@@ -44,13 +49,23 @@ function TaskCard({
           <TaskCardMenu onToggleMenu={handleToggleMenu} />
         </Grid>
       </Grid>
-      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+        }}
+      >
         <TaskTitle title={name} />
       </Box>
       <TaskDescription description={description} />
       <Grid
         container
-        sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", margin: "8px 0 8px 0" }}
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          margin: "8px 0 8px 0",
+        }}
       >
         <Grid>
           <TaskTimeFrame start={dateCreated} end={dateUntil} />

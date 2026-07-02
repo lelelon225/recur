@@ -1,4 +1,5 @@
 import HomePage from "./components/pages/HomePage"
+import FavoritesPage from "./components/pages/FavoritesPage"
 import DefaultLayout from "./components/templates/DefaulLayout"
 import { Route, Routes } from "react-router-dom"
 
@@ -8,6 +9,12 @@ function App() {
       <Route path="/" element={
         <DefaultLayout>
           <HomePage />
+        </DefaultLayout>
+      } />
+
+      <Route path="/favorites" element={
+        <DefaultLayout>
+          <FavoritesPage />
         </DefaultLayout>
       } />
 
