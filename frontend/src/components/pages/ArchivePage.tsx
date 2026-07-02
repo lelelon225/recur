@@ -1,7 +1,6 @@
 import { Box, Container } from "@mui/material";
 import {
-  getFavoriteTasks,
-  patchTaskFavorite,
+  getArchivedTasks,
   patchTaskArchived,
   deleteTask,
   type Task,
@@ -11,34 +10,23 @@ import InfoCard from "../organisms/InfoCard";
 import LoadingTime from "../atoms/LoadingTime";
 import TaskCard from "../molecules/TaskCard";
 
-function FavoritesPage() {
+function ArchivePage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  function handleToggleFavorite(taskId: string) {
+  function handleToggleArchive(taskId: string) {
     const previousTasks = tasks;
     const updatedTasks = tasks
       .map((task) =>
-        task.id === taskId ? { ...task, isFavorite: !task.isFavorite } : task,
+        task.id === taskId ? { ...task, isArchived: !task.isArchived } : task,
       )
-      .filter((task) => task.isFavorite);
+      .filter((task) => task.isArchived);
     setTasks(updatedTasks);
 
-    patchTaskFavorite(taskId, false).catch((err) => {
+    patchTaskArchived(taskId, false).catch((err) => {
       setTasks(previousTasks);
-      console.error("Fehler beim Aktualisieren des Favoritenstatus", err);
-    });
-  }
-
-  function handleToggleArchive(taskId: string) {
-    const previousTasks = tasks;
-    const updatedTasks = tasks.filter((task) => task.id !== taskId);
-    setTasks(updatedTasks);
-
-    patchTaskArchived(taskId, true).catch((err) => {
-      setTasks(previousTasks);
-      console.error("Fehler beim Archivieren der Aufgabe", err);
+      console.error("Fehler beim Aktualisieren Archivierungsstatus", err);
     });
   }
 
@@ -53,10 +41,10 @@ function FavoritesPage() {
     });
   }
 
-  async function fetchFavoriteTasks() {
+  async function fetchArchivedTasks() {
     try {
-      const fetchedTasks = await getFavoriteTasks();
-      setTasks(fetchedTasks.filter((task) => !task.isArchived));
+      const fetchedTasks = await getArchivedTasks();
+      setTasks(fetchedTasks);
     } catch (error) {
       setError(
         error instanceof Error
@@ -71,7 +59,7 @@ function FavoritesPage() {
   }
 
   useEffect(() => {
-    fetchFavoriteTasks();
+    fetchArchivedTasks();
   }, []);
 
   if (loading) {
@@ -82,7 +70,7 @@ function FavoritesPage() {
     return (
       <InfoCard
         variant="error"
-        title="Fehler beim Abrufen der Favoriten"
+        title="Fehler beim Abrufen der archivierten Aufgaben"
         discription={error}
       />
     );
@@ -92,7 +80,7 @@ function FavoritesPage() {
     return (
       <InfoCard
         variant="info"
-        title="Keine Favoriten gefunden"
+        title="Keine archivierten Aufgaben gefunden"
         discription="Fügen Sie Aufgaben zu Ihren Favoriten hinzu, um sie hier anzuzeigen."
       />
     );
@@ -127,7 +115,6 @@ function FavoritesPage() {
             progress={task.progress}
             isFavorite={task.isFavorite}
             isArchived={task.isArchived}
-            onToggleFavorite={() => handleToggleFavorite(task.id)}
             onToggleArchive={() => handleToggleArchive(task.id)}
             onDelete={() => handleDelete(task.id)}
           />
@@ -137,4 +124,4 @@ function FavoritesPage() {
   );
 }
 
-export default FavoritesPage;
+export default ArchivePage;

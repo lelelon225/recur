@@ -1,14 +1,22 @@
 import { Box, IconButton } from "@mui/material";
-import MenuIcon from '@mui/icons-material/MoreVert';
+import MenuIcon from "@mui/icons-material/MoreVert";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import { useState } from "react";
 
 type TaskCardMenuProps = {
   onToggleMenu: () => void;
+  onToggleArchive?: () => void;
+  onDelete?: () => void;
+  isArchived?: boolean;
 };
 
-function TaskCardMenu({ onToggleMenu }: TaskCardMenuProps) {
+function TaskCardMenu({
+  onToggleMenu,
+  onToggleArchive,
+  onDelete,
+  isArchived,
+}: TaskCardMenuProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
@@ -20,23 +28,60 @@ function TaskCardMenu({ onToggleMenu }: TaskCardMenuProps) {
     setAnchorEl(null);
   };
 
-  const handleToggle = () => {
+  const handleToggleArchive = () => {
+    onToggleArchive?.();
+    handleClose();
+  };
+
+  const handleToggleEdit = () => {
     onToggleMenu();
+    console.log("Edit clicked");
+    handleClose();
+  };
+
+  const handleDelete = () => {
+    onDelete?.();
     handleClose();
   };
 
   return (
-    <Box sx={{ display: "flex", justifyContent: "flex-start", alignItems: "flex-start" }}>
-      <IconButton onClick={handleClick} sx={{ padding: 0, margin: "8px 0 8px 0" }} aria-label="Task Card Menu">
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "flex-start",
+        alignItems: "flex-start",
+      }}
+    >
+      <IconButton
+        onClick={handleClick}
+        sx={{ padding: 0, margin: "8px 0 8px 0" }}
+        aria-label="Task Card Menu"
+      >
         <MenuIcon sx={{ padding: 0, color: "white" }} />
       </IconButton>
       <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
-        <MenuItem onClick={handleToggle}>Edit</MenuItem>
-        <MenuItem onClick={handleToggle}>Delete</MenuItem>
+        {isArchived ? (
+          [
+            <MenuItem key="unarchive" onClick={handleToggleArchive}>
+              Unarchive
+            </MenuItem>,
+            <MenuItem key="delete" onClick={handleDelete}>
+              Delete
+            </MenuItem>,
+          ]
+        ) : (
+          [
+            <MenuItem key="edit" onClick={handleToggleEdit}>
+              Edit
+            </MenuItem>,
+            <MenuItem key="archive" onClick={handleToggleArchive}>
+              Archive
+            </MenuItem>,
+          ]
+        )}
       </Menu>
     </Box>
   );
 }
 
-export default TaskCardMenu;    
-
+export default TaskCardMenu;

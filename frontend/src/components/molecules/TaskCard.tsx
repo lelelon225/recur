@@ -11,6 +11,8 @@ type TaskCardProps = {
   classname?: string;
   onToggleFavorite?: () => void;
   onToggleMenu?: () => void;
+  onToggleArchive?: () => void;
+  onDelete?: () => void;
 } & Task;
 
 function TaskCard({
@@ -20,9 +22,12 @@ function TaskCard({
   dateUntil,
   progress,
   isFavorite,
+  isArchived,
   classname,
   onToggleFavorite,
   onToggleMenu,
+  onToggleArchive,
+  onDelete,
 }: TaskCardProps) {
   const handleToggle = () => {
     onToggleFavorite?.();
@@ -30,6 +35,14 @@ function TaskCard({
 
   const handleToggleMenu = () => {
     onToggleMenu?.();
+  };
+
+  const handleToggleArchive = () => {
+    onToggleArchive?.();
+  };
+
+  const handleDelete = () => {
+    onDelete?.();
   };
 
   return (
@@ -46,7 +59,12 @@ function TaskCard({
           <ProgressIndicator value={progress} />
         </Grid>
         <Grid>
-          <TaskCardMenu onToggleMenu={handleToggleMenu} />
+          <TaskCardMenu
+            onToggleMenu={handleToggleMenu}
+            onToggleArchive={handleToggleArchive}
+            onDelete={handleDelete}
+            isArchived={isArchived}
+          />
         </Grid>
       </Grid>
       <Box

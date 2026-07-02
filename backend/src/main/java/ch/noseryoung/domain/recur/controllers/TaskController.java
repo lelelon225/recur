@@ -34,6 +34,11 @@ public class TaskController {
                 return taskService.getFavoriteTasks();
         };
 
+        @GetMapping({ "/archived", "/archived/" })
+        public ResponseEntity<Collection<Task>> getArchivedTasks() {
+                return taskService.getArchivedTasks();
+        };
+
         @PostMapping({ "", "/" })
         public ResponseEntity<Task> createTask(@Valid @RequestBody Task task) {
                 return taskService.createTask(task);
