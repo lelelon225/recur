@@ -7,56 +7,52 @@ import TaskTimeFrame from "../atoms/TaskTimeFrame";
 import TaskFavorite from "../atoms/TaskFavourite";
 import TaskCardMenu from "../atoms/TaskCardMenu";
 
-type TaskCardProps = Pick<Task,
-  "name" | "category" | "description" | "dateCreated" | "dateUntil" | "progress" | "isFavorite"
-> & {
+type TaskCardProps = {
+  task: Task;
   classname?: string;
   onToggleFavorite?: () => void;
-  onToggleMenu?: () => void;
 };
 
-function TaskCard({
-  name,
-  description,
-  dateCreated,
-  dateUntil,
-  progress,
-  isFavorite,
-  classname,
-  onToggleFavorite,
-  onToggleMenu,
-}: TaskCardProps) {
+function TaskCard({ task, classname, onToggleFavorite }: TaskCardProps) {
   const handleToggle = () => {
     onToggleFavorite?.();
   };
 
-  const handleToggleMenu = () => {
-    onToggleMenu?.();
-  };
-
   return (
     <Box className={classname}>
-      <Grid container sx={{ justifyContent: "space-between", alignItems: "flex-start", margin: "8px 0 8px 0" }}>
+      <Grid
+        container
+        sx={{
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          margin: "8px 0 8px 0",
+        }}
+      >
         <Grid>
-          <ProgressIndicator value={progress} />
+          <ProgressIndicator value={task.progress} />
         </Grid>
         <Grid>
-          <TaskCardMenu onToggleMenu={handleToggleMenu} />
+          <TaskCardMenu task={task} onToggleMenu={() => {}} />
         </Grid>
       </Grid>
       <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-        <TaskTitle title={name} />
+        <TaskTitle title={task.name} />
       </Box>
-      <TaskDescription description={description} />
+      <TaskDescription description={task.description} />
       <Grid
         container
-        sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", margin: "8px 0 8px 0" }}
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          margin: "8px 0 8px 0",
+        }}
       >
         <Grid>
-          <TaskTimeFrame start={dateCreated} end={dateUntil} />
+          <TaskTimeFrame start={task.dateCreated} end={task.dateUntil} />
         </Grid>
         <Grid>
-          <TaskFavorite isFavorite={isFavorite} onClick={handleToggle} />
+          <TaskFavorite isFavorite={task.isFavorite} onClick={handleToggle} />
         </Grid>
       </Grid>
     </Box>

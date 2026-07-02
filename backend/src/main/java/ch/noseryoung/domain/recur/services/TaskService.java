@@ -30,15 +30,23 @@ public class TaskService {
                 return ResponseEntity.status(201).body(task);
         }
 
-        public ResponseEntity<Task> patchTask(UUID id, Task task) {
+      public ResponseEntity<Task> patchTask(UUID id, Task task) {
                 Task existingTask = taskRepository.findById(id).orElse(null);
                 if (existingTask == null) {
                         return ResponseEntity.status(404).build();
                 }
-                task.setId(id);
-                taskRepository.save(task);
-                return ResponseEntity.status(200).body(task);
-        }
+
+                if (task.getName() != null) existingTask.setName(task.getName());
+                if (task.getDescription() != null) existingTask.setDescription(task.getDescription());
+                if (task.getCategory() != null) existingTask.setCategory(task.getCategory());
+                if (task.getDateUntil() != null) existingTask.setDateUntil(task.getDateUntil());
+                if (task.getFrequency() != null) existingTask.setFrequency(task.getFrequency());
+                if (task.getProgress() != null) existingTask.setProgress(task.getProgress());
+                // ... halt für jedes Feld, das patchbar sein soll
+
+                taskRepository.save(existingTask);
+                return ResponseEntity.status(200).body(existingTask);
+}
 
         public ResponseEntity<Task> deleteTask(UUID id) {
                 Task task = taskRepository.findById(id).orElse(null);
