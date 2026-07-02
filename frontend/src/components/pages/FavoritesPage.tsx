@@ -11,17 +11,18 @@ function FavoritesPage() {
   const [error, setError] = useState<string | null>(null);
 
   function handleToggleFavorite(taskId: string) {
+    const previousTasks = tasks;
     const updatedTasks = tasks
-      .map((task) => {
-        if (task.id === taskId) {
-          const updatedTask = { ...task, isFavorite: !task.isFavorite };
-          patchTaskFavorite(taskId, updatedTask.isFavorite);
-          return updatedTask;
-        }
-        return task;
-      })
+      .map((task) =>
+        task.id === taskId ? { ...task, isFavorite: !task.isFavorite } : task,
+      )
       .filter((task) => task.isFavorite);
     setTasks(updatedTasks);
+
+    patchTaskFavorite(taskId, false).catch((err) => {
+      setTasks(previousTasks);
+      console.error("Fehler beim Aktualisieren des Favoritenstatus", err);
+    });
   }
 
   async function fetchFavoriteTasks() {
