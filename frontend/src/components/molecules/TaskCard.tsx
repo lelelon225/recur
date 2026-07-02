@@ -56,7 +56,7 @@ function TaskCard({
         }}
       >
         <Grid>
-          <ProgressIndicator value={progress} />
+          <ProgressIndicator value={task.progress} />
         </Grid>
         <Grid>
           <TaskCardMenu
@@ -75,7 +75,7 @@ function TaskCard({
       >
         <TaskTitle title={name} />
       </Box>
-      <TaskDescription description={description} />
+      <TaskDescription description={task.description} />
       <Grid
         container
         sx={{
@@ -86,10 +86,10 @@ function TaskCard({
         }}
       >
         <Grid>
-          <TaskTimeFrame start={dateCreated} end={dateUntil} />
+          <TaskTimeFrame start={task.dateCreated} end={task.dateUntil} />
         </Grid>
         <Grid>
-          <TaskFavorite isFavorite={isFavorite} onClick={handleToggle} />
+          <TaskFavorite isFavorite={task.isFavorite} onClick={handleToggle} />
         </Grid>
       </Grid>
     </Box>
