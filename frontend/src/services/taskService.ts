@@ -23,7 +23,10 @@ type ServerOwnedFields = "id" | "dateCreated";
 
 function extractErrorMessage(err: unknown, fallback: string): string {
   if (axios.isAxiosError(err)) {
-    return (err.response?.data as { message?: string } | undefined)?.message ?? fallback;
+    return (
+      (err.response?.data as { message?: string } | undefined)?.message ??
+      fallback
+    );
   }
   return fallback;
 }
@@ -33,7 +36,9 @@ function getAllTasks(): Promise<Task[]> {
     .get("/task")
     .then((response) => response.data as Task[])
     .catch((err: unknown) => {
-      throw new Error(extractErrorMessage(err, "Fehler beim Abrufen der Aufgaben"));
+      throw new Error(
+        extractErrorMessage(err, "Fehler beim Abrufen der Aufgaben"),
+      );
     });
 }
 
@@ -43,7 +48,19 @@ function getFavoriteTasks(): Promise<Task[]> {
     .then((response) => response.data as Task[])
     .catch((err) => {
       throw new Error(
-        err.response?.data?.message || "Fehler beim Abrufen der Favoriten"
+        err.response?.data?.message || "Fehler beim Abrufen der Favoriten",
+      );
+    });
+}
+
+function getArchivedTasks(): Promise<Task[]> {
+  return api
+    .get("/task/archived")
+    .then((response) => response.data as Task[])
+    .catch((err) => {
+      throw new Error(
+        err.response?.data?.message ||
+          "Fehler beim Abrufen der archivierten Aufgaben",
       );
     });
 }
@@ -53,19 +70,23 @@ function createTask(task: Omit<Task, "id" | "date_created">): Promise<Task> {
     .post("/task", task)
     .then((response) => response.data as Task)
     .catch((err: unknown) => {
-      throw new Error(extractErrorMessage(err, "Fehler beim Erstellen der Aufgabe"));
+      throw new Error(
+        extractErrorMessage(err, "Fehler beim Erstellen der Aufgabe"),
+      );
     });
 }
 
 function patchTask(
   id: string,
-  task: Partial<Omit<Task, ServerOwnedFields>>
+  task: Partial<Omit<Task, ServerOwnedFields>>,
 ): Promise<Task> {
   return api
     .patch(`/task/${id}`, task)
     .then((response) => response.data as Task)
     .catch((err: unknown) => {
-      throw new Error(extractErrorMessage(err, "Fehler beim Aktualisieren der Aufgabe"));
+      throw new Error(
+        extractErrorMessage(err, "Fehler beim Aktualisieren der Aufgabe"),
+      );
     });
 }
 
@@ -74,7 +95,12 @@ function patchTaskFavorite(id: string, isFavorite: boolean): Promise<Task> {
     .patch(`/task/${id}/favorite`, { isFavorite })
     .then((response) => response.data as Task)
     .catch((err: unknown) => {
-      throw new Error(extractErrorMessage(err, "Fehler beim Aktualisieren des Favoritenstatus"));
+      throw new Error(
+        extractErrorMessage(
+          err,
+          "Fehler beim Aktualisieren des Favoritenstatus",
+        ),
+      );
     });
 }
 
@@ -83,7 +109,9 @@ function patchTaskArchived(id: string, isArchived: boolean): Promise<Task> {
     .patch(`/task/${id}/archived`, { isArchived })
     .then((response) => response.data as Task)
     .catch((err: unknown) => {
-      throw new Error(extractErrorMessage(err, "Fehler beim Archivieren der Aufgabe"));
+      throw new Error(
+        extractErrorMessage(err, "Fehler beim Archivieren der Aufgabe"),
+      );
     });
 }
 
@@ -92,7 +120,9 @@ function deleteTask(id: string): Promise<void> {
     .delete(`/task/${id}`)
     .then(() => {})
     .catch((err: unknown) => {
-      throw new Error(extractErrorMessage(err, "Fehler beim Löschen der Aufgabe"));
+      throw new Error(
+        extractErrorMessage(err, "Fehler beim Löschen der Aufgabe"),
+      );
     });
 }
 
@@ -101,13 +131,16 @@ function deleteAllTasks(): Promise<void> {
     .delete(`/task/all`)
     .then(() => {})
     .catch((err: unknown) => {
-      throw new Error(extractErrorMessage(err, "Fehler beim Löschen aller Aufgaben"));
+      throw new Error(
+        extractErrorMessage(err, "Fehler beim Löschen aller Aufgaben"),
+      );
     });
 }
 
 export {
   getAllTasks,
   getFavoriteTasks,
+  getArchivedTasks,
   createTask,
   patchTask,
   patchTaskFavorite,

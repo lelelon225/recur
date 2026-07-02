@@ -1,5 +1,11 @@
 import { Box, Container } from "@mui/material";
-import { getAllTasks, patchTaskFavorite, type Task } from "../../services/taskService";
+import {
+  getAllTasks,
+  patchTaskFavorite,
+  patchTaskArchived,
+  deleteTask,
+  type Task,
+} from "../../services/taskService";
 import { useEffect, useState } from "react";
 import InfoCard from "../organisms/InfoCard";
 import Fab from "../atoms/FloatingActionButton";
@@ -35,10 +41,32 @@ function HomePage() {
     });
   }
 
+  function handleToggleArchive(taskId: string) {
+    const previousTasks = tasks;
+    const updatedTasks = tasks.filter((task) => task.id !== taskId);
+    setTasks(updatedTasks);
+
+    patchTaskArchived(taskId, true).catch((err) => {
+      setTasks(previousTasks);
+      console.error("Fehler beim Archivieren der Aufgabe", err);
+    });
+  }
+
+  function handleDelete(taskId: string) {
+    const previousTasks = tasks;
+    const updatedTasks = tasks.filter((task) => task.id !== taskId);
+    setTasks(updatedTasks);
+
+    deleteTask(taskId).catch((err) => {
+      setTasks(previousTasks);
+      console.error("Fehler beim Löschen der Aufgabe", err);
+    });
+  }
+
   async function fetchTasks() {
     try {
       const fetchedTasks = await getAllTasks();
-      setTasks(fetchedTasks);
+      setTasks(fetchedTasks.filter((task) => !task.isArchived));
     } catch (error) {
       setError(
         error instanceof Error
@@ -113,7 +141,10 @@ function HomePage() {
               dateUntil={task.dateUntil}
               progress={task.progress}
               isFavorite={task.isFavorite}
+              isArchived={task.isArchived}
               onToggleFavorite={() => handleToggleFavorite(task.id)}
+              onToggleArchive={() => handleToggleArchive(task.id)}
+              onDelete={() => handleDelete(task.id)}
             />
           ))}
           <Fab onClick={showForm} />
