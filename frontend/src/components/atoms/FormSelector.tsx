@@ -1,16 +1,15 @@
-import { FormControl, FormHelperText, InputLabel, MenuItem, Select, type SelectChangeEvent } from "@mui/material";
+import { FormControl, FormHelperText, InputLabel, MenuItem, Select } from "@mui/material";
 import { type TaskCategory, type TaskFrequency } from "../../services/taskService";
+import type {SelectProps} from "@mui/material/Select";
 
 type FormSelectorProps = {
-  onChange: (event: SelectChangeEvent<TaskCategory | TaskFrequency>) => void;
-  onBlur: (event: React.FocusEvent<HTMLInputElement>) => void;
   value: TaskCategory | TaskFrequency;
   category: boolean;
   error?: boolean;
   helperText?: string;
-};
+} & SelectProps;
 
-function FormSelector({ onChange, onBlur, value, category, error, helperText }: FormSelectorProps) {
+function FormSelector({ value, category, error, helperText, ...props }: FormSelectorProps) {
   const field = category ? "category" : "frequency";
   const label = category ? "Kategorie" : "Frequenz";
   const labelId = category ? "category-label" : "frequency-label";
@@ -40,9 +39,8 @@ function FormSelector({ onChange, onBlur, value, category, error, helperText }: 
         labelId={labelId}
         name={field}
         value={value}
-        onChange={onChange}
-        onBlur={onBlur}
         label={label}
+        {...props}
       >
         {items.map((item) => (
           <MenuItem key={item.value} value={item.value}>

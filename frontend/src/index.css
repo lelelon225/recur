@@ -15,6 +15,8 @@
     --color-border: #e3e5e8;
     --color-primary: #273469;
     --color-accent: #1E2749;
+    --color-button: #4A90E2;
+    --color-button-hover: #357ABD;
 
 
 
@@ -210,24 +212,40 @@ h1, h2, h3, h4, h5, h6 {
     display: flex;
     justify-content: flex-end;
     gap: var(--space-sm);
+    padding: var(--space-md);
 }
 
-.customDialog .MuiButton-root[variant="contained"] {
+.customDialog .MuiDialogActions-root .MuiButton-contained {
+    border-radius: var(--radius);
     box-shadow: var(--shadow);
-    background: var(--color-primary);
+    background: var(--color-button);
     color: var(--color-text);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.customDialog .MuiButtonOutlined-root {
-    transform: scale(0.98);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+.customDialog .MuiDialogActions-root .MuiButton-outlined {
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border: 2px solid var(--color-button);
+    color: var(--color-button);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.customDialog .MuiButton-root:hover {
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-    transition: box-shadow 0.3s ease-in-out;
+.customDialog .MuiDialogActions-root .Mui-disabled {
+    opacity: 0.5;
 }
+
+.customDialog .MuiDialogActions-root .Mui-disabled:hover {
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.customDialog .MuiDialogActions-root .MuiButton-root:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
 
 .addTaskForm {
     display: flex;
@@ -285,7 +303,6 @@ h1, h2, h3, h4, h5, h6 {
     opacity: 1;
 }
 
-/* Dropdown-Icon beim Select */
 .addTaskForm .MuiSelect-icon {
     color: var(--color-text);
 }

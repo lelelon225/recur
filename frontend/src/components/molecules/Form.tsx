@@ -3,18 +3,17 @@ import { Form as FormikForm } from "formik";
 import { type Task } from "../../services/taskService";
 import FormTextField from "../atoms/FormTextField";
 import FormSelector from "../atoms/FormSelector";
+import type { FormikErrors, FormikTouched } from "formik";
 
-type FormErrors = Partial<Record<keyof Task, string>>;
-type FormTouched = Partial<Record<keyof Task, boolean>>;
 
 type FormProps = {
     onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
     values: Task;
-    handleChange: (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
-    handleBlur: (event: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => void;
-    errors: FormErrors;
-    touched: FormTouched;
+    errors: FormikErrors<Task>;
+    touched: FormikTouched<Task>;
     className?: string;
+    handleChange: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+    handleBlur: (event: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 };
 
 function Form ({ onSubmit, values, handleChange, handleBlur, errors, touched, className }: FormProps) {
@@ -28,6 +27,7 @@ function Form ({ onSubmit, values, handleChange, handleBlur, errors, touched, cl
                 onBlur={handleBlur}
                 error={touched.name && !!errors.name}
                 helperText={touched.name ? errors.name : undefined}
+                required
             />
             <FormTextField
                 name="description"
@@ -37,6 +37,7 @@ function Form ({ onSubmit, values, handleChange, handleBlur, errors, touched, cl
                 onBlur={handleBlur}
                 error={touched.description && !!errors.description}
                 helperText={touched.description ? errors.description : undefined}
+                required
             />
             <FormSelector
                 value={values.category}
@@ -45,6 +46,7 @@ function Form ({ onSubmit, values, handleChange, handleBlur, errors, touched, cl
                 category={true}
                 error={touched.category && !!errors.category}
                 helperText={touched.category ? errors.category : undefined}
+                required
             />
             <FormSelector
                 value={values.frequency}
@@ -53,16 +55,21 @@ function Form ({ onSubmit, values, handleChange, handleBlur, errors, touched, cl
                 category={false}
                 error={touched.frequency && !!errors.frequency}
                 helperText={touched.frequency ? errors.frequency : undefined}
+                required
             />
-            <FormTextField
-                name="dateUntil"
-                label="Fälligkeitsdatum"
-                type="date"
-                value={values.dateUntil}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                error={touched.dateUntil && !!errors.dateUntil}
-                helperText={touched.dateUntil ? errors.dateUntil : undefined}
+                <FormTextField
+                    name="dateUntil"
+                    label="Fälligkeitsdatum"
+                    type="date"
+                    value={values.dateUntil}
+                    onBlur={handleBlur}
+                    onChange={handleChange}
+                    error={touched.dateUntil && !!errors.dateUntil}
+                    helperText={touched.dateUntil ? errors.dateUntil : undefined}
+                    required
+                    slotProps={{ 
+                        inputLabel: { shrink: true }
+                    }}
             />
         </FormikForm>
     );

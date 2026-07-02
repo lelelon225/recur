@@ -1,8 +1,9 @@
 import Dialog from "../atoms/Dialog";
 import { Formik } from "formik";
 import { useState } from "react";
-import { createTask } from "../../services/taskService";
-import type { Task } from "../../services/taskService";
+import { createTask, TaskCategory, TaskFrequency } from "../../services/taskService";
+import type { NewTask } from "../../services/taskService";
+import SnackAlert from "../atoms/SnackAlert";
 import Form from "../molecules/Form";
 import * as yup from "yup";
 import { Typography } from "@mui/material";
@@ -19,23 +20,40 @@ const validationSchema = yup.object().shape({
   dateUntil: yup.date().required("Fälligkeitsdatum ist erforderlich").min(new Date(), "Fälligkeitsdatum muss in der Zukunft liegen"),
 });
 
+function isFormEmpty(values: NewTask): boolean {
+  return (
+    !values.name &&
+    !values.description &&
+    !values.category &&
+    !values.frequency &&
+    !values.dateUntil
+  );
+}
+
 function AddTaskForm({ onClose }: AddTaskFormProps) {
   const [loading, setLoading] = useState(false);
   const [submitDisabled, setSubmitDisabled] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [emptyAlertOpen, setEmptyAlertOpen] = useState(false);
 
-  const handleSubmit = async (values: Task) => {
+  const handleSubmit = async (values: NewTask) => {
+    if (isFormEmpty(values)) {
+      setEmptyAlertOpen(true);
+      return;
+    }
+
     setLoading(true);
     setSubmitDisabled(true);
+    setError(null);
+
     try {
       await createTask(values);
-      onClose();
-    } catch (error) {
-      setError(
-        error instanceof Error
-          ? error.message
-          : "Unbekannter Fehler beim Erstellen der Aufgabe"
-      );
+      setSuccess("Aufgabe erfolgreich erstellt.");
+      setTimeout(onClose, 1500);
+    } catch (err) {
+      console.error(err);
+      setError("Fehler beim Erstellen der Aufgabe.");
     } finally {
       setLoading(false);
       setSubmitDisabled(false);
@@ -47,16 +65,40 @@ function AddTaskForm({ onClose }: AddTaskFormProps) {
   };
 
   return (
-    <Dialog open={true} onClose={handleClose} loading={loading} submitDisabled={submitDisabled}>
-      <Typography variant="h6" component="h2" gutterBottom sx={{ fontWeight: "bold", color:"white" }}>
-        Neue Aufgabe hinzufügen
-      </Typography>
-      <Formik<Task>
+    <>
+      {error && (
+        <SnackAlert
+          message={error}
+          severity="error"
+          open={true}
+          onClose={() => setError(null)}
+        />
+      )}
+
+      {success && (
+        <SnackAlert
+          message={success}
+          severity="success"
+          open={true}
+          onClose={() => setSuccess(null)}
+        />
+      )}
+
+      {emptyAlertOpen && (
+        <SnackAlert
+          message="Bitte füllen Sie alle erforderlichen Felder aus."
+          severity="warning"
+          open={true}
+          onClose={() => setEmptyAlertOpen(false)}
+        />
+      )}
+
+      <Formik<NewTask>
         initialValues={{
           name: "",
           description: "",
-          category: "",
-          frequency: "",
+          category: "" as TaskCategory,
+          frequency: "" as TaskFrequency,
           progress: 0,
           goal: "",
           dateUntil: null,
@@ -64,20 +106,30 @@ function AddTaskForm({ onClose }: AddTaskFormProps) {
         onSubmit={handleSubmit}
         validationSchema={validationSchema}
       >
-        {({ values, handleChange, handleSubmit, handleBlur, errors, touched }) => (
+        {({ values, handleChange, handleSubmit: formikHandleSubmit, handleBlur, errors, touched }) => (
+          <Dialog
+            open={true}
+            onClose={handleClose}
+            onSubmit={formikHandleSubmit}
+            loading={loading}
+            submitDisabled={submitDisabled || isFormEmpty(values)}
+          >
+            <Typography variant="h6" component="h2" gutterBottom sx={{ fontWeight: "bold", color: "white" }}>
+              Neue Aufgabe hinzufügen
+            </Typography>
             <Form
-              onSubmit={handleSubmit}
+              onSubmit={formikHandleSubmit}
               values={values}
               handleChange={handleChange}
               handleBlur={handleBlur}
               errors={errors}
               touched={touched}
-              className="addTaskForm" 
+              className="addTaskForm"
             />
-          )}
+          </Dialog>
+        )}
       </Formik>
-      {error && <div className="formError">{error}</div>}
-    </Dialog>
+    </>
   );
 }
 
