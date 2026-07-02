@@ -70,7 +70,7 @@ function HomePage() {
     );
   }
 
-  if (tasks.length === 0 && !loading) {
+  if (tasks.length === 0) {
     return (
       <InfoCard
         variant="info"

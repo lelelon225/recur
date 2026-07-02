@@ -44,6 +44,20 @@ public class TaskController {
                 return taskService.patchTask(id, task);
         };
 
+        @PatchMapping({ "/{id}/favorite", "/{id}/favorite/" })
+        public ResponseEntity<Task> patchTaskFavorite(@PathVariable UUID id,
+                        @RequestBody Map<String, Boolean> requestBody) {
+                Boolean isFavorite = requestBody.get("isFavorite");
+                return taskService.patchTaskFavorite(id, isFavorite);
+        }
+
+        @PatchMapping({ "/{id}/archived", "/{id}/archived/" })
+        public ResponseEntity<Task> patchTaskArchived(@PathVariable UUID id,
+                        @RequestBody Map<String, Boolean> requestBody) {
+                Boolean isArchived = requestBody.get("isArchived");
+                return taskService.patchTaskArchived(id, isArchived);
+        }
+
         @DeleteMapping({ "/{id}", "/{id}/" })
         public ResponseEntity<Task> deleteTask(@PathVariable UUID id) {
                 return taskService.deleteTask(id);
