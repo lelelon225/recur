@@ -9,13 +9,15 @@ import type { Task } from "../../services/taskService";
 type TaskCardMenuProps = {
   task: Task;
   onToggleMenu: () => void;
-  onToggleArchive?: () => void;
-  onDelete?: () => void;
-  isArchived?: boolean;
+  onToggleEdit: () => void;
+  onToggleArchive: () => void;
+  onDelete: () => void;
+  isArchived: boolean;
 };
 
 function TaskCardMenu({
   task,
+  onToggleEdit,
   onToggleMenu,
   onToggleArchive,
   onDelete,
@@ -31,21 +33,21 @@ function TaskCardMenu({
 
   const handleClose = () => {
     setAnchorEl(null);
-  };
-
-  const handleToggleArchive = () => {
-    onToggleArchive?.();
-    handleClose();
+    setEditOpen(false);
   };
 
   const handleToggleEdit = () => {
-    onToggleMenu();
-    console.log("Edit clicked");
+    setEditOpen(true);
+    onToggleEdit();
+  };
+
+  const handleToggleArchive = () => {
+    onToggleArchive();
     handleClose();
   };
 
   const handleDelete = () => {
-    onDelete?.();
+    onDelete();
     handleClose();
   };
 
@@ -84,7 +86,7 @@ function TaskCardMenu({
             ]}
       </Menu>
 
-      {editOpen && <EditTaskForm task={task} onClose={handleEditClose} />}
+      {editOpen && <EditTaskForm task={task} onClose={handleClose} />}
     </Box>
   );
 }

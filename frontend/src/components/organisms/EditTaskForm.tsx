@@ -12,18 +12,14 @@ type EditTaskFormProps = {
 };
 
 const validationSchema = yup.object().shape({
-  name: yup.string(),
-  description: yup.string(),
-  category: yup.string(),
-  progress: yup
-    .number()
-    .min(0, "Fortschritt muss mindestens 0 sein")
-    .max(100, "Fortschritt darf höchstens 100 sein"),
-  goal: yup.string(),
-  dateUntil: yup.date().nullable(),
+  name: yup.string().required("Name ist erforderlich"),
+  description: yup.string().required("Beschreibung ist erforderlich"),
+  category: yup.string().required("Kategorie ist erforderlich"),
+  frequency: yup.string().required("Frequenz ist erforderlich"),
+  dateUntil: yup.date().required("Fälligkeitsdatum ist erforderlich").min(new Date(), "Fälligkeitsdatum muss in der Zukunft liegen"),
 });
 
-function EditTaskForm({ task, onClose }: EditTaskFormProps) {
+function EditTaskForm({task, onClose }: EditTaskFormProps) {
   const [loading, setLoading] = useState(false);
   const [submitDisabled, setSubmitDisabled] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,24 +54,25 @@ function EditTaskForm({ task, onClose }: EditTaskFormProps) {
       loading={loading}
       submitDisabled={submitDisabled}
     >
-      <Formik<Partial<Task>>
+      <Formik
         initialValues={{
           name: task.name,
           description: task.description,
           category: task.category,
-          progress: task.progress,
-          goal: task.goal,
+          frequency: task.frequency,
           dateUntil: task.dateUntil,
         }}
-        onSubmit={handleSubmit}
         validationSchema={validationSchema}
+        onSubmit={handleSubmit}
       >
-        {({ values, handleChange, handleSubmit }) => (
+        {({ values, handleChange, handleSubmit, errors, touched }) => (
           <Form
-            onSubmit={handleSubmit}
             values={values}
             handleChange={handleChange}
-            className="addTaskForm"
+            handleSubmit={handleSubmit}
+            errors={errors}
+            touched={touched}
+            submitDisabled={submitDisabled}
           />
         )}
       </Formik>

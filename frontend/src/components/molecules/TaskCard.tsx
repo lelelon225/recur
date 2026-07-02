@@ -12,6 +12,7 @@ type TaskCardProps = {
   classname?: string;
   onToggleFavorite?: () => void;
   onToggleMenu?: () => void;
+  onToggleEdit?: () => void;
   onToggleArchive?: () => void;
   onDelete?: () => void;
 };
@@ -20,6 +21,7 @@ function TaskCard({
   task,
   classname,
   onToggleFavorite,
+  onToggleEdit,
   onToggleMenu,
   onToggleArchive,
   onDelete,
@@ -30,8 +32,8 @@ function TaskCard({
     onToggleFavorite?.();
   };
 
-  const handleEdit = () => {
-    onToggleMenu?.();
+  const handleToggleEdit = () => {
+    onToggleEdit?.();
   };
 
   const handleToggleMenu = () => {
@@ -63,8 +65,8 @@ function TaskCard({
           <TaskCardMenu
             task={task}
             onToggleMenu={handleToggleMenu}
+            onToggleEdit={handleToggleEdit}
             onToggleArchive={handleToggleArchive}
-            onEdit={handleEdit}
             onDelete={handleDelete}
             isArchived={isArchived}
           />
