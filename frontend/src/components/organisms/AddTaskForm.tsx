@@ -5,6 +5,7 @@ import { createTask } from "../../services/taskService";
 import type { Task } from "../../services/taskService";
 import Form from "../molecules/Form";
 import * as yup from "yup";
+import { Typography } from "@mui/material";
 
 type AddTaskFormProps = {
   onClose: () => void;
@@ -14,13 +15,8 @@ const validationSchema = yup.object().shape({
   name: yup.string().required("Name ist erforderlich"),
   description: yup.string().required("Beschreibung ist erforderlich"),
   category: yup.string().required("Kategorie ist erforderlich"),
-  progress: yup
-    .number()
-    .min(0, "Fortschritt muss mindestens 0 sein")
-    .max(100, "Fortschritt darf höchstens 100 sein")
-    .required("Fortschritt ist erforderlich"),
-  goal: yup.string().required("Ziel ist erforderlich"),
-  dateUntil: yup.date().nullable(),
+  frequency: yup.string().required("Frequenz ist erforderlich"),
+  dateUntil: yup.date().required("Fälligkeitsdatum ist erforderlich").min(new Date(), "Fälligkeitsdatum muss in der Zukunft liegen"),
 });
 
 function AddTaskForm({ onClose }: AddTaskFormProps) {
@@ -52,11 +48,15 @@ function AddTaskForm({ onClose }: AddTaskFormProps) {
 
   return (
     <Dialog open={true} onClose={handleClose} loading={loading} submitDisabled={submitDisabled}>
+      <Typography variant="h6" component="h2" gutterBottom sx={{ fontWeight: "bold", color:"white" }}>
+        Neue Aufgabe hinzufügen
+      </Typography>
       <Formik<Task>
         initialValues={{
           name: "",
           description: "",
           category: "",
+          frequency: "",
           progress: 0,
           goal: "",
           dateUntil: null,
@@ -64,16 +64,19 @@ function AddTaskForm({ onClose }: AddTaskFormProps) {
         onSubmit={handleSubmit}
         validationSchema={validationSchema}
       >
-        {({ values, handleChange, handleSubmit }) => (
-          <Form
-            onSubmit={handleSubmit}
-            values={values}
-            handleChange={handleChange}
-            className="addTaskForm"
-          />
-        )}
+        {({ values, handleChange, handleSubmit, handleBlur, errors, touched }) => (
+            <Form
+              onSubmit={handleSubmit}
+              values={values}
+              handleChange={handleChange}
+              handleBlur={handleBlur}
+              errors={errors}
+              touched={touched}
+              className="addTaskForm" 
+            />
+          )}
       </Formik>
-      {error && <div style={{ color: "red" }}>{error}</div>}
+      {error && <div className="formError">{error}</div>}
     </Dialog>
   );
 }

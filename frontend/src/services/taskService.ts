@@ -1,8 +1,21 @@
 import axios from "axios";
 import api from "./api";
 
-export type TaskFrequency = "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY" | "ONCE";
-export type TaskCategory = "WORK" | "PERSONAL" | "SCHOOL" | "OTHER";
+export enum TaskFrequency {
+  DAILY = "DAILY",
+  WEEKLY = "WEEKLY",
+  MONTHLY = "MONTHLY",
+  YEARLY = "YEARLY",
+  ONCE = "ONCE"
+}
+
+export enum TaskCategory {
+  WORK = "WORK",
+  PERSONAL = "PERSONAL",
+  SCHOOL = "SCHOOL",
+  OTHER = "OTHER"
+}
+
 
 export interface Task {
   id: string;
