@@ -6,12 +6,13 @@ import {
   deleteTask,
   type Task,
 } from "../../services/taskService";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import InfoCard from "../organisms/InfoCard";
 import Fab from "../atoms/FloatingActionButton";
 import AddTaskForm from "../organisms/AddTaskForm";
 import LoadingTime from "../atoms/LoadingTime";
 import TaskCard from "../molecules/TaskCard";
+import { Select, MenuItem } from "@mui/material";
 
 type SortOptions = "date" | "progress" | "alphabetical";
 
@@ -174,8 +175,6 @@ function HomePage() {
               classname="taskCard"
               key={task.id}
               task={task}
-              isFavorite={task.isFavorite}
-              isArchived={task.isArchived}
               onToggleFavorite={() => handleToggleFavorite(task.id)}
               onToggleArchive={() => handleToggleArchive(task.id)}
               onDelete={() => handleDelete(task.id)}
