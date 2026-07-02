@@ -7,53 +7,6 @@ import type { FormikErrors, FormikTouched } from "formik";
 
 
 type FormProps = {
-<<<<<<< HEAD
-  onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
-  values: Partial<Task>;
-  handleChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  className?: string;
-};
-
-function Form({ onSubmit, values, handleChange, className }: FormProps) {
-  return (
-    <FormikForm onSubmit={onSubmit} className={className} id="editTaskForm">
-      <TextField
-        label="Name"
-        value={values.name}
-        onChange={handleChange}
-        name="name"
-      />
-      <TextField
-        label="Description"
-        value={values.description}
-        onChange={handleChange}
-        name="description"
-      />
-      <TextField
-        label="Category"
-        value={values.category}
-        onChange={handleChange}
-        name="category"
-      />
-      <TextField
-        label="Goal"
-        value={values.goal}
-        onChange={handleChange}
-        name="goal"
-      />
-      <TextField
-        label="Date Until"
-        type="date"
-        value={values.dateUntil || ""}
-        onChange={handleChange}
-        name="dateUntil"
-        InputLabelProps={{
-          shrink: true,
-        }}
-      />
-    </FormikForm>
-  );
-=======
     onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
     values: Task;
     errors: FormikErrors<Task>;
@@ -120,7 +73,6 @@ function Form ({ onSubmit, values, handleChange, handleBlur, errors, touched, cl
             />
         </FormikForm>
     );
->>>>>>> 47130b9fbeeb6d4a1bbe955766f4a06e5a8b53be
 }
 
 export default Form;

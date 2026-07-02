@@ -8,29 +8,30 @@ import TaskFavorite from "../atoms/TaskFavourite";
 import TaskCardMenu from "../atoms/TaskCardMenu";
 
 type TaskCardProps = {
+  task: Task;
   classname?: string;
   onToggleFavorite?: () => void;
   onToggleMenu?: () => void;
   onToggleArchive?: () => void;
   onDelete?: () => void;
-} & Task;
+};
 
 function TaskCard({
-  name,
-  description,
-  dateCreated,
-  dateUntil,
-  progress,
-  isFavorite,
-  isArchived,
+  task,
   classname,
   onToggleFavorite,
   onToggleMenu,
   onToggleArchive,
   onDelete,
 }: TaskCardProps) {
+  const { name, description, dateCreated, dateUntil, progress, isFavorite, isArchived } = task;
+
   const handleToggle = () => {
     onToggleFavorite?.();
+  };
+
+  const handleEdit = () => {
+    onToggleMenu?.();
   };
 
   const handleToggleMenu = () => {
@@ -56,12 +57,14 @@ function TaskCard({
         }}
       >
         <Grid>
-          <ProgressIndicator value={task.progress} />
+          <ProgressIndicator value={progress} />
         </Grid>
         <Grid>
           <TaskCardMenu
+            task={task}
             onToggleMenu={handleToggleMenu}
             onToggleArchive={handleToggleArchive}
+            onEdit={handleEdit}
             onDelete={handleDelete}
             isArchived={isArchived}
           />
@@ -75,7 +78,7 @@ function TaskCard({
       >
         <TaskTitle title={name} />
       </Box>
-      <TaskDescription description={task.description} />
+      <TaskDescription description={description} />
       <Grid
         container
         sx={{
@@ -86,10 +89,10 @@ function TaskCard({
         }}
       >
         <Grid>
-          <TaskTimeFrame start={task.dateCreated} end={task.dateUntil} />
+          <TaskTimeFrame start={dateCreated} end={dateUntil} />
         </Grid>
         <Grid>
-          <TaskFavorite isFavorite={task.isFavorite} onClick={handleToggle} />
+          <TaskFavorite isFavorite={isFavorite} onClick={handleToggle} />
         </Grid>
       </Grid>
     </Box>
