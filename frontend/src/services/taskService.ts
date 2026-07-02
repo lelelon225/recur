@@ -20,15 +20,15 @@ export enum TaskCategory {
 export interface Task {
   id: string;
   name: string;
+  description: string;
   category: TaskCategory;
   frequency: TaskFrequency;
-  progress: number;
-  goal: string;
-  description: string | null;
+  dateCreated: string;
   dateUntil: string | null;
-  dateCreated: string | null;
-  isFavorite?: boolean;
-  isArchived?: boolean;
+  progress?: number | null;
+  isFavorite?: boolean | null;
+  isArchived?: boolean | null;
+  amountDid?: number | null;
 }
 
 /** Fields the server owns and the client must never send on create/patch. */
@@ -150,6 +150,17 @@ function patchTaskArchived(id: string, isArchived: boolean): Promise<Task> {
     });
 }
 
+function patchTaskAmountDid(id: string, amountDid: number): Promise<Task> {
+  return api
+    .patch(`/task/${id}/amountDid`, { amountDid })
+    .then((response) => response.data as Task)
+    .catch((err: unknown) => {
+      throw new Error(
+        extractErrorMessage(err, "Fehler beim Aktualisieren der erledigten Menge"),
+      );
+    });
+}
+
 function deleteTask(id: string): Promise<void> {
   return api
     .delete(`/task/${id}`)
@@ -180,6 +191,7 @@ export {
   patchTask,
   patchTaskFavorite,
   patchTaskArchived,
+  patchTaskAmountDid,
   deleteTask,
   deleteAllTasks,
 };

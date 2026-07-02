@@ -3,6 +3,7 @@ import {
   getAllTasks,
   patchTaskFavorite,
   patchTaskArchived,
+  patchTaskAmountDid,
   deleteTask,
   type Task,
 } from "../../services/taskService";
@@ -63,6 +64,25 @@ function HomePage() {
     });
   }
 
+  function handleToggleDone(taskId: string) {
+  const targetTask = tasks.find((task) => task.id === taskId);
+  if (!targetTask) {
+    return;
+  }
+
+  const newAmountDid = (targetTask.amountDid ?? 0) + 1;
+
+  patchTaskAmountDid(taskId, newAmountDid)
+    .then((updatedTask) => {
+      setTasks((prev) =>
+        prev.map((task) => (task.id === taskId ? updatedTask : task)),
+      );
+    })
+    .catch((err) => {
+      console.error("Fehler beim Aktualisieren der erledigten Menge", err);
+    });
+}
+
   async function fetchTasks() {
     try {
       const fetchedTasks = await getAllTasks();
@@ -111,9 +131,14 @@ function HomePage() {
   return (
     <>
       <Container maxWidth="lg">
-        {showAddTaskForm && (
-          <AddTaskForm onClose={() => setShowAddTaskForm(false)} />
-        )}
+       {showAddTaskForm && (
+        <AddTaskForm
+          onClose={() => setShowAddTaskForm(false)}
+          onTaskCreated={(newTask) => {
+            setTasks((prev) => [...prev, newTask]);
+          }}
+        />
+      )}
 
         <Box
           className="homePage"
@@ -145,6 +170,7 @@ function HomePage() {
               onToggleFavorite={() => handleToggleFavorite(task.id)}
               onToggleArchive={() => handleToggleArchive(task.id)}
               onDelete={() => handleDelete(task.id)}
+              onToggleDone={() => handleToggleDone(task.id)}
             />
           ))}
           <Fab onClick={showForm} />
