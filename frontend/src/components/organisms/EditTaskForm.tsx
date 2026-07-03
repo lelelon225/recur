@@ -28,7 +28,7 @@ function EditTaskForm({ task, onClose }: EditTaskFormProps) {
   const [loading, setLoading] = useState(false);
   const [submitDisabled, setSubmitDisabled] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const [success, setSuccess] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
 
   function valuesChanged(values: Task): boolean {
@@ -53,7 +53,7 @@ function EditTaskForm({ task, onClose }: EditTaskFormProps) {
 
     try {
       await patchTask(task.id, values);
-      setSuccess(true);
+      setSuccess("Aufgabe erfolgreich aktualisiert");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Fehler beim Aktualisieren der Aufgabe");
     } finally {
@@ -69,19 +69,24 @@ function EditTaskForm({ task, onClose }: EditTaskFormProps) {
   return (
     <>
       {error && (
-        <SnackAlert open={true} message={error} severity="error" onClose={() => setError(null)} />
-      )}
-      {success && (
         <SnackAlert
+          message={error}
+          severity="error"
           open={true}
-          message="Aufgabe erfolgreich aktualisiert"
-          severity="success"
-          onClose={() => {
-            setSuccess(false);
-            onClose();
-          }}
+          onClose={() => setError(null)}
         />
       )}
+
+      
+      {success && (
+        <SnackAlert
+          message={success}
+          severity="success"
+          open={true}
+          onClose={() => setSuccess(null)}
+        />
+      )}
+
       {info && (
         <SnackAlert open={true} message={info} severity="info" onClose={() => setInfo(null)} />
       )}

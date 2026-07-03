@@ -31,13 +31,14 @@ function TaskCardMenu({
     setAnchorEl(event.currentTarget);
   };
 
+
   const handleClose = () => {
     setAnchorEl(null);
     setEditOpen(false);
   };
 
   const handleToggleEdit = () => {
-    setAnchorEl(null);  // Menu explizit schliessen
+    setAnchorEl(null);  
     setEditOpen(true);
     onToggleEdit();
   };

@@ -2,13 +2,15 @@ import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlin
 import FavoriteOutlinedIcon from "@mui/icons-material/FavoriteOutlined";
 import IconButton from "@mui/material/IconButton";
 
+type TaskFavoriteProps = {
+  isFavorite: boolean;
+  onClick: () => void;
+};
+
 function TaskFavorite({
   isFavorite,
   onClick,
-}: {
-  isFavorite: boolean;
-  onClick: () => void;
-}) {
+}: TaskFavoriteProps) {
 
 
   return (

@@ -26,7 +26,6 @@ function TaskCard({
   onToggleArchive,
   onDelete,
 }: TaskCardProps) {
-  const { name, description, dateCreated, dateUntil, progress, isFavorite, isArchived } = task;
 
   const handleToggle = () => {
     onToggleFavorite?.();
@@ -59,7 +58,7 @@ function TaskCard({
         }}
       >
         <Grid>
-          <ProgressIndicator value={progress} />
+          <ProgressIndicator value={task.progress} />
         </Grid>
         <Grid>
           <TaskCardMenu
@@ -68,7 +67,7 @@ function TaskCard({
             onToggleEdit={handleToggleEdit}
             onToggleArchive={handleToggleArchive}
             onDelete={handleDelete}
-            isArchived={isArchived}
+            isArchived={task.isArchived}
           />
         </Grid>
       </Grid>
@@ -78,9 +77,9 @@ function TaskCard({
           justifyContent: "space-between",
         }}
       >
-        <TaskTitle title={name} />
+        <TaskTitle title={task.name} />
       </Box>
-      <TaskDescription description={description} />
+      <TaskDescription description={task.description} />
       <Grid
         container
         sx={{
@@ -91,10 +90,10 @@ function TaskCard({
         }}
       >
         <Grid>
-          <TaskTimeFrame start={dateCreated} end={dateUntil} />
+          <TaskTimeFrame start={task.dateCreated} end={task.dateUntil} />
         </Grid>
         <Grid>
-          <TaskFavorite isFavorite={isFavorite} onClick={handleToggle} />
+          <TaskFavorite isFavorite={task.isFavorite} onClick={handleToggle} />
         </Grid>
       </Grid>
     </Box>
