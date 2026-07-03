@@ -63,6 +63,13 @@ public class TaskController {
                 return taskService.patchTaskArchived(id, isArchived);
         }
 
+        @PatchMapping({ "/{id}/amountDid", "/{id}/amountDid/" })
+        public ResponseEntity<Task> patchAmountDid(@PathVariable UUID id,
+                        @RequestBody Map<String, Integer> requestBody) {
+                Integer amountDid = requestBody.get("amountDid");
+                return taskService.patchAmountDid(id, amountDid);
+        }
+
         @DeleteMapping({ "/{id}", "/{id}/" })
         public ResponseEntity<Task> deleteTask(@PathVariable UUID id) {
                 return taskService.deleteTask(id);

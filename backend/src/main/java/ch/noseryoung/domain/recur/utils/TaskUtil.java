@@ -1,15 +1,18 @@
 package ch.noseryoung.domain.recur.utils;
 
+import org.springframework.stereotype.Component;
+
 import ch.noseryoung.domain.recur.models.Task;
 import ch.noseryoung.domain.recur.Enum.Frequency;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.HashMap;
+import java.util.EnumMap;
 
+@Component
 public class TaskUtil {
 
-    private HashMap<Frequency, Integer> frequencies = new HashMap<>();
+    private EnumMap<Frequency, Integer> frequencies = new EnumMap<>(Frequency.class);
 
     public TaskUtil() {
         frequencies.put(Frequency.DAILY, 1);
@@ -37,18 +40,23 @@ public class TaskUtil {
     }
 
     /**
-     * Berechnet den Progress basierend auf verstrichener Zeit im Vergleich zum
-     * Frequenz-Intervall.
-     * progress = (tatsächliche Erledigungen) / (erwartete Erledigungen bis jetzt) *
-     * 100
+     * Berechnet den Progress basierend auf der Gesamt-Zeitspanne (daysInSpan)
+     * und der Frequenz, NICHT auf verstrichener Zeit.
+     * progress = amountDid / (daysInSpan / intervalDays) * 100
+     *
+     * Jeder Klick auf "abhaken" steigert den Progress um einen fixen Betrag
+     * (bei 10 Tagen daily z.B. immer +10%), unabhängig davon an welchem Tag
+     * der Task-Laufzeit man sich befindet.
      */
     public void calculateProgress(Task task) {
         calculateProgress(task, Instant.now());
     }
 
-    // Overload mit "now" als Parameter, damit man's einfach testen kann
+    // Overload mit "now" als Parameter bleibt bestehen, "now" wird aber nicht mehr
+    // gebraucht
     public void calculateProgress(Task task, Instant now) {
-        if (task.getAmountDid() == null || task.getFrequency() == null || task.getDateCreated() == null) {
+        if (task.getAmountDid() == null || task.getFrequency() == null || task.getDaysInSpan() == null
+                || task.getDaysInSpan() <= 0) {
             task.setProgress(0.0);
             return;
         }
@@ -59,25 +67,9 @@ public class TaskUtil {
             return;
         }
 
-        long elapsedDays = Duration.between(task.getDateCreated(), now).toDays();
-
-        // Nicht über die Gesamtdauer der Task hinaus rechnen
-        if (task.getDaysInSpan() != null && task.getDaysInSpan() > 0) {
-            elapsedDays = Math.min(elapsedDays, task.getDaysInSpan());
-        }
-        elapsedDays = Math.max(elapsedDays, 0);
-
-        double expectedRepsSoFar = (double) elapsedDays / intervalDays;
-
-        double progress;
-        if (expectedRepsSoFar <= 0) {
-            // Task ist praktisch gerade erst gestartet -> noch nichts erwartet
-            progress = task.getAmountDid() > 0 ? 100.0 : 0.0;
-        } else {
-            progress = (task.getAmountDid() / expectedRepsSoFar) * 100.0;
-        }
+        double expectedRepsTotal = (double) task.getDaysInSpan() / intervalDays;
+        double progress = (task.getAmountDid() / expectedRepsTotal) * 100.0;
 
         task.setProgress(progress);
     }
-
 }

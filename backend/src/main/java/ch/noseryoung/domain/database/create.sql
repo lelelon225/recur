@@ -12,7 +12,7 @@ CREATE TABLE task (
     description VARCHAR(255),
     date_until TIMESTAMP,
     progress DOUBLE PRECISION,
-    date_created TIMESTAMP,
+    date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     days_in_span INTEGER,
     amount_did INTEGER,
     is_favorite BOOLEAN DEFAULT FALSE,

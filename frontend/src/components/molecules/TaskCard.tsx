@@ -15,7 +15,8 @@ type TaskCardProps = {
   onToggleEdit?: () => void;
   onToggleArchive?: () => void;
   onDelete?: () => void;
-};
+  onToggleDone?: () => void;
+} & Task;
 
 function TaskCard({
   task,
@@ -25,7 +26,14 @@ function TaskCard({
   onToggleMenu,
   onToggleArchive,
   onDelete,
+  onToggleDone,
 }: TaskCardProps) {
+
+  const clampedProgress = Math.min(100, Math.max(0, task.progress ?? 0));
+
+  const handleDone = () => {
+    onToggleDone?.();
+  }
 
   const handleToggle = () => {
     onToggleFavorite?.();
@@ -48,7 +56,7 @@ function TaskCard({
   };
 
   return (
-    <Box className={classname}>
+    <Box className={classname} onClick={handleDone}>
       <Grid
         container
         sx={{
@@ -58,7 +66,7 @@ function TaskCard({
         }}
       >
         <Grid>
-          <ProgressIndicator value={task.progress} />
+          <ProgressIndicator value={clampedProgress} />
         </Grid>
         <Grid>
           <TaskCardMenu

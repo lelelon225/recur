@@ -3,6 +3,7 @@ import {
   getAllTasks,
   patchTaskFavorite,
   patchTaskArchived,
+  patchTaskAmountDid,
   deleteTask,
   type Task,
 } from "../../services/taskService";
@@ -66,6 +67,25 @@ function HomePage() {
       console.error("Fehler beim Löschen der Aufgabe", err);
     });
   }
+
+  function handleToggleDone(taskId: string) {
+  const targetTask = tasks.find((task) => task.id === taskId);
+  if (!targetTask) {
+    return;
+  }
+
+  const newAmountDid = (targetTask.amountDid ?? 0) + 1;
+
+  patchTaskAmountDid(taskId, newAmountDid)
+    .then((updatedTask) => {
+      setTasks((prev) =>
+        prev.map((task) => (task.id === taskId ? updatedTask : task)),
+      );
+    })
+    .catch((err) => {
+      console.error("Fehler beim Aktualisieren der erledigten Menge", err);
+    });
+}
 
   async function fetchTasks() {
     try {
@@ -151,9 +171,14 @@ function HomePage() {
       </Select>
 
       <Container maxWidth="lg">
-        {showAddTaskForm && (
-          <AddTaskForm onClose={() => { setShowAddTaskForm(false); fetchTasks(); }} />
-        )}
+       {showAddTaskForm && (
+        <AddTaskForm
+          onClose={() => setShowAddTaskForm(false)}
+          onTaskCreated={(newTask) => {
+            setTasks((prev) => [...prev, newTask]);
+          }}
+        />
+      )}
 
         <Box
           className="homePage"
@@ -179,6 +204,7 @@ function HomePage() {
               onToggleArchive={() => handleToggleArchive(task.id)}
               onDelete={() => handleDelete(task.id)}
               onToggleEdit={fetchTasks}
+              onToggleDone={() => handleToggleDone(task.id)}
             />
           ))}
           <Fab onClick={showForm} />

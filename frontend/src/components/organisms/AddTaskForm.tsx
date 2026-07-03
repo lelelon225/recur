@@ -2,7 +2,7 @@ import Dialog from "../atoms/Dialog";
 import { Formik } from "formik";
 import { useState } from "react";
 import { createTask, TaskCategory, TaskFrequency } from "../../services/taskService";
-import type { NewTask } from "../../services/taskService";
+import type { NewTask, Task } from "../../services/taskService";
 import SnackAlert from "../atoms/SnackAlert";
 import Form from "../molecules/Form";
 import * as yup from "yup";
@@ -10,6 +10,7 @@ import { Typography } from "@mui/material";
 
 type AddTaskFormProps = {
   onClose: () => void;
+  onTaskCreated?: (task: Task) => void;
 };
 
 const validationSchema = yup.object().shape({
@@ -30,7 +31,7 @@ function isFormEmpty(values: NewTask): boolean {
   );
 }
 
-function AddTaskForm({ onClose }: AddTaskFormProps) {
+function AddTaskForm({ onClose, onTaskCreated }: AddTaskFormProps) {
   const [loading, setLoading] = useState(false);
   const [submitDisabled, setSubmitDisabled] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,9 +49,10 @@ function AddTaskForm({ onClose }: AddTaskFormProps) {
     setError(null);
 
     try {
-      await createTask(values);
+      const createdTask = await createTask(values);
       setSuccess("Aufgabe erfolgreich erstellt.");
-      setTimeout(onClose, 1500);
+      onTaskCreated?.(createdTask);
+      setTimeout(onClose, 500);
     } catch (err) {
       console.error(err);
       setError("Fehler beim Erstellen der Aufgabe.");
