@@ -40,12 +40,13 @@ function SlideTransition(props: SlideProps) {
 function SnackAlert({ message, severity, open, onClose, sx, ...props }: SnackAlertProps) {
   return (
     <Snackbar
-        open={open}
-        autoHideDuration={2000}
-        onClose={onClose}
-        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-        slots={{ transition: SlideTransition }}
-      >
+      open={open}
+      autoHideDuration={2000}
+      onClose={onClose}
+      anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+      slots={{ transition: SlideTransition }}
+      sx={{ zIndex: (theme) => theme.zIndex.modal + 1000 }}
+    >
       <Alert
         severity={severity}
         {...props}

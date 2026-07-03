@@ -152,7 +152,7 @@ function HomePage() {
 
       <Container maxWidth="lg">
         {showAddTaskForm && (
-          <AddTaskForm onClose={() => setShowAddTaskForm(false)} />
+          <AddTaskForm onClose={() => { setShowAddTaskForm(false); fetchTasks(); }} />
         )}
 
         <Box
@@ -178,6 +178,7 @@ function HomePage() {
               onToggleFavorite={() => handleToggleFavorite(task.id)}
               onToggleArchive={() => handleToggleArchive(task.id)}
               onDelete={() => handleDelete(task.id)}
+              onToggleEdit={fetchTasks}
             />
           ))}
           <Fab onClick={showForm} />

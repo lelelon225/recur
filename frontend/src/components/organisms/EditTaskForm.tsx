@@ -5,6 +5,8 @@ import { patchTask } from "../../services/taskService";
 import type { Task } from "../../services/taskService";
 import Form from "../molecules/Form";
 import * as yup from "yup";
+import SnackAlert from "../atoms/SnackAlert";
+import Typography from "@mui/material/Typography";
 
 type EditTaskFormProps = {
   task: Task;
@@ -16,27 +18,44 @@ const validationSchema = yup.object().shape({
   description: yup.string().required("Beschreibung ist erforderlich"),
   category: yup.string().required("Kategorie ist erforderlich"),
   frequency: yup.string().required("Frequenz ist erforderlich"),
-  dateUntil: yup.date().required("Fälligkeitsdatum ist erforderlich").min(new Date(), "Fälligkeitsdatum muss in der Zukunft liegen"),
+  dateUntil: yup
+    .date()
+    .required("Fälligkeitsdatum ist erforderlich")
+    .min(new Date(), "Fälligkeitsdatum muss in der Zukunft liegen"),
 });
 
-function EditTaskForm({task, onClose }: EditTaskFormProps) {
+function EditTaskForm({ task, onClose }: EditTaskFormProps) {
   const [loading, setLoading] = useState(false);
   const [submitDisabled, setSubmitDisabled] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const [info, setInfo] = useState<string | null>(null);
 
-  const handleSubmit = async (values: Partial<Task>) => {
+  function valuesChanged(values: Task): boolean {
+    return !(
+      values.name === task.name &&
+      values.description === task.description &&
+      values.category === task.category &&
+      values.frequency === task.frequency &&
+      values.dateUntil === task.dateUntil
+    );
+  }
+
+  const handleSubmit = async (values: Task) => {
+    if (!valuesChanged(values)) {
+      setInfo("Keine Änderungen vorgenommen");
+      return;
+    }
+
     setLoading(true);
     setSubmitDisabled(true);
     setError(null);
+
     try {
       await patchTask(task.id, values);
-      onClose();
-    } catch (error) {
-      setError(
-        error instanceof Error
-          ? error.message
-          : "Unbekannter Fehler beim Bearbeiten der Aufgabe"
-      );
+      setSuccess(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Fehler beim Aktualisieren der Aufgabe");
     } finally {
       setLoading(false);
       setSubmitDisabled(false);
@@ -48,36 +67,64 @@ function EditTaskForm({task, onClose }: EditTaskFormProps) {
   };
 
   return (
-    <Dialog
-      open={true}
-      onClose={handleClose}
-      loading={loading}
-      submitDisabled={submitDisabled}
-    >
-      <Formik
+    <>
+      {error && (
+        <SnackAlert open={true} message={error} severity="error" onClose={() => setError(null)} />
+      )}
+      {success && (
+        <SnackAlert
+          open={true}
+          message="Aufgabe erfolgreich aktualisiert"
+          severity="success"
+          onClose={() => {
+            setSuccess(false);
+            onClose();
+          }}
+        />
+      )}
+      {info && (
+        <SnackAlert open={true} message={info} severity="info" onClose={() => setInfo(null)} />
+      )}
+
+      <Formik<Task>
         initialValues={{
+          id: task.id,
           name: task.name,
           description: task.description,
+          progress: task.progress,
           category: task.category,
           frequency: task.frequency,
-          dateUntil: task.dateUntil,
+          dateUntil: task.dateUntil?.slice(0, 10) || "",
+          dateCreated: task.dateCreated,
         }}
-        validationSchema={validationSchema}
         onSubmit={handleSubmit}
+        validationSchema={validationSchema}
       >
-        {({ values, handleChange, handleSubmit, errors, touched }) => (
-          <Form
-            values={values}
-            handleChange={handleChange}
-            handleSubmit={handleSubmit}
-            errors={errors}
-            touched={touched}
+        {({ values, handleChange, handleSubmit: formikHandleSubmit, handleBlur, errors, touched }) => (
+          <Dialog
+            open={true}
+            onClose={handleClose}
+            title="Aufgabe bearbeiten"
+            loading={loading}
             submitDisabled={submitDisabled}
-          />
+            onSubmit={formikHandleSubmit}
+          >
+            <Typography variant="h6" component="h2" gutterBottom sx={{ fontWeight: "bold", color: "white" }}>
+              Bearbeite die Details der Aufgabe
+            </Typography>
+            <Form
+              onSubmit={formikHandleSubmit}
+              values={values}
+              handleChange={handleChange}
+              handleBlur={handleBlur}
+              errors={errors}
+              touched={touched}
+              className="taskForm"
+            />
+          </Dialog>
         )}
       </Formik>
-      {error && <div style={{ color: "red" }}>{error}</div>}
-    </Dialog>
+    </>
   );
 }
 

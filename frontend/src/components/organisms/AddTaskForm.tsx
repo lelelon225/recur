@@ -97,11 +97,10 @@ function AddTaskForm({ onClose }: AddTaskFormProps) {
         initialValues={{
           name: "",
           description: "",
-          category: "" as TaskCategory,
-          frequency: "" as TaskFrequency,
           progress: 0,
-          goal: "",
-          dateUntil: null,
+          category: "" as TaskCategory,
+          frequency:"" as TaskFrequency,
+          dateUntil: "",
         }}
         onSubmit={handleSubmit}
         validationSchema={validationSchema}
@@ -118,13 +117,13 @@ function AddTaskForm({ onClose }: AddTaskFormProps) {
               Neue Aufgabe hinzufügen
             </Typography>
             <Form
+              className="taskForm"
               onSubmit={formikHandleSubmit}
               values={values}
               handleChange={handleChange}
               handleBlur={handleBlur}
               errors={errors}
               touched={touched}
-              className="addTaskForm"
             />
           </Dialog>
         )}

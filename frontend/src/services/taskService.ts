@@ -20,16 +20,18 @@ export enum TaskCategory {
 export interface Task {
   id: string;
   name: string;
-  category: TaskCategory;
-  frequency: TaskFrequency;
+  category: string;
+  frequency: string;
+  description: string;
+  dateUntil: string;
   progress: number;
-  goal: string;
-  description: string | null;
-  dateUntil: string | null;
-  dateCreated: string | null;
-  isFavorite?: boolean;
-  isArchived?: boolean;
+  dateCreated: string;
+  daysInSpan?: number | null;
+  amountDid?: number | null;
+  isFavorite?: boolean | null;
+  isArchived?: boolean | null;
 }
+
 
 /** Fields the server owns and the client must never send on create/patch. */
 export type ServerOwnedFields = "id" | "dateCreated";

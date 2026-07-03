@@ -40,6 +40,7 @@ function Form ({ onSubmit, values, handleChange, handleBlur, errors, touched, cl
                 required
             />
             <FormSelector
+                name="category"
                 value={values.category}
                 onChange={handleChange}
                 onBlur={handleBlur}
@@ -49,6 +50,7 @@ function Form ({ onSubmit, values, handleChange, handleBlur, errors, touched, cl
                 required
             />
             <FormSelector
+                name="frequency"
                 value={values.frequency}
                 onChange={handleChange}
                 onBlur={handleBlur}

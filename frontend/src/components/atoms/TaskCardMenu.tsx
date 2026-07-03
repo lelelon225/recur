@@ -37,6 +37,7 @@ function TaskCardMenu({
   };
 
   const handleToggleEdit = () => {
+    setAnchorEl(null);  // Menu explizit schliessen
     setEditOpen(true);
     onToggleEdit();
   };
@@ -86,7 +87,15 @@ function TaskCardMenu({
             ]}
       </Menu>
 
-      {editOpen && <EditTaskForm task={task} onClose={handleClose} />}
+        {editOpen && (
+          <EditTaskForm
+            task={task}
+            onClose={() => {
+              handleClose();
+              onToggleEdit();
+            }}
+          />
+        )}
     </Box>
   );
 }
