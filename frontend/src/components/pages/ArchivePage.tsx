@@ -1,8 +1,7 @@
 import { Box, Container } from "@mui/material";
 import {
-  getArchivedTasks,
-  patchTaskArchived,
-  patchTaskFavorite,
+  getTasks,
+  patchTask,
   deleteTask,
   type Task,
 } from "../../services/taskService";
@@ -28,7 +27,7 @@ function ArchivePage() {
       return;
     }
 
-    patchTaskFavorite(taskId, toggledTask.isFavorite ?? false).catch((err) => {
+    patchTask(taskId, { isFavorite: toggledTask.isFavorite ?? false }).catch((err) => {
       setTasks(previousTasks);
       console.error("Fehler beim Aktualisieren des Favoritenstatus", err);
     });
@@ -43,7 +42,7 @@ function ArchivePage() {
       .filter((task) => task.isArchived);
     setTasks(updatedTasks);
 
-    patchTaskArchived(taskId, false).catch((err) => {
+    patchTask(taskId, { isArchived: false }).catch((err) => {
       setTasks(previousTasks);
       console.error("Fehler beim Aktualisieren Archivierungsstatus", err);
     });
@@ -62,7 +61,7 @@ function ArchivePage() {
 
   async function fetchArchivedTasks() {
     try {
-      const fetchedTasks = await getArchivedTasks();
+      const fetchedTasks = await getTasks(true, false);
       setTasks(fetchedTasks);
     } catch (error) {
       setError(

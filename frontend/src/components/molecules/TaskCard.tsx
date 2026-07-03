@@ -35,7 +35,8 @@ function TaskCard({
     onToggleDone?.();
   }
 
-  const handleToggle = () => {
+  const handleToggleFavorite = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
     onToggleFavorite?.();
   };
 
@@ -101,7 +102,7 @@ function TaskCard({
           <TaskTimeFrame start={task.dateCreated} end={task.dateUntil} />
         </Grid>
         <Grid>
-          <TaskFavorite isFavorite={task.isFavorite} onClick={handleToggle} />
+          <TaskFavorite isFavorite={task.isFavorite} onClick={handleToggleFavorite} />
         </Grid>
       </Grid>
     </Box>

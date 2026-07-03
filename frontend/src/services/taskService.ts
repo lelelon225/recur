@@ -69,35 +69,13 @@ function normalizeTaskDates<T extends { dateUntil?: string | null }>(task: T): T
   return { ...task, dateUntil: toInstantString(task.dateUntil) };
 }
 
-function getAllTasks(): Promise<Task[]> {
+function getTasks(archived?: boolean, favorite?: boolean): Promise<Task[]> {
   return api
-    .get("/task")
+    .get("/task", { params: { archived, favorite } })
     .then((response) => response.data as Task[])
     .catch((err: unknown) => {
       throw new Error(
         extractErrorMessage(err, "Fehler beim Abrufen der Aufgaben"),
-      );
-    });
-}
-function getFavoriteTasks(): Promise<Task[]> {
-  return api
-    .get("/task/favorite")
-    .then((response) => response.data as Task[])
-    .catch((err) => {
-      throw new Error(
-        err.response?.data?.message || "Fehler beim Abrufen der Favoriten",
-      );
-    });
-}
-
-function getArchivedTasks(): Promise<Task[]> {
-  return api
-    .get("/task/archived")
-    .then((response) => response.data as Task[])
-    .catch((err) => {
-      throw new Error(
-        err.response?.data?.message ||
-          "Fehler beim Abrufen der archivierten Aufgaben",
       );
     });
 }
@@ -116,49 +94,19 @@ function createTask(task: NewTask): Promise<Task> {
 function patchTask(
   id: string,
   task: Partial<Omit<Task, ServerOwnedFields>>,
+  resetProgress?: boolean,
+  favourite?: boolean,
+  archived?: boolean,
+  amountDid?: number
 ): Promise<Task> {
   return api
-    .patch(`/task/${id}`, normalizeTaskDates(task))
+    .patch(`/task/${id}`, normalizeTaskDates(task), {
+      params: { resetProgress, favourite, archived, amountDid },
+    })
     .then((response) => response.data as Task)
     .catch((err: unknown) => {
       throw new Error(
         extractErrorMessage(err, "Fehler beim Aktualisieren der Aufgabe"),
-      );
-    });
-}
-
-function patchTaskFavorite(id: string, isFavorite: boolean): Promise<Task> {
-  return api
-    .patch(`/task/${id}/favorite`, { isFavorite })
-    .then((response) => response.data as Task)
-    .catch((err: unknown) => {
-      throw new Error(
-        extractErrorMessage(
-          err,
-          "Fehler beim Aktualisieren des Favoritenstatus",
-        ),
-      );
-    });
-}
-
-function patchTaskArchived(id: string, isArchived: boolean): Promise<Task> {
-  return api
-    .patch(`/task/${id}/archived`, { isArchived })
-    .then((response) => response.data as Task)
-    .catch((err: unknown) => {
-      throw new Error(
-        extractErrorMessage(err, "Fehler beim Archivieren der Aufgabe"),
-      );
-    });
-}
-
-function patchTaskAmountDid(id: string, amountDid: number): Promise<Task> {
-  return api
-    .patch(`/task/${id}/amountDid`, { amountDid })
-    .then((response) => response.data as Task)
-    .catch((err: unknown) => {
-      throw new Error(
-        extractErrorMessage(err, "Fehler beim Aktualisieren der erledigten Menge"),
       );
     });
 }
@@ -186,14 +134,9 @@ function deleteAllTasks(): Promise<void> {
 }
 
 export {
-  getAllTasks,
-  getFavoriteTasks,
-  getArchivedTasks,
+  getTasks,
   createTask,
   patchTask,
-  patchTaskFavorite,
-  patchTaskArchived,
-  patchTaskAmountDid,
   deleteTask,
   deleteAllTasks,
 };
