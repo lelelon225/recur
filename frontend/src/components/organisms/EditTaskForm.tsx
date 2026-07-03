@@ -32,13 +32,13 @@ function EditTaskForm({ task, onClose }: EditTaskFormProps) {
   const [info, setInfo] = useState<string | null>(null);
 
   function valuesChanged(values: Task): boolean {
-    return !(
-      values.name === task.name &&
-      values.description === task.description &&
-      values.category === task.category &&
-      values.frequency === task.frequency &&
-      values.dateUntil === task.dateUntil
-    );
+  return !(
+    values.name === task.name &&
+    values.description === task.description &&
+    values.category === task.category &&
+    values.frequency === task.frequency &&
+    values.dateUntil === task.dateUntil?.slice(0, 10)
+  );
   }
 
   const handleSubmit = async (values: Task) => {
@@ -68,7 +68,7 @@ function EditTaskForm({ task, onClose }: EditTaskFormProps) {
 
   return (
     <>
-      {error && (
+    {error && (
         <SnackAlert
           message={error}
           severity="error"
@@ -77,7 +77,6 @@ function EditTaskForm({ task, onClose }: EditTaskFormProps) {
         />
       )}
 
-      
       {success && (
         <SnackAlert
           message={success}
@@ -109,22 +108,21 @@ function EditTaskForm({ task, onClose }: EditTaskFormProps) {
           <Dialog
             open={true}
             onClose={handleClose}
-            title="Aufgabe bearbeiten"
+            onSubmit={formikHandleSubmit}
             loading={loading}
             submitDisabled={submitDisabled}
-            onSubmit={formikHandleSubmit}
           >
             <Typography variant="h6" component="h2" gutterBottom sx={{ fontWeight: "bold", color: "white" }}>
               Bearbeite die Details der Aufgabe
             </Typography>
             <Form
+              className="taskForm"
               onSubmit={formikHandleSubmit}
               values={values}
               handleChange={handleChange}
               handleBlur={handleBlur}
               errors={errors}
               touched={touched}
-              className="taskForm"
             />
           </Dialog>
         )}

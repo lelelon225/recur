@@ -116,15 +116,14 @@ function FavoritesPage() {
         }}
       >
         {tasks.map((task) => (
-            <TaskCard
-              classname="taskCard"
-              key={task.id}
-              task={task}
-              onToggleFavorite={() => handleToggleFavorite(task.id)}
-              onToggleArchive={() => handleToggleArchive(task.id)}
-              onDelete={() => handleDelete(task.id)}
-              onToggleEdit={fetchFavoriteTasks}
-            />
+        <TaskCard
+          key={task.id}
+          classname="taskCard"
+          task={task}
+          onToggleFavorite={() => handleToggleFavorite(task.id)}
+          onToggleArchive={() => handleToggleArchive(task.id)}
+          onDelete={() => handleDelete(task.id)}
+        />
         ))}
       </Box>
     </Container>
