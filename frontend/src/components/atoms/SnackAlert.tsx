@@ -1,4 +1,5 @@
 import { Snackbar, Alert, Slide as MuiSlide } from "@mui/material";
+import Portal from "@mui/material/Portal";
 import type { SlideProps } from "@mui/material/Slide";
 import type { AlertProps } from "@mui/material/Alert";
 
@@ -39,28 +40,31 @@ function SlideTransition(props: SlideProps) {
 
 function SnackAlert({ message, severity, open, onClose, sx, ...props }: SnackAlertProps) {
   return (
-    <Snackbar
+    <Portal container={document.body}>
+      <Snackbar
         open={open}
         autoHideDuration={2000}
         onClose={onClose}
         anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
         slots={{ transition: SlideTransition }}
+        sx={{ zIndex: (theme) => theme.zIndex.modal + 1000 }}
       >
-      <Alert
-        severity={severity}
-        {...props}
-        sx={{
-          width: "100%",
-          fontSize: "1.5rem",
-          fontWeight: "bold",
-          backgroundColor: getColorBySeverity(severity),
-          color: getTextColorBySeverity(severity),
-          ...sx,
-        }}
-      >
-        {message}
-      </Alert>
-    </Snackbar>
+        <Alert
+          severity={severity}
+          {...props}
+          sx={{
+            width: "100%",
+            fontSize: "1.5rem",
+            fontWeight: "bold",
+            backgroundColor: getColorBySeverity(severity),
+            color: getTextColorBySeverity(severity),
+            ...sx,
+          }}
+        >
+          {message}
+        </Alert>
+      </Snackbar>
+    </Portal>
   );
 }
 

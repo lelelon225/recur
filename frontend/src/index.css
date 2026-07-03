@@ -247,7 +247,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 
-.addTaskForm {
+.taskForm {
     display: flex;
     flex-direction: column;
     gap: var(--space-md);
@@ -255,11 +255,11 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* Gemeinsame Basis für TextField und Select */
-.addTaskForm .MuiFormControl-root {
+.taskForm .MuiFormControl-root {
     width: 100%;
 }
 
-.addTaskForm .MuiOutlinedInput-root {
+.taskForm .MuiOutlinedInput-root {
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     color: var(--color-text);
@@ -267,51 +267,43 @@ h1, h2, h3, h4, h5, h6 {
     transition: box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
-.addTaskForm .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline {
+.taskForm .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline {
     border-color: var(--color-primary);
     transition: border-color 0.3s ease;
 }
 
-.addTaskForm .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+.taskForm .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
     border-color: var(--color-text);
 }
 
-.addTaskForm .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+.taskForm .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
     border-color: var(--color-border);
     border-width: 2px;
 }
 
-.addTaskForm .MuiOutlinedInput-root.Mui-focused {
+.taskForm .MuiOutlinedInput-root.Mui-focused {
     border-color: var(--color-primary);
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
 }
 
 /* Text / Input / Select-Value */
-.addTaskForm .MuiInputBase-input,
-.addTaskForm .MuiSelect-select {
+.taskForm .MuiInputBase-input,
+.taskForm .MuiSelect-select {
     color: var(--color-text);
 }
 
 /* Label */
-.addTaskForm .MuiInputLabel-root {
+.taskForm .MuiInputLabel-root {
     color: var(--color-text);
     opacity: 0.8;
 }
 
-.addTaskForm .MuiInputLabel-root.Mui-focused {
+.taskForm .MuiInputLabel-root.Mui-focused {
     color: var(--color-text);
     opacity: 1;
 }
 
-.addTaskForm .MuiSelect-icon {
+.taskForm .MuiSelect-icon {
     color: var(--color-text);
-}
-.addTaskForm .formError {
-    color: #ff6b6b; /* gut lesbar auf --color-accent, aber noch klar als Fehlerfarbe erkennbar */
-    background: rgba(255, 107, 107, 0.1);
-    border: 1px solid rgba(255, 107, 107, 0.3);
-    border-radius: var(--radius);
-    padding: var(--space-sm) var(--space-md);
-    font-size: 1.4rem;
 }
 /*#endregion HomePage */
