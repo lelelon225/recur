@@ -1,7 +1,7 @@
 import { Box, Container } from "@mui/material";
 import {
-  getArchivedTasks,
-  patchTaskArchived,
+  getTasks,
+  patchTask,
   deleteTask,
   type Task,
 } from "../../services/taskService";
@@ -15,6 +15,24 @@ function ArchivePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  function handleToggleFavorite(taskId: string) {
+    const previousTasks = tasks;
+    const updatedTasks = tasks.map((task) =>
+      task.id === taskId ? { ...task, isFavorite: !task.isFavorite } : task,
+    );
+    setTasks(updatedTasks);
+
+    const toggledTask = updatedTasks.find((task) => task.id === taskId);
+    if (!toggledTask) {
+      return;
+    }
+
+    patchTask(taskId, { isFavorite: toggledTask.isFavorite ?? false }).catch((err) => {
+      setTasks(previousTasks);
+      console.error("Fehler beim Aktualisieren des Favoritenstatus", err);
+    });
+  }
+
   function handleToggleArchive(taskId: string) {
     const previousTasks = tasks;
     const updatedTasks = tasks
@@ -24,7 +42,7 @@ function ArchivePage() {
       .filter((task) => task.isArchived);
     setTasks(updatedTasks);
 
-    patchTaskArchived(taskId, false).catch((err) => {
+    patchTask(taskId, { isArchived: false }).catch((err) => {
       setTasks(previousTasks);
       console.error("Fehler beim Aktualisieren Archivierungsstatus", err);
     });
@@ -43,13 +61,13 @@ function ArchivePage() {
 
   async function fetchArchivedTasks() {
     try {
-      const fetchedTasks = await getArchivedTasks();
+      const fetchedTasks = await getTasks(true, false);
       setTasks(fetchedTasks);
     } catch (error) {
       setError(
         error instanceof Error
           ? error.message
-          : "Unbekannter Fehler beim Abrufen der Favoriten",
+          : "Unbekannter Fehler beim Abrufen der archivierten Aufgaben",
       );
     } finally {
       setTimeout(() => {
@@ -81,7 +99,7 @@ function ArchivePage() {
       <InfoCard
         variant="info"
         title="Keine archivierten Aufgaben gefunden"
-        discription="Fügen Sie Aufgaben zu Ihren Favoriten hinzu, um sie hier anzuzeigen."
+        discription="Archivierte Aufgaben werden hier angezeigt, sobald du welche archivierst."
       />
     );
   }
@@ -89,7 +107,7 @@ function ArchivePage() {
   return (
     <Container maxWidth="lg">
       <Box
-        className="favoritesPage"
+        className="archivePage"
         sx={{
           display: "grid",
           gridTemplateColumns: {
@@ -105,19 +123,13 @@ function ArchivePage() {
       >
         {tasks.map((task) => (
           <TaskCard
-            classname="taskCard"
-            key={task.id}
-            name={task.name}
-            category={task.category}
-            description={task.description}
-            dateCreated={task.dateCreated}
-            dateUntil={task.dateUntil}
-            progress={task.progress}
-            isFavorite={task.isFavorite}
-            isArchived={task.isArchived}
-            onToggleArchive={() => handleToggleArchive(task.id)}
-            onDelete={() => handleDelete(task.id)}
-          />
+              key={task.id}
+              classname="taskCard"
+              task={task}
+              onToggleFavorite={() => handleToggleFavorite(task.id)}
+              onToggleArchive={() => handleToggleArchive(task.id)}
+              onDelete={() => handleDelete(task.id)}
+            />
         ))}
       </Box>
     </Container>

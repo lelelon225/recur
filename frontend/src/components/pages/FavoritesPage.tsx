@@ -1,8 +1,7 @@
 import { Box, Container } from "@mui/material";
 import {
-  getFavoriteTasks,
-  patchTaskFavorite,
-  patchTaskArchived,
+  getTasks,
+  patchTask,
   deleteTask,
   type Task,
 } from "../../services/taskService";
@@ -25,7 +24,7 @@ function FavoritesPage() {
       .filter((task) => task.isFavorite);
     setTasks(updatedTasks);
 
-    patchTaskFavorite(taskId, false).catch((err) => {
+    patchTask(taskId, { isFavorite: false }).catch((err) => {
       setTasks(previousTasks);
       console.error("Fehler beim Aktualisieren des Favoritenstatus", err);
     });
@@ -36,7 +35,7 @@ function FavoritesPage() {
     const updatedTasks = tasks.filter((task) => task.id !== taskId);
     setTasks(updatedTasks);
 
-    patchTaskArchived(taskId, true).catch((err) => {
+    patchTask(taskId, { isArchived: true }).catch((err) => {
       setTasks(previousTasks);
       console.error("Fehler beim Archivieren der Aufgabe", err);
     });
@@ -55,7 +54,7 @@ function FavoritesPage() {
 
   async function fetchFavoriteTasks() {
     try {
-      const fetchedTasks = await getFavoriteTasks();
+      const fetchedTasks = await getTasks(false, true);
       setTasks(fetchedTasks.filter((task) => !task.isArchived));
     } catch (error) {
       setError(
@@ -116,21 +115,14 @@ function FavoritesPage() {
         }}
       >
         {tasks.map((task) => (
-          <TaskCard
-            classname="taskCard"
-            key={task.id}
-            name={task.name}
-            category={task.category}
-            description={task.description}
-            dateCreated={task.dateCreated}
-            dateUntil={task.dateUntil}
-            progress={task.progress}
-            isFavorite={task.isFavorite}
-            isArchived={task.isArchived}
-            onToggleFavorite={() => handleToggleFavorite(task.id)}
-            onToggleArchive={() => handleToggleArchive(task.id)}
-            onDelete={() => handleDelete(task.id)}
-          />
+        <TaskCard
+          key={task.id}
+          classname="taskCard"
+          task={task}
+          onToggleFavorite={() => handleToggleFavorite(task.id)}
+          onToggleArchive={() => handleToggleArchive(task.id)}
+          onDelete={() => handleDelete(task.id)}
+        />
         ))}
       </Box>
     </Container>

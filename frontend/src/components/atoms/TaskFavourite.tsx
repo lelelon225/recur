@@ -2,17 +2,20 @@ import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlin
 import FavoriteOutlinedIcon from "@mui/icons-material/FavoriteOutlined";
 import IconButton from "@mui/material/IconButton";
 
-function TaskFavorite({
-  isFavorite,
-  onClick,
-}: {
+// TaskFavourite.tsx
+type TaskFavoriteProps = {
   isFavorite: boolean;
-  onClick: () => void;
-}) {
+  onClick: (e: React.MouseEvent) => void;
+};
 
-
+function TaskFavorite({ isFavorite, onClick }: TaskFavoriteProps) {
   return (
-    <IconButton  onClick={onClick}>
+    <IconButton
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick(e);
+      }}
+    >
       {isFavorite ? (
         <FavoriteOutlinedIcon color="error" />
       ) : (

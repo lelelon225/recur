@@ -1,23 +1,26 @@
 import { Box, Container } from "@mui/material";
 import {
-  getAllTasks,
-  patchTaskFavorite,
-  patchTaskArchived,
+  getTasks,
+  patchTask,
   deleteTask,
   type Task,
 } from "../../services/taskService";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import InfoCard from "../organisms/InfoCard";
 import Fab from "../atoms/FloatingActionButton";
 import AddTaskForm from "../organisms/AddTaskForm";
 import LoadingTime from "../atoms/LoadingTime";
 import TaskCard from "../molecules/TaskCard";
+import { Select, MenuItem } from "@mui/material";
+
+type SortOptions = "date" | "progress" | "alphabetical";
 
 function HomePage() {
   const [showAddTaskForm, setShowAddTaskForm] = useState(false);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<SortOptions>("date");
 
   function showForm() {
     setShowAddTaskForm(true);
@@ -26,7 +29,7 @@ function HomePage() {
   function handleToggleFavorite(taskId: string) {
     const previousTasks = tasks;
     const updatedTasks = tasks.map((task) =>
-      task.id === taskId ? { ...task, isFavorite: !task.isFavorite } : task,
+      task.id === taskId ? { ...task, isFavorite: !task.isFavorite } : task
     );
     setTasks(updatedTasks);
 
@@ -35,7 +38,7 @@ function HomePage() {
       return;
     }
 
-    patchTaskFavorite(taskId, toggledTask.isFavorite ?? false).catch((err) => {
+    patchTask(taskId, { isFavorite: toggledTask.isFavorite }).catch((err) => {
       setTasks(previousTasks);
       console.error("Fehler beim Aktualisieren des Favoritenstatus", err);
     });
@@ -46,7 +49,7 @@ function HomePage() {
     const updatedTasks = tasks.filter((task) => task.id !== taskId);
     setTasks(updatedTasks);
 
-    patchTaskArchived(taskId, true).catch((err) => {
+    patchTask(taskId, { isArchived: true }).catch((err) => {
       setTasks(previousTasks);
       console.error("Fehler beim Archivieren der Aufgabe", err);
     });
@@ -63,15 +66,34 @@ function HomePage() {
     });
   }
 
+  function handleToggleDone(taskId: string) {
+  const targetTask = tasks.find((task) => task.id === taskId);
+  if (!targetTask) {
+    return;
+  }
+
+  const newAmountDid = (targetTask.amountDid ?? 0) + 1;
+
+  patchTask(taskId, {}, undefined, undefined, undefined, newAmountDid)
+    .then((updatedTask) => {
+      setTasks((prev) =>
+        prev.map((task) => (task.id === taskId ? updatedTask : task)),
+      );
+    })
+    .catch((err) => {
+      console.error("Fehler beim Aktualisieren der erledigten Menge", err);
+    });
+}
+
   async function fetchTasks() {
     try {
-      const fetchedTasks = await getAllTasks();
+      const fetchedTasks = await getTasks();
       setTasks(fetchedTasks.filter((task) => !task.isArchived));
     } catch (error) {
       setError(
         error instanceof Error
           ? error.message
-          : "Unbekannter Fehler beim Abrufen der Aufgaben",
+          : "Unbekannter Fehler beim Abrufen der Aufgaben"
       );
     } finally {
       setTimeout(() => {
@@ -79,6 +101,31 @@ function HomePage() {
       }, 500);
     }
   }
+
+  function sortTaskByDateCreated(tasks: Task[]): Task[] {
+    return [...tasks].sort(
+      (a, b) =>
+        new Date(b.dateCreated).getTime() - new Date(a.dateCreated).getTime()
+    );
+  }
+  function sortTaskByProgress(tasks: Task[]): Task[] {
+    return [...tasks].sort((a, b) => a.progress - b.progress);
+  }
+
+  function sortTaskAlphabetically(tasks: Task[]): Task[] {
+    return [...tasks].sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  const sortedTasks = useMemo(() => {
+    switch (sortBy) {
+      case "progress":
+        return sortTaskByProgress(tasks);
+      case "alphabetical":
+        return sortTaskAlphabetically(tasks);
+      default:
+        return sortTaskByDateCreated(tasks);
+    }
+  }, [tasks, sortBy]);
 
   useEffect(() => {
     fetchTasks();
@@ -110,10 +157,26 @@ function HomePage() {
 
   return (
     <>
+      <Select
+        value={sortBy}
+        onChange={(e) => setSortBy(e.target.value as SortOptions)}
+        size="small"
+        sx={{ mb: 2 }}
+      >
+        <MenuItem value="date">Neuste zuerst</MenuItem>
+        <MenuItem value="progress">Fortschritt</MenuItem>
+        <MenuItem value="alphabetical">Alphabetisch</MenuItem>
+      </Select>
+
       <Container maxWidth="lg">
-        {showAddTaskForm && (
-          <AddTaskForm onClose={() => setShowAddTaskForm(false)} />
-        )}
+       {showAddTaskForm && (
+        <AddTaskForm
+          onClose={() => setShowAddTaskForm(false)}
+          onTaskCreated={(newTask) => {
+            setTasks((prev) => [...prev, newTask]);
+          }}
+        />
+      )}
 
         <Box
           className="homePage"
@@ -130,21 +193,16 @@ function HomePage() {
             gap: "16px",
           }}
         >
-          {tasks.map((task) => (
+          {sortedTasks.map((task) => (
             <TaskCard
               classname="taskCard"
               key={task.id}
-              name={task.name}
-              category={task.category}
-              description={task.description}
-              dateCreated={task.dateCreated}
-              dateUntil={task.dateUntil}
-              progress={task.progress}
-              isFavorite={task.isFavorite}
-              isArchived={task.isArchived}
+              task={task}
               onToggleFavorite={() => handleToggleFavorite(task.id)}
               onToggleArchive={() => handleToggleArchive(task.id)}
               onDelete={() => handleDelete(task.id)}
+              onToggleEdit={fetchTasks}
+              onToggleDone={() => handleToggleDone(task.id)}
             />
           ))}
           <Fab onClick={showForm} />

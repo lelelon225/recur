@@ -1,16 +1,16 @@
 import Dialog from "../atoms/Dialog";
 import { Formik } from "formik";
 import { useState } from "react";
-import { createTask, TaskCategory, TaskFrequency } from "../../services/taskService";
-import type { NewTask, Task } from "../../services/taskService";
-import SnackAlert from "../atoms/SnackAlert";
+import { patchTask } from "../../services/taskService";
+import type { Task } from "../../services/taskService";
 import Form from "../molecules/Form";
 import * as yup from "yup";
-import { Typography } from "@mui/material";
+import SnackAlert from "../atoms/SnackAlert";
+import Typography from "@mui/material/Typography";
 
-type AddTaskFormProps = {
+type EditTaskFormProps = {
+  task: Task;
   onClose: () => void;
-  onTaskCreated?: (task: Task) => void;
 };
 
 const validationSchema = yup.object().shape({
@@ -18,29 +18,32 @@ const validationSchema = yup.object().shape({
   description: yup.string().required("Beschreibung ist erforderlich"),
   category: yup.string().required("Kategorie ist erforderlich"),
   frequency: yup.string().required("Frequenz ist erforderlich"),
-  dateUntil: yup.date().required("Fälligkeitsdatum ist erforderlich").min(new Date(), "Fälligkeitsdatum muss in der Zukunft liegen"),
+  dateUntil: yup
+    .date()
+    .required("Fälligkeitsdatum ist erforderlich")
+    .min(new Date(), "Fälligkeitsdatum muss in der Zukunft liegen"),
 });
 
-function isFormEmpty(values: NewTask): boolean {
-  return (
-    !values.name &&
-    !values.description &&
-    !values.category &&
-    !values.frequency &&
-    !values.dateUntil
-  );
-}
-
-function AddTaskForm({ onClose, onTaskCreated }: AddTaskFormProps) {
+function EditTaskForm({ task, onClose }: EditTaskFormProps) {
   const [loading, setLoading] = useState(false);
   const [submitDisabled, setSubmitDisabled] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [emptyAlertOpen, setEmptyAlertOpen] = useState(false);
+  const [info, setInfo] = useState<string | null>(null);
 
-  const handleSubmit = async (values: NewTask) => {
-    if (isFormEmpty(values)) {
-      setEmptyAlertOpen(true);
+  function valuesChanged(values: Task): boolean {
+  return !(
+    values.name === task.name &&
+    values.description === task.description &&
+    values.category === task.category &&
+    values.frequency === task.frequency &&
+    values.dateUntil === task.dateUntil?.slice(0, 10)
+  );
+  }
+
+  const handleSubmit = async (values: Task) => {
+    if (!valuesChanged(values)) {
+      setInfo("Keine Änderungen vorgenommen");
       return;
     }
 
@@ -49,13 +52,10 @@ function AddTaskForm({ onClose, onTaskCreated }: AddTaskFormProps) {
     setError(null);
 
     try {
-      const createdTask = await createTask(values);
-      setSuccess("Aufgabe erfolgreich erstellt.");
-      onTaskCreated?.(createdTask);
-      setTimeout(onClose, 500);
+      await patchTask(task.id, values);
+      setSuccess("Aufgabe erfolgreich aktualisiert");
     } catch (err) {
-      console.error(err);
-      setError("Fehler beim Erstellen der Aufgabe.");
+      setError(err instanceof Error ? err.message : "Fehler beim Aktualisieren der Aufgabe");
     } finally {
       setLoading(false);
       setSubmitDisabled(false);
@@ -68,7 +68,7 @@ function AddTaskForm({ onClose, onTaskCreated }: AddTaskFormProps) {
 
   return (
     <>
-      {error && (
+    {error && (
         <SnackAlert
           message={error}
           severity="error"
@@ -86,23 +86,20 @@ function AddTaskForm({ onClose, onTaskCreated }: AddTaskFormProps) {
         />
       )}
 
-      {emptyAlertOpen && (
-        <SnackAlert
-          message="Bitte füllen Sie alle erforderlichen Felder aus."
-          severity="warning"
-          open={true}
-          onClose={() => setEmptyAlertOpen(false)}
-        />
+      {info && (
+        <SnackAlert open={true} message={info} severity="info" onClose={() => setInfo(null)} />
       )}
 
-      <Formik<NewTask>
+      <Formik<Task>
         initialValues={{
-          name: "",
-          description: "",
-          progress: 0,
-          category: "" as TaskCategory,
-          frequency:"" as TaskFrequency,
-          dateUntil: "",
+          id: task.id,
+          name: task.name,
+          description: task.description,
+          progress: task.progress,
+          category: task.category,
+          frequency: task.frequency,
+          dateUntil: task.dateUntil?.slice(0, 10) || "",
+          dateCreated: task.dateCreated,
         }}
         onSubmit={handleSubmit}
         validationSchema={validationSchema}
@@ -113,10 +110,10 @@ function AddTaskForm({ onClose, onTaskCreated }: AddTaskFormProps) {
             onClose={handleClose}
             onSubmit={formikHandleSubmit}
             loading={loading}
-            submitDisabled={submitDisabled || isFormEmpty(values)}
+            submitDisabled={submitDisabled}
           >
             <Typography variant="h6" component="h2" gutterBottom sx={{ fontWeight: "bold", color: "white" }}>
-              Neue Aufgabe hinzufügen
+              Bearbeite die Details der Aufgabe
             </Typography>
             <Form
               className="taskForm"
@@ -134,4 +131,4 @@ function AddTaskForm({ onClose, onTaskCreated }: AddTaskFormProps) {
   );
 }
 
-export default AddTaskForm;
+export default EditTaskForm;
