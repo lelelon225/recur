@@ -20,23 +20,14 @@ public class TaskController {
         }
 
         @GetMapping({ "", "/" })
-        public ResponseEntity<Collection<Task>> getTasks() {
-                return taskService.getTasks();
+        public ResponseEntity<Collection<Task>> getTasks(@RequestParam(required = false) Boolean archived,
+                        @RequestParam(required = false) Boolean favorite) {
+                return taskService.getTasks(archived, favorite);
         };
 
         @GetMapping({ "/{id}", "/{id}/" })
         public ResponseEntity<Task> getTask(@PathVariable UUID id) {
                 return taskService.getTask(id);
-        };
-
-        @GetMapping({ "/favorite", "/favorite/" })
-        public ResponseEntity<Collection<Task>> getFavoriteTasks() {
-                return taskService.getFavoriteTasks();
-        };
-
-        @GetMapping({ "/archived", "/archived/" })
-        public ResponseEntity<Collection<Task>> getArchivedTasks() {
-                return taskService.getArchivedTasks();
         };
 
         @PostMapping({ "", "/" })
@@ -45,38 +36,21 @@ public class TaskController {
         };
 
         @PatchMapping({ "/{id}", "/{id}/" })
-        public ResponseEntity<Task> patchTask(@PathVariable UUID id, @Valid @RequestBody Task task) {
-                return taskService.patchTask(id, task);
-        };
-
-        @PatchMapping({ "/{id}/favorite", "/{id}/favorite/" })
-        public ResponseEntity<Task> patchTaskFavorite(@PathVariable UUID id,
-                        @RequestBody Map<String, Boolean> requestBody) {
-                Boolean isFavorite = requestBody.get("isFavorite");
-                return taskService.patchTaskFavorite(id, isFavorite);
-        }
-
-        @PatchMapping({ "/{id}/archived", "/{id}/archived/" })
-        public ResponseEntity<Task> patchTaskArchived(@PathVariable UUID id,
-                        @RequestBody Map<String, Boolean> requestBody) {
-                Boolean isArchived = requestBody.get("isArchived");
-                return taskService.patchTaskArchived(id, isArchived);
-        }
-
-        @PatchMapping({ "/{id}/amountDid", "/{id}/amountDid/" })
-        public ResponseEntity<Task> patchAmountDid(@PathVariable UUID id,
-                        @RequestBody Map<String, Integer> requestBody) {
-                Integer amountDid = requestBody.get("amountDid");
-                return taskService.patchAmountDid(id, amountDid);
+        public ResponseEntity<Task> patchTask(@PathVariable UUID id, @Valid @RequestBody Task task,
+                        @RequestParam(required = false) Boolean resetProgress,
+                        @RequestParam(required = false) Boolean favourite,
+                        @RequestParam(required = false) Boolean archived,
+                        @RequestParam(required = false) Integer amountDid) {
+                return taskService.patchTask(id, task, resetProgress, favourite, archived, amountDid);
         }
 
         @DeleteMapping({ "/{id}", "/{id}/" })
         public ResponseEntity<Task> deleteTask(@PathVariable UUID id) {
                 return taskService.deleteTask(id);
-        };
+        }
 
         @DeleteMapping({ "/all", "/all/" })
         public ResponseEntity<Task> deleteAllTasks() {
                 return taskService.deleteAllTasks();
-        };
+        }
 }

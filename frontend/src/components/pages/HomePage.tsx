@@ -1,9 +1,7 @@
 import { Box, Container } from "@mui/material";
 import {
-  getAllTasks,
-  patchTaskFavorite,
-  patchTaskArchived,
-  patchTaskAmountDid,
+  getTasks,
+  patchTask,
   deleteTask,
   type Task,
 } from "../../services/taskService";
@@ -40,7 +38,7 @@ function HomePage() {
       return;
     }
 
-    patchTaskFavorite(taskId, toggledTask.isFavorite ?? false).catch((err) => {
+    patchTask(taskId, { isFavorite: toggledTask.isFavorite }).catch((err) => {
       setTasks(previousTasks);
       console.error("Fehler beim Aktualisieren des Favoritenstatus", err);
     });
@@ -51,7 +49,7 @@ function HomePage() {
     const updatedTasks = tasks.filter((task) => task.id !== taskId);
     setTasks(updatedTasks);
 
-    patchTaskArchived(taskId, true).catch((err) => {
+    patchTask(taskId, { isArchived: true }).catch((err) => {
       setTasks(previousTasks);
       console.error("Fehler beim Archivieren der Aufgabe", err);
     });
@@ -76,7 +74,7 @@ function HomePage() {
 
   const newAmountDid = (targetTask.amountDid ?? 0) + 1;
 
-  patchTaskAmountDid(taskId, newAmountDid)
+  patchTask(taskId, {}, undefined, undefined, undefined, newAmountDid)
     .then((updatedTask) => {
       setTasks((prev) =>
         prev.map((task) => (task.id === taskId ? updatedTask : task)),
@@ -89,7 +87,7 @@ function HomePage() {
 
   async function fetchTasks() {
     try {
-      const fetchedTasks = await getAllTasks();
+      const fetchedTasks = await getTasks();
       setTasks(fetchedTasks.filter((task) => !task.isArchived));
     } catch (error) {
       setError(
