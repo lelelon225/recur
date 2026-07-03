@@ -2,6 +2,7 @@ package ch.noseryoung.domain.recur.services;
 
 import ch.noseryoung.domain.recur.models.Task;
 import ch.noseryoung.domain.recur.repositories.TaskRepository;
+import ch.noseryoung.domain.recur.utils.TaskUtil;
 
 import java.util.*;
 import org.springframework.stereotype.Service;
@@ -11,9 +12,11 @@ import org.springframework.http.ResponseEntity;
 public class TaskService {
 
         private final TaskRepository taskRepository;
+        private final TaskUtil taskUtil;
 
-        public TaskService(TaskRepository taskRepository) {
+        public TaskService(TaskRepository taskRepository, TaskUtil taskUtil) {
                 this.taskRepository = taskRepository;
+                this.taskUtil = taskUtil;
         }
 
         public ResponseEntity<Collection<Task>> getTasks() {
@@ -26,6 +29,7 @@ public class TaskService {
         }
 
         public ResponseEntity<Task> createTask(Task task) {
+                taskUtil.calculateProgress(task);
                 taskRepository.save(task);
                 return ResponseEntity.status(201).body(task);
         }
@@ -36,6 +40,8 @@ public class TaskService {
                         return ResponseEntity.status(404).build();
                 }
                 task.setId(id);
+                TaskUtil.calculateDaysInSpan(task);
+                taskUtil.calculateProgress(task);
                 taskRepository.save(task);
                 return ResponseEntity.status(200).body(task);
         }
@@ -83,6 +89,18 @@ public class TaskService {
                         return ResponseEntity.status(404).build();
                 }
                 existingTask.setIsArchived(isArchived);
+                taskRepository.save(existingTask);
+                return ResponseEntity.status(200).body(existingTask);
+        }
+
+        public ResponseEntity<Task> patchAmountDid(UUID id, Integer amountDid) {
+                Task existingTask = taskRepository.findById(id).orElse(null);
+                if (existingTask == null) {
+                        return ResponseEntity.status(404).build();
+                }
+                existingTask.setAmountDid(amountDid);
+                TaskUtil.calculateDaysInSpan(existingTask); // <-- neu
+                taskUtil.calculateProgress(existingTask);
                 taskRepository.save(existingTask);
                 return ResponseEntity.status(200).body(existingTask);
         }

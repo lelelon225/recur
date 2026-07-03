@@ -2,6 +2,9 @@ package ch.noseryoung.domain.recur.models;
 
 import java.time.Instant;
 import java.util.*;
+
+import org.hibernate.annotations.CreationTimestamp;
+
 import lombok.*;
 import jakarta.persistence.*;
 
@@ -42,7 +45,8 @@ public class Task {
         @Column(name = "progress")
         private Double progress;
 
-        @Column(name = "date_created")
+        @CreationTimestamp
+        @Column(name = "date_created", updatable = false)
         private Instant dateCreated;
 
         @Column(name = "days_in_span")
