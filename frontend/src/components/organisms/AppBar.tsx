@@ -14,7 +14,7 @@ function AppBar({ children, ...props }: AppBarProps) {
             sx={{
               width: "100%",
               display: "flex",
-              justifyContent: "space-between",
+              justifyContent: "center",
               alignItems: "center",
             }}
           >
