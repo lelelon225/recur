@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { getTasks, patchTask, deleteTask, type Task } from "../services/taskService";
 import { useAddTask } from "@/contexts/AddTaskContext";
+import { deleteTask, getTasks, patchTask } from "@/services/taskService";
 
 export function useTasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
