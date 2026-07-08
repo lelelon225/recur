@@ -63,7 +63,7 @@ public class TaskService {
         }
 
         // PATCH METHODS
-        public ResponseEntity<Task> patchTask(UUID id, Task task, Boolean resetProgress, Boolean favourite,
+        public ResponseEntity<Task> patchTask(UUID id, Task task, Boolean resetProgress, Boolean favorite,
                         Boolean archived, Integer amountDid) {
                 Task existingTask = taskRepository.findById(id).orElse(null);
                 if (existingTask == null) {
@@ -95,15 +95,15 @@ public class TaskService {
                 }
 
                 // Query-Parameter überschreiben optional zusätzlich (falls mal genutzt)
-                if (favourite != null) {
-                        existingTask.setIsFavorite(favourite);
+                if (favorite != null) {
+                        existingTask.setIsFavorite(favorite);
                 }
                 if (archived != null) {
                         existingTask.setIsArchived(archived);
                 }
 
                 if (resetProgress != null && resetProgress) {
-                        existingTask.setAmountDid(0);
+                        resetTask(id);
                 }
 
                 if (amountDid != null) {
@@ -116,7 +116,7 @@ public class TaskService {
                 return ResponseEntity.status(200).body(existingTask);
         }
 
-        public ResponseEntity<Task> resetAmountDid(UUID id) {
+        public ResponseEntity<Task> resetTask(UUID id) {
                 Task existingTask = taskRepository.findById(id).orElse(null);
                 if (existingTask == null) {
                         return ResponseEntity.status(404).build();

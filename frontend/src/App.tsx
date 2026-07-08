@@ -10,7 +10,7 @@ function App() {
       <Route
         path="/"
         element={
-          <DefaultLayout>
+          <DefaultLayout pageTitle="Deine Habits">
             <HomePage />
           </DefaultLayout>
         }
@@ -19,7 +19,7 @@ function App() {
       <Route
         path="/favorites"
         element={
-          <DefaultLayout>
+          <DefaultLayout pageTitle="Deine Favoriten">
             <FavoritesPage />
           </DefaultLayout>
         }
@@ -28,7 +28,7 @@ function App() {
       <Route
         path="/archive"
         element={
-          <DefaultLayout>
+          <DefaultLayout pageTitle="Dein Archiv">
             <ArchivePage />
           </DefaultLayout>
         }

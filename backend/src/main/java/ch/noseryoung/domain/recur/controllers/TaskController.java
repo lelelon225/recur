@@ -38,10 +38,10 @@ public class TaskController {
         @PatchMapping({ "/{id}", "/{id}/" })
         public ResponseEntity<Task> patchTask(@PathVariable UUID id, @Valid @RequestBody Task task,
                         @RequestParam(required = false) Boolean resetProgress,
-                        @RequestParam(required = false) Boolean favourite,
+                        @RequestParam(required = false) Boolean favorite,
                         @RequestParam(required = false) Boolean archived,
                         @RequestParam(required = false) Integer amountDid) {
-                return taskService.patchTask(id, task, resetProgress, favourite, archived, amountDid);
+                return taskService.patchTask(id, task, resetProgress, favorite, archived, amountDid);
         }
 
         @DeleteMapping({ "/{id}", "/{id}/" })
@@ -49,7 +49,7 @@ public class TaskController {
                 return taskService.deleteTask(id);
         }
 
-        @DeleteMapping({ "/all", "/all/" })
+        @DeleteMapping({ "", "/" })
         public ResponseEntity<Task> deleteAllTasks() {
                 return taskService.deleteAllTasks();
         }

@@ -1,35 +1,48 @@
+import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import NavigationBar from "../atoms/NavigationBar"
-import RestoreIcon from '@mui/icons-material/Restore';
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import ArchiveIcon from '@mui/icons-material/Archive';
-import AppBar from "../organisms/AppBar"
+import { History, Heart, Archive } from "lucide-react";
+import AppBar from "../molecules/AppBar";
+import NavigationBar from "../organisms/NavigationBar";
+import { Toaster } from "@/components/ui/sonner";
+import { AddTaskProvider } from "@/contexts/AddTaskContext";
 
 type DefaultLayoutProps = {
-  children: React.ReactNode
-}
+  children: ReactNode;
+  pageTitle?: string;
+};
 
+const NAV_ROUTES = [
+  { path: "/", label: "Recent", icon: History },
+  { path: "/favorites", label: "Favorites", icon: Heart },
+  { path: "/archive", label: "Archive", icon: Archive },
+] as const;
 
-function DefaultLayout({ children }: DefaultLayoutProps) {
+function DefaultLayout({ children, pageTitle }: DefaultLayoutProps) {
   const navigate = useNavigate();
 
+  const destinations = NAV_ROUTES.map(({ path, label, icon: Icon }) => ({
+    navigate: () => navigate(path),
+    label,
+    icon: <Icon className="h-5 w-5" />,
+  }));
 
- 
   return (
-    <div className="default-layout">
-     <AppBar position="static" className="appBar">
-        <h1>RECUR</h1>
-      </AppBar>
-      <div className="content">
-        {children}
+    <AddTaskProvider>
+      <div className="flex min-h-screen flex-col">
+        <AppBar>
+          <h1 className="text-3xl font-bold tracking-wide">RECUR</h1>
+        </AppBar>
+        <div className="flex mx-auto w-full max-w-6xl px-4 py-6 pb-24">
+          <div className="mb-6 flex w-full flex-col gap-4">
+            <h1 className="text-left text-xl font-semibold text-foreground">{pageTitle}</h1>
+            <main>{children}</main>
+          </div>
+        </div>
+        <Toaster position="bottom-left" />
+        <NavigationBar destinations={destinations} />
       </div>
-      <NavigationBar className="navigationBar" destinations={[
-        { navigate: () => navigate('/'), label: "Recent", icon: <RestoreIcon /> },
-        { navigate: () => navigate('/favorites'), label: "Favorites", icon: <FavoriteIcon /> },
-        { navigate: () => navigate('/archive'), label: "Archive", icon: <ArchiveIcon /> },
-      ]} />
-    </div>
-  )
+    </AddTaskProvider>
+  );
 }
 
-export default DefaultLayout
+export default DefaultLayout;
