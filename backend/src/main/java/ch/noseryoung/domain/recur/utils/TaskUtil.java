@@ -2,8 +2,8 @@ package ch.noseryoung.domain.recur.utils;
 
 import org.springframework.stereotype.Component;
 
+import ch.noseryoung.domain.recur.enums.Frequency;
 import ch.noseryoung.domain.recur.models.Task;
-import ch.noseryoung.domain.recur.Enum.Frequency;
 
 import java.time.Duration;
 import java.util.EnumMap;

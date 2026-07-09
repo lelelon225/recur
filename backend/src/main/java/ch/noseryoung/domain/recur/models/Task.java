@@ -5,15 +5,14 @@ import java.util.*;
 
 import org.hibernate.annotations.CreationTimestamp;
 
+import ch.noseryoung.domain.recur.enums.Category;
+import ch.noseryoung.domain.recur.enums.Frequency;
 import lombok.*;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-
-import ch.noseryoung.domain.recur.Enum.Category;
-import ch.noseryoung.domain.recur.Enum.Frequency;
 
 @Builder
 @Getter
