@@ -2,32 +2,22 @@ import {
   createContext,
   useCallback,
   useContext,
-  useRef,
   useState,
   type ReactNode,
 } from "react";
 import AddTaskForm from "@/components/organisms/AddTaskForm";
 import type { Task } from "@/services/taskService";
-
-type TaskCreatedListener = (task: Task) => void;
+import { useTasksContext } from "@/contexts/TasksContext";
 
 type AddTaskContextValue = {
   openAddTaskForm: () => void;
-  subscribeTaskCreated: (listener: TaskCreatedListener) => () => void;
 };
 
 const AddTaskContext = createContext<AddTaskContextValue | null>(null);
 
 export function AddTaskProvider({ children }: { children: ReactNode }) {
   const [showAddTaskForm, setShowAddTaskForm] = useState(false);
-  const listenersRef = useRef<Set<TaskCreatedListener>>(new Set());
-
-  const subscribeTaskCreated = useCallback((listener: TaskCreatedListener) => {
-    listenersRef.current.add(listener);
-    return () => {
-      listenersRef.current.delete(listener);
-    };
-  }, []);
+  const { addTask } = useTasksContext();
 
   const openAddTaskForm = useCallback(() => {
     setShowAddTaskForm(true);
@@ -38,11 +28,11 @@ export function AddTaskProvider({ children }: { children: ReactNode }) {
   }
 
   function handleTaskCreated(task: Task) {
-    listenersRef.current.forEach((listener) => listener(task));
+    addTask(task);
   }
 
   return (
-    <AddTaskContext.Provider value={{ openAddTaskForm, subscribeTaskCreated }}>
+    <AddTaskContext.Provider value={{ openAddTaskForm }}>
       {children}
       {showAddTaskForm && (
         <AddTaskForm onClose={handleClose} onTaskCreated={handleTaskCreated} />

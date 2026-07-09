@@ -1,15 +1,13 @@
 import { useMemo, useState } from "react";
-import InfoCard from "../molecules/InfoCard";
-import LoadingTime from "../atoms/LoadingTime";
-import TaskCardGrid from "../molecules/TaskCardGrid";
-import Sorter from "../atoms/Sorter";
-import Empty from "../molecules/Empty";
 import { FilePlus2 } from "lucide-react";
-import { useAddTask } from "@/contexts/AddTaskContext";
-import { useTasks } from "@/hooks/useTasks";
+import InfoCard from "@/components/molecules/InfoCard";
+import Empty from "@/components/molecules/Empty";
 import { type SortOptions, sortTasks } from "@/utils/sortTasks";
-
-const noop = () => {};
+import TaskCardGrid from "@/components/molecules/TaskCardGrid";
+import Sorter from "@/components/atoms/Sorter";
+import LoadingTime from "@/components/atoms/LoadingTime";
+import { useAddTask } from "@/contexts/AddTaskContext";
+import { useTasksContext } from "@/contexts/TasksContext";
 
 function HomePage() {
   const {
@@ -22,17 +20,15 @@ function HomePage() {
     handleDelete,
     handleToggleDone,
     handleUpdateTask,
-  } = useTasks();
+  } = useTasksContext();
 
   const handlers = useMemo(
     () => ({
       onToggleFavorite: handleToggleFavorite,
-      onToggleMenu: noop,
       onToggleArchive: handleToggleArchive,
       onResetProgress: handleResetProgress,
       onDelete: handleDelete,
       onToggleDone: handleToggleDone,
-      onEdit: noop,
       onTaskUpdated: handleUpdateTask,
     }),
     [
@@ -67,10 +63,10 @@ function HomePage() {
   if (tasks.length === 0) {
     return (
       <Empty
-        icon={() => <FilePlus2 />}
-        title="Keine Aufgaben"
-        description="Es gibt derzeit keine Aufgaben."
-        buttonText="Aufgabe erstellen"
+        icon={() => <FilePlus2 className="w-12 h-12 text-gray-400" />}
+        title="Keine Habits"
+        description="Es gibt derzeit keine Habits."
+        buttonText="Habit erstellen"
         onButtonClick={openAddTaskForm}
       />
     );

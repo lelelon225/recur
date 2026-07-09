@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { History, Heart, Archive } from "lucide-react";
-import AppBar from "../molecules/AppBar";
-import NavigationBar from "../organisms/NavigationBar";
+import AppBar from "@/components/molecules/AppBar";
+import NavigationBar from "@/components/organisms/NavigationBar";
 import { Toaster } from "@/components/ui/sonner";
 import { AddTaskProvider } from "@/contexts/AddTaskContext";
 
@@ -12,19 +12,20 @@ type DefaultLayoutProps = {
 };
 
 const NAV_ROUTES = [
-  { path: "/", label: "Recent", icon: History },
-  { path: "/favorites", label: "Favorites", icon: Heart },
-  { path: "/archive", label: "Archive", icon: Archive },
+  { path: "/", label: "Neuste", icon: History },
+  { path: "/favorites", label: "Favoriten", icon: Heart },
+  { path: "/archive", label: "Archiv", icon: Archive },
 ] as const;
 
 function DefaultLayout({ children, pageTitle }: DefaultLayoutProps) {
   const navigate = useNavigate();
 
   const destinations = NAV_ROUTES.map(({ path, label, icon: Icon }) => ({
-    navigate: () => navigate(path),
-    label,
-    icon: <Icon className="h-5 w-5" />,
-  }));
+  path,
+  navigate: () => navigate(path),
+  label,
+  icon: <Icon className="h-5 w-5" />,
+}));
 
   return (
     <AddTaskProvider>

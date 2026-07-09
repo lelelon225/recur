@@ -1,4 +1,4 @@
-import type { TaskCategory, TaskFrequency } from "../services/taskService";
+import type { TaskCategory, TaskFrequency } from "@/services/taskService";
 
 export const CATEGORY_OPTIONS: { value: TaskCategory; label: string }[] = [
   { value: "WORK", label: "Arbeit" },

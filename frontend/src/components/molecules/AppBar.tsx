@@ -1,6 +1,6 @@
 import type { HTMLAttributes, ReactNode } from "react";
 import { cn } from "@/lib/utils";
-import DarkModeToggle from "../atoms/DarkModeToggle";
+import DarkModeToggle from "@/components/atoms/DarkModeToggle";
 
 type AppBarProps = HTMLAttributes<HTMLElement> & {
   children: ReactNode;

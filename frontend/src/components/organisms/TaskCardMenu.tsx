@@ -6,10 +6,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import EditTaskForm from "../organisms/EditTaskForm";
-import type { Task } from "../../services/taskService";
+import EditTaskForm from "./EditTaskForm";
+import type { Task } from "@/services/taskService";
+import ConfirmDialog from "@/components/molecules/ConfirmDialog";
 import useTaskCardMenu from "@/hooks/useTaskCardMenu";
-import ConfirmDialog from "../molecules/ConfirmDialog";
 
 type TaskCardMenuProps = {
   task: Task;

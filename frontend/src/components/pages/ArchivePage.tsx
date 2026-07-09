@@ -4,13 +4,11 @@ import Empty from "@/components/molecules/Empty";
 import ConfirmDialog from "@/components/molecules/ConfirmDialog";
 import ArchiveSelectionToolbar from "@/components/molecules/ArchiveSelectionToolbar";
 import { OctagonXIcon } from "lucide-react";
-import { useTasks } from "@/hooks/useTasks";
+import { useTasksContext } from "@/contexts/TasksContext";
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import TaskCardGrid from "@/components/molecules/TaskCardGrid";
 import useArchiveSelection from "@/hooks/useArchiveSelection";
-
-const noop = () => {};
 
 function ArchivePage() {
   const navigate = useNavigate();
@@ -22,7 +20,7 @@ function ArchivePage() {
     handleToggleFavorite,
     handleToggleArchive,
     handleDelete,
-  } = useTasks();
+  } = useTasksContext();
 
   const archivedTaskIds = useMemo(() => archivedTasks.map((task) => task.id), [archivedTasks]);
 
@@ -44,13 +42,8 @@ function ArchivePage() {
   const handlers = useMemo(
     () => ({
       onToggleFavorite: handleToggleFavorite,
-      onToggleMenu: noop,
       onToggleArchive: handleToggleArchive,
       onDelete: handleDelete,
-      onResetProgress: noop,
-      onTaskUpdated: noop,
-      onToggleDone: noop,
-      onEdit: noop,
       onToggleSelect: toggleSelect,
     }),
     [handleToggleFavorite, handleToggleArchive, handleDelete, toggleSelect],

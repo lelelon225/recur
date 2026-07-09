@@ -2,13 +2,14 @@ import InfoCard from "@/components/molecules/InfoCard";
 import LoadingTime from "@/components/atoms/LoadingTime";
 import Empty from "@/components/molecules/Empty";
 import { OctagonXIcon } from "lucide-react";
-import { useTasks } from "@/hooks/useTasks";
+import { useTasksContext } from "@/contexts/TasksContext";
 import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import TaskCardGrid from "@/components/molecules/TaskCardGrid";
 
-const noop = () => {};
-
 function FavoritesPage() {
+  const navigate = useNavigate();
+
   const {
     loading,
     favoriteTasks,
@@ -16,18 +17,13 @@ function FavoritesPage() {
     handleToggleFavorite,
     handleToggleArchive,
     handleDelete,
-  } = useTasks();
+  } = useTasksContext();
 
   const handlers = useMemo(
     () => ({
       onToggleFavorite: handleToggleFavorite,
-      onToggleMenu: noop,
       onToggleArchive: handleToggleArchive,
-      onTaskUpdated: noop,
-      onResetProgress: noop,
       onDelete: handleDelete,
-      onToggleDone: noop,
-      onEdit: noop,
     }),
     [handleToggleFavorite, handleToggleArchive, handleDelete],
   );
@@ -53,7 +49,7 @@ function FavoritesPage() {
         title="Keine favorisierten Habits"
         description="Es gibt derzeit keine favorisierten Habits."
         buttonText="Zurück zu den Habits"
-        onButtonClick={() => window.location.assign("/")}
+        onButtonClick={() => navigate("/")}
       />
     );
   }

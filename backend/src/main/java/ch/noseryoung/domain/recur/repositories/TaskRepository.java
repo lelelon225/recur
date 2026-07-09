@@ -13,6 +13,4 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
 
     public List<Task> findByIsFavorite(Boolean isFavorite);
 
-    Optional<Task> findByIdAndIsArchived(UUID id, Boolean isArchived);
-
 }

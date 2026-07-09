@@ -27,27 +27,29 @@ public class TaskService {
                         return getFavoriteTasks();
 
                 Collection<Task> tasks = taskRepository.findAll();
-                tasks.forEach(task -> {
-                        TaskUtil.calculateDaysInSpan(task);
-                        taskUtil.calculateProgress(task);
-                });
+                recalculateAll(tasks);
                 return ResponseEntity.status(200).body(tasks);
         }
 
         public ResponseEntity<Collection<Task>> getFavoriteTasks() {
-                taskRepository.findAll().forEach(task -> {
-                        TaskUtil.calculateDaysInSpan(task);
-                        taskUtil.calculateProgress(task);
-                });
-                return ResponseEntity.status(200).body(taskRepository.findByIsFavorite(true));
+                List<Task> favoriteTasks = taskRepository.findByIsFavorite(true);
+                recalculateAll(favoriteTasks);
+                return ResponseEntity.status(200).body(favoriteTasks);
         }
 
         public ResponseEntity<Collection<Task>> getArchivedTasks() {
-                taskRepository.findAll().forEach(task -> {
+                List<Task> archivedTasks = taskRepository.findByIsArchived(true);
+                recalculateAll(archivedTasks);
+                return ResponseEntity.status(200).body(archivedTasks);
+        }
+
+        // Berechnet daysInSpan und progress neu für eine Menge von Tasks.
+        // War zuvor dreifach dupliziert in getTasks/getFavoriteTasks/getArchivedTasks.
+        private void recalculateAll(Collection<Task> tasks) {
+                tasks.forEach(task -> {
                         TaskUtil.calculateDaysInSpan(task);
                         taskUtil.calculateProgress(task);
                 });
-                return ResponseEntity.status(200).body(taskRepository.findByIsArchived(true));
         }
 
         public ResponseEntity<Task> getTask(UUID id) {
@@ -57,7 +59,16 @@ public class TaskService {
 
         // POST METHODS
         public ResponseEntity<Task> createTask(Task task) {
+                // dateCreated wird erst von Hibernate (@CreationTimestamp) gesetzt, sobald
+                // die Entity persistiert wird. Deshalb muss zuerst gespeichert werden,
+                // bevor daysInSpan (abhängig von dateCreated) berechnet werden kann.
+                taskRepository.save(task);
+
+                TaskUtil.calculateDaysInSpan(task);
                 taskUtil.calculateProgress(task);
+
+                // Zweites Speichern, damit die berechneten Werte (daysInSpan, progress)
+                // auch tatsächlich in der DB landen und nicht nur im Response-Objekt stehen.
                 taskRepository.save(task);
                 return ResponseEntity.status(201).body(task);
         }
@@ -102,8 +113,13 @@ public class TaskService {
                         existingTask.setIsArchived(archived);
                 }
 
+                // Reset direkt auf der bereits geladenen Entity, statt über resetTask(id)
+                // eine zweite, unabhängige Entity zu laden/speichern (führte zu doppeltem
+                // DB-Write und dazu, dass der Reset von diesem save() unten wieder
+                // überschrieben wurde). Reihenfolge bleibt: erst zurücksetzen, danach
+                // überschreibt ein explizit mitgesendetes amountDid den Reset wieder.
                 if (resetProgress != null && resetProgress) {
-                        resetTask(id);
+                        existingTask.setAmountDid(0);
                 }
 
                 if (amountDid != null) {

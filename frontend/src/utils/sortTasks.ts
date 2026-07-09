@@ -1,4 +1,4 @@
-import type { Task } from "../services/taskService";
+import type { Task } from "@/services/taskService";
 
 export type SortOptions =
   | "date ascending"

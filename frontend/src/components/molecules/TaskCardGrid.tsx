@@ -3,14 +3,14 @@ import { type Task } from "@/services/taskService";
 import { cn } from "@/lib/utils";
 
 type TaskCardHandlers = {
-  onToggleFavorite: (taskId: string) => void;
-  onToggleMenu: (taskId: string) => void;
-  onToggleArchive: (taskId: string) => void;
-  onDelete: (taskId: string) => void;
-  onResetProgress: (taskId: string) => void;
-  onToggleDone: (taskId: string) => void;
-  onEdit: (taskId: string) => void;
-  onTaskUpdated: (task: Task) => void;
+  onToggleFavorite?: (taskId: string) => void;
+  onToggleMenu?: (taskId: string) => void;
+  onToggleArchive?: (taskId: string) => void;
+  onDelete?: (taskId: string) => void;
+  onResetProgress?: (taskId: string) => void;
+  onToggleDone?: (taskId: string) => void;
+  onEdit?: (taskId: string) => void;
+  onTaskUpdated?: (task: Task) => void;
   onToggleSelect?: (taskId: string) => void;
 };
 
@@ -42,13 +42,13 @@ function TaskCardGrid({
         <TaskCard
           key={task.id}
           task={task}
-          onToggleFavorite={() => handlers.onToggleFavorite(task.id)}
-          onToggleMenu={() => handlers.onToggleMenu(task.id)}
-          onToggleArchive={() => handlers.onToggleArchive(task.id)}
-          onResetProgress={() => handlers.onResetProgress(task.id)}
-          onDelete={() => handlers.onDelete(task.id)}
-          onToggleEdit={() => handlers.onEdit(task.id)}
-          onToggleDone={() => handlers.onToggleDone(task.id)}
+          onToggleFavorite={() => handlers.onToggleFavorite?.(task.id)}
+          onToggleMenu={() => handlers.onToggleMenu?.(task.id)}
+          onToggleArchive={() => handlers.onToggleArchive?.(task.id)}
+          onResetProgress={() => handlers.onResetProgress?.(task.id)}
+          onDelete={() => handlers.onDelete?.(task.id)}
+          onToggleEdit={() => handlers.onEdit?.(task.id)}
+          onToggleDone={() => handlers.onToggleDone?.(task.id)}
           onTaskUpdated={handlers.onTaskUpdated}
           selectMode={selectMode}
           selected={selectedIds?.has(task.id) ?? false}

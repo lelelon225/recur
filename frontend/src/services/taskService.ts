@@ -126,7 +126,7 @@ function deleteTask(id: string): Promise<void> {
 
 function deleteAllTasks(): Promise<void> {
   return api
-    .delete(`/task/all`)
+    .delete(`/task`)
     .then(() => {})
     .catch((err: unknown) => {
       throw new Error(

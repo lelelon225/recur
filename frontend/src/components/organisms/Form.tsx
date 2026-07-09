@@ -1,10 +1,10 @@
 import type { FormEvent, ChangeEvent, FocusEvent } from "react";
 import { Form as FormikForm } from "formik";
 import type { FormikErrors, FormikTouched } from "formik";
-import { type NewTask } from "../../services/taskService";
-import FormTextField from "../molecules/FormTextField";
-import FormDateField from "../molecules/FormDateField";
-import FormSelector from "../molecules/FormSelector";
+import { type NewTask } from "@/services/taskService";
+import FormTextField from "@/components/molecules/FormTextField";
+import FormDateField from "@/components/molecules/FormDateField";
+import FormSelector from "@/components/molecules/FormSelector";
 
 type FormProps = {
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
@@ -30,41 +30,23 @@ function Form({
       <FormTextField
         name="name"
         label="Name"
-        className="mb-4"
         value={values.name}
         onChange={handleChange}
         onBlur={handleBlur}
-        error={touched.name && !!errors.name}
-        helperText={touched.name ? errors.name : undefined}
+        error={(touched.name || values.name.length > 0) && !!errors.name}
+      helperText={(touched.name || values.name.length > 0) ? errors.name : undefined}
       />
       <FormTextField
         name="description"
         label="Beschreibung"
-        className="mb-4"
         value={values.description}
         onChange={handleChange}
         onBlur={handleBlur}
-        error={touched.description && !!errors.description}
-        helperText={touched.description ? errors.description : undefined}
+        error={(touched.description || values.description.length > 0) && !!errors.description}
+        helperText={(touched.description || values.description.length > 0) ? errors.description : undefined}
       />
-      <FormSelector
-        variant="category"
-        className="mb-4"
-        value={values.category}
-        onChange={handleChange}
-        onBlur={handleBlur}
-        error={touched.category && !!errors.category}
-        helperText={touched.category ? errors.category : undefined}
-      />
-      <FormSelector
-        variant="frequency"
-        className="mb-4"
-        value={values.frequency}
-        onChange={handleChange}
-        onBlur={handleBlur}
-        error={touched.frequency && !!errors.frequency}
-        helperText={touched.frequency ? errors.frequency : undefined}
-      />
+      <FormSelector variant="category" />
+      <FormSelector variant="frequency" />
       <FormDateField name="dateUntil" label="Datum bis" />
     </FormikForm>
   );
