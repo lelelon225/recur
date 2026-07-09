@@ -1,19 +1,17 @@
 import { useMemo, useState } from "react";
 import { FilePlus2 } from "lucide-react";
-import InfoCard from "@/components/molecules/InfoCard";
 import Empty from "@/components/molecules/Empty";
 import { type SortOptions, sortTasks } from "@/utils/sortTasks";
 import TaskCardGrid from "@/components/molecules/TaskCardGrid";
 import Sorter from "@/components/atoms/Sorter";
-import LoadingTime from "@/components/atoms/LoadingTime";
 import { useAddTask } from "@/contexts/AddTaskContext";
 import { useTasksContext } from "@/contexts/TasksContext";
+import TaskCardGridSkeleton from "../molecules/TaskCardGridSkeleton";
 
 function HomePage() {
   const {
     tasks,
     loading,
-    error,
     handleToggleFavorite,
     handleToggleArchive,
     handleResetProgress,
@@ -47,17 +45,7 @@ function HomePage() {
   const sortedTasks = useMemo(() => sortTasks(tasks, sortBy), [tasks, sortBy]);
 
   if (loading) {
-    return <LoadingTime loading={loading} />;
-  }
-
-  if (error) {
-    return (
-      <InfoCard
-        variant="error"
-        title="Fehler beim Abrufen der Aufgaben"
-        description={error}
-      />
-    );
+    return <TaskCardGridSkeleton count={6} direction="row" />;
   }
 
   if (tasks.length === 0) {

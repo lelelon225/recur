@@ -8,6 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { useErrorBoundary } from "react-error-boundary";
 import { deleteTask, getTasks, patchTask } from "@/services/taskService";
 import type { Task } from "@/services/taskService";
 import { showErrorToast } from "@/lib/toast";
@@ -15,7 +16,6 @@ import { showErrorToast } from "@/lib/toast";
 type TasksContextValue = {
   tasks: Task[];
   loading: boolean;
-  error: string | null;
   favoriteTasks: Task[];
   archivedTasks: Task[];
   addTask: (newTask: Task) => void;
@@ -33,7 +33,7 @@ const TasksContext = createContext<TasksContextValue | null>(null);
 export function TasksProvider({ children }: { children: ReactNode }) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { showBoundary } = useErrorBoundary();
 
   const tasksRef = useRef<Task[]>(tasks);
   useEffect(() => {
@@ -43,19 +43,14 @@ export function TasksProvider({ children }: { children: ReactNode }) {
   const fetchTasks = useCallback(async () => {
     try {
       setLoading(true);
-      setError(null);
       const fetchedTasks = await getTasks();
       setTasks(fetchedTasks);
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Unbekannter Fehler beim Abrufen der Aufgaben"
-      );
+      showBoundary(err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [showBoundary]);
 
   useEffect(() => {
     fetchTasks();
@@ -156,7 +151,6 @@ export function TasksProvider({ children }: { children: ReactNode }) {
   const value: TasksContextValue = {
     tasks: visibleTasks,
     loading,
-    error,
     favoriteTasks,
     archivedTasks,
     addTask,

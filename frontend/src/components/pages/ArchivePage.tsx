@@ -1,5 +1,3 @@
-import InfoCard from "@/components/molecules/InfoCard";
-import LoadingTime from "@/components/atoms/LoadingTime";
 import Empty from "@/components/molecules/Empty";
 import ConfirmDialog from "@/components/molecules/ConfirmDialog";
 import ArchiveSelectionToolbar from "@/components/molecules/ArchiveSelectionToolbar";
@@ -9,6 +7,7 @@ import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import TaskCardGrid from "@/components/molecules/TaskCardGrid";
 import useArchiveSelection from "@/hooks/useArchiveSelection";
+import TaskCardGridSkeleton from "../molecules/TaskCardGridSkeleton";
 
 function ArchivePage() {
   const navigate = useNavigate();
@@ -16,7 +15,6 @@ function ArchivePage() {
   const {
     archivedTasks,
     loading,
-    error,
     handleToggleFavorite,
     handleToggleArchive,
     handleDelete,
@@ -49,10 +47,7 @@ function ArchivePage() {
     [handleToggleFavorite, handleToggleArchive, handleDelete, toggleSelect],
   );
 
-  if (loading) return <LoadingTime loading={loading} />;
-  if (error) return (
-    <InfoCard variant="error" title="Fehler beim Abrufen der archivierten Aufgaben" description={error} />
-  );
+  if (loading) return <TaskCardGridSkeleton count={6} direction="column" />;
 
   if (archivedTasks.length === 0) {
     return (

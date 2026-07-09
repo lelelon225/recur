@@ -1,11 +1,10 @@
-import InfoCard from "@/components/molecules/InfoCard";
-import LoadingTime from "@/components/atoms/LoadingTime";
 import Empty from "@/components/molecules/Empty";
 import { OctagonXIcon } from "lucide-react";
 import { useTasksContext } from "@/contexts/TasksContext";
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import TaskCardGrid from "@/components/molecules/TaskCardGrid";
+import TaskCardGridSkeleton from "../molecules/TaskCardGridSkeleton";
 
 function FavoritesPage() {
   const navigate = useNavigate();
@@ -13,7 +12,6 @@ function FavoritesPage() {
   const {
     loading,
     favoriteTasks,
-    error,
     handleToggleFavorite,
     handleToggleArchive,
     handleDelete,
@@ -29,17 +27,7 @@ function FavoritesPage() {
   );
 
   if (loading) {
-    return <LoadingTime loading={loading} />;
-  }
-
-  if (error) {
-    return (
-      <InfoCard
-        variant="error"
-        title="Fehler beim Abrufen der Favoriten"
-        description={error}
-      />
-    );
+    return <TaskCardGridSkeleton count={6} direction="row" />;
   }
 
   if (favoriteTasks.length === 0) {
