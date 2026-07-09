@@ -6,11 +6,12 @@ import ch.noseryoung.domain.recur.services.TaskService;
 import java.util.*;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/task")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "${app.cors.allowed-origin}")
 public class TaskController {
 
         private final TaskService taskService;
@@ -30,11 +31,16 @@ public class TaskController {
                 return taskService.getTask(id);
         };
 
+        // OnCreate-Gruppe statt @Valid, damit die Pflichtfeld-Constraints (name,
+        // category, frequency, description, dateUntil) nur beim Erstellen greifen.
         @PostMapping({ "", "/" })
-        public ResponseEntity<Task> createTask(@Valid @RequestBody Task task) {
+        public ResponseEntity<Task> createTask(@Validated(Task.OnCreate.class) @RequestBody Task task) {
                 return taskService.createTask(task);
         };
 
+        // Bewusst weiterhin @Valid (Default-Gruppe) statt OnCreate: patchTask()
+        // erlaubt partielle Updates mit leeren Feldern, das würde mit den
+        // OnCreate-Pflichtfeld-Constraints sonst fehlschlagen.
         @PatchMapping({ "/{id}", "/{id}/" })
         public ResponseEntity<Task> patchTask(@PathVariable UUID id, @Valid @RequestBody Task task,
                         @RequestParam(required = false) Boolean resetProgress,

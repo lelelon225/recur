@@ -1,17 +1,25 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useMemo } from "react";
 import type { ReactNode } from "react";
+import { useLocation } from "react-router-dom";
 
 export type NavigationDestination = {
+  path: string;
   navigate: () => void;
   label: string;
   icon: ReactNode;
 };
 
 export function useNavigationBar(destinations: NavigationDestination[]) {
-  useEffect(() => {
-    destinations[0]?.navigate();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const location = useLocation();
+
+  // Aktiven Tab aus der aktuellen URL ableiten, statt beim Mount aktiv zu
+  // destinations[0] umzuleiten. So bleibt z.B. ein Direktaufruf von /archive
+  // (Reload, Lesezeichen, geteilter Link) erhalten, und der Tab zeigt auch
+  // nach einem Reload den korrekten aktiven Zustand.
+  const activeValue = useMemo(() => {
+    const index = destinations.findIndex((d) => d.path === location.pathname);
+    return String(index === -1 ? 0 : index);
+  }, [destinations, location.pathname]);
 
   const handleNavigation = useCallback(
     (value: string) => {
@@ -21,5 +29,5 @@ export function useNavigationBar(destinations: NavigationDestination[]) {
     [destinations],
   );
 
-  return { handleNavigation };
+  return { activeValue, handleNavigation };
 }

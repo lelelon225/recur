@@ -14,11 +14,11 @@ type NavigationBarProps = {
 
 function NavigationBar({ destinations, className }: NavigationBarProps) {
   const { openAddTaskForm } = useAddTask();
-  const { handleNavigation } = useNavigationBar(destinations);
+  const { activeValue, handleNavigation } = useNavigationBar(destinations);
 
   return (
     <Tabs
-      defaultValue="0"
+      value={activeValue}
       onValueChange={handleNavigation}
       className={cn(
         "fixed mx-auto max-w-7xl z-40",

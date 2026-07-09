@@ -1,4 +1,5 @@
 import { useId, useRef } from "react";
+import { useField } from "formik";
 import {
   Select,
   SelectContent,
@@ -7,17 +8,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { TaskCategory, TaskFrequency } from "../../services/taskService";
-import { Field, FieldError, FieldLabel } from "../ui/field";
-import { CATEGORY_OPTIONS, FREQUENCY_OPTIONS } from "../../constants/taskOptions";
+import type { TaskCategory, TaskFrequency } from "@/services/taskService";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { CATEGORY_OPTIONS, FREQUENCY_OPTIONS } from "@/constants/taskOptions";
 
 type FormSelectorProps = {
-  value: TaskCategory | TaskFrequency | "";
   variant: "category" | "frequency";
-  error?: boolean;
-  helperText?: string;
-  onChange: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-  onBlur?: (event: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   disabled?: boolean;
   className?: string;
 };
@@ -25,20 +21,17 @@ type FormSelectorProps = {
 type SelectOnValueChange = React.ComponentProps<typeof Select>["onValueChange"];
 type SelectOnOpenChange = React.ComponentProps<typeof Select>["onOpenChange"];
 
-function FormSelector({
-  value,
-  variant,
-  error,
-  helperText,
-  onChange,
-  onBlur,
-  disabled,
-  className,
-}: FormSelectorProps) {
+function FormSelector({ variant, disabled, className }: FormSelectorProps) {
   const uid = useId();
   const isCategory = variant === "category";
   const fieldId = `${variant}-${uid}`;
   const label = isCategory ? "Kategorie" : "Frequenz";
+
+  // useField bindet direkt an Formik, statt Value/onChange/onBlur/Error von
+  // aussen durchgereicht zu bekommen und über synthetische Events zu simulieren
+  // (analog zum Muster in useDateField.ts).
+  const [field, meta, helpers] = useField<TaskCategory | TaskFrequency | "">(variant);
+  const { setValue, setTouched } = helpers;
 
   const justSelectedRef = useRef(false);
 
@@ -46,11 +39,12 @@ function FormSelector({
     ? CATEGORY_OPTIONS
     : FREQUENCY_OPTIONS;
 
+  const error = meta.touched && !!meta.error;
+  const helperText = meta.touched ? meta.error : undefined;
+
   const handleValueChange: SelectOnValueChange = (newValue) => {
     justSelectedRef.current = true;
-    onChange({
-      target: { name: variant, value: newValue ?? "" },
-    } as unknown as React.ChangeEvent<HTMLInputElement>);
+    setValue(newValue ?? "");
   };
 
   const handleOpenChange: SelectOnOpenChange = (open) => {
@@ -60,17 +54,15 @@ function FormSelector({
       justSelectedRef.current = false;
       return;
     }
-    onBlur?.({
-      target: { name: variant },
-    } as unknown as React.FocusEvent<HTMLInputElement>);
+    setTouched(true, true);
   };
 
   return (
     <Field data-invalid={error ? "true" : "false"} className={className}>
-      <FieldLabel htmlFor={fieldId}>{label}</FieldLabel>
+      <FieldLabel className="mt-3" htmlFor={fieldId}>{label}</FieldLabel>
       <Select
         items={items}
-        value={value || ""}
+        value={field.value || ""}
         onValueChange={handleValueChange}
         onOpenChange={handleOpenChange}
         disabled={disabled}
@@ -88,7 +80,11 @@ function FormSelector({
           </SelectGroup>
         </SelectContent>
       </Select>
-      {error && <FieldError>{helperText}</FieldError>}
+      {error && (
+        <FieldError className="text-sm text-destructive ">
+          {helperText}
+        </FieldError>
+      )}
     </Field>
   );
 }

@@ -29,7 +29,7 @@ function FormTextField({
 }: FormTextFieldProps) {
   return (
     <Field data-invalid={error ? "true" : "false"}>
-      <FieldLabel htmlFor={name}>{label}</FieldLabel>
+      <FieldLabel className="mt-3" htmlFor={name}>{label}</FieldLabel>
       <Input
         id={name}
         name={name}
@@ -42,7 +42,11 @@ function FormTextField({
         aria-invalid={error ? "true" : "false"}
         required={required}
       />
-      <FieldError>{error && helperText}</FieldError>
+      {error && (
+        <FieldError className="text-sm text-destructive">
+          {helperText}
+        </FieldError>
+      )}
     </Field>
   );
 }

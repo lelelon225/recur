@@ -1,27 +1,16 @@
 import { Formik } from "formik";
-import * as yup from "yup";
 import Form from "@/components/organisms/Form";
 import { Separator } from "@/components/ui/separator";
 import type { Task } from "@/services/taskService";
 import useEditTaskForm from "@/hooks/useEditTaskForm";
 import AppDialog from "@/components/molecules/AppDialog";
+import { taskValidationSchema } from "@/schemas/taskSchema";
 
 type EditTaskFormProps = {
   task: Task;
   onClose: () => void;
   onTaskUpdated?: (task: Task) => void;
 };
-
-const validationSchema = yup.object().shape({
-  name: yup.string().required("Name ist erforderlich"),
-  description: yup.string().required("Beschreibung ist erforderlich"),
-  category: yup.string().required("Kategorie ist erforderlich"),
-  frequency: yup.string().required("Frequenz ist erforderlich"),
-  dateUntil: yup
-    .date()
-    .required("Fälligkeitsdatum ist erforderlich")
-    .min(new Date(), "Fälligkeitsdatum muss in der Zukunft liegen"),
-});
 
 function EditTaskForm({ task, onClose, onTaskUpdated }: EditTaskFormProps) {
   const { loading, handleSubmit } = useEditTaskForm({ task, onClose, onTaskUpdated });
@@ -39,20 +28,19 @@ function EditTaskForm({ task, onClose, onTaskUpdated }: EditTaskFormProps) {
         dateCreated: task.dateCreated,
       }}
       onSubmit={handleSubmit}
-      validationSchema={validationSchema}
+      validationSchema={taskValidationSchema}
     >
-      {({ values, handleChange, handleSubmit: formikHandleSubmit, handleBlur, errors, touched }) => (
+      {({ values, handleChange, handleSubmit: formikHandleSubmit, handleBlur, errors, touched, isValid }) => (
         <AppDialog
           open
           onClose={onClose}
           onSubmit={formikHandleSubmit}
           loading={loading}
-          submitDisabled={loading}
+          submitDisabled={loading || !isValid}
         >
           <h2 className="mb-2 text-lg font-bold">Bearbeite die Details der Aufgabe</h2>
-          <Separator className="mb-4 h-px w-full" />
+          <Separator className="h-px w-full" />
           <Form
-            className="taskForm"
             onSubmit={formikHandleSubmit}
             values={values}
             handleChange={handleChange}

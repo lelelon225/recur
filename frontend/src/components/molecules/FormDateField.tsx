@@ -18,7 +18,7 @@ function FormDateField({ name, label }: FormDateFieldProps) {
 
   return (
     <Field data-invalid={showError ? "true" : "false"}>
-      <FieldLabel htmlFor={name}>{label}</FieldLabel>
+      <FieldLabel className="mt-3" htmlFor={name}>{label}</FieldLabel>
       <Popover open={open} onOpenChange={handleOpenChange}>
         <PopoverTrigger
           render={
@@ -43,7 +43,9 @@ function FormDateField({ name, label }: FormDateFieldProps) {
           <Calendar mode="single" selected={dateValue} onSelect={handleSelect} locale={de} />
         </PopoverContent>
       </Popover>
-      <FieldError>{showError && errorMessage}</FieldError>
+      <FieldError className="text-sm text-destructive">
+        {showError && errorMessage}
+      </FieldError>
     </Field>
   );
 }

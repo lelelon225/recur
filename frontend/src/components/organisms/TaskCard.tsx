@@ -1,13 +1,13 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
-import { type Task } from "../../services/taskService";
-import TaskFavorite from "../atoms/TaskFavorite";
+import { type Task } from "@/services/taskService";
+import TaskFavorite from "@/components/atoms/TaskFavorite";
 import TaskCardMenu from "./TaskCardMenu";
-import TaskDescription from "../atoms/TaskDescription";
-import TaskTimeFrame from "../atoms/TaskTimeFrame";
-import TaskTitle from "../atoms/TaskTitle";
-import ProgressIndicator from "../atoms/ProgressIndicator";
+import TaskDescription from "@/components/atoms/TaskDescription";
+import TaskTimeFrame from "@/components/atoms/TaskTimeFrame";
+import TaskTitle from "@/components/atoms/TaskTitle";
+import ProgressIndicator from "@/components/atoms/ProgressIndicator";
 import useTaskCard from "@/hooks/useTaskCard";
 
 type TaskCardProps = {
