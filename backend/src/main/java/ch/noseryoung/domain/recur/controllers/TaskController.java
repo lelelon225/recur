@@ -10,7 +10,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/task")
+@RequestMapping("/api/task")
 @CrossOrigin(origins = "${app.cors.allowed-origin}")
 public class TaskController {
 

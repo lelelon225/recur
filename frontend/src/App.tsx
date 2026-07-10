@@ -5,8 +5,10 @@ import ArchivePage from "./components/pages/ArchivePage";
 import DefaultLayout from "./components/templates/DefaulLayout";
 import ErrorPage from "./components/pages/ErrorPage";
 import ReactErrorBoundary from "./components/error/ReactErrorBoundary";
+import { useNavigate } from "react-router-dom";
 
 function App() {
+  const navigate = useNavigate();
   return (
         <Routes>
           <Route
@@ -46,7 +48,7 @@ function App() {
             path="/*"
             element={
               <DefaultLayout>
-                <ErrorPage errorCode={404} errorMessage="Seite nicht gefunden" buttonText="Zurück zur Startseite" resetErrorBoundary={() => window.location.href = "/"} />
+                <ErrorPage errorCode={404} errorMessage="Seite nicht gefunden" buttonText="Zurück zur Startseite" resetErrorBoundary={() => navigate("/")} />
               </DefaultLayout>
             }
           />

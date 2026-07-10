@@ -1,25 +1,31 @@
 import { Moon, Sun } from "lucide-react";
-import { Toggle } from "@base-ui/react/toggle";
 import { cn } from "@/lib/utils";
 import useDarkMode from "@/hooks/useDarkMode";
+import  {SidebarMenuButton} from "@/components/ui/sidebar";
 
 function DarkModeToggle() {
   const { isDark, toggleDark } = useDarkMode();
 
   return (
-    <Toggle
-      pressed={isDark}
-      onPressedChange={toggleDark}
-      aria-label={isDark ? "Zu Light Mode wechseln" : "Zu Dark Mode wechseln"}
+    <SidebarMenuButton
+      onClick={() => toggleDark(!isDark)}
       className={cn(
-        "inline-flex h-9 w-9 items-center justify-center rounded-md",
-        "text-foreground/70 hover:bg-accent hover:text-foreground",
-        "data-[pressed]:bg-accent data-[pressed]:text-foreground",
-        "transition-colors"
+        "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
+        isDark ? "bg-accent text-accent-foreground" : "bg-transparent text-foreground"
       )}
     >
-      {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-    </Toggle>
+      {isDark ? (
+        <>
+          <Moon className="h-4 w-4" />
+          <span>Dark Mode</span>
+        </>
+      ) : (
+        <>
+          <Sun className="h-4 w-4" />
+          <span>Light Mode</span>
+        </>
+      )}
+    </  SidebarMenuButton>
   );
 }
 

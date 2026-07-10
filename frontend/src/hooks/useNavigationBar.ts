@@ -1,12 +1,12 @@
 import { useCallback, useMemo } from "react";
-import type { ReactNode } from "react";
 import { useLocation } from "react-router-dom";
+import type { LucideIcon } from "lucide-react";
 
 export type NavigationDestination = {
   path: string;
   navigate: () => void;
   label: string;
-  icon: ReactNode;
+  icon: LucideIcon;
 };
 
 export function useNavigationBar(destinations: NavigationDestination[]) {
@@ -17,14 +17,13 @@ export function useNavigationBar(destinations: NavigationDestination[]) {
   // (Reload, Lesezeichen, geteilter Link) erhalten, und der Tab zeigt auch
   // nach einem Reload den korrekten aktiven Zustand.
   const activeValue = useMemo(() => {
-    const index = destinations.findIndex((d) => d.path === location.pathname);
-    return String(index === -1 ? 0 : index);
+    const match = destinations.find((d) => d.path === location.pathname);
+    return match?.path ?? destinations[0]?.path ?? "";
   }, [destinations, location.pathname]);
 
   const handleNavigation = useCallback(
-    (value: string) => {
-      const index = Number(value);
-      destinations[index]?.navigate();
+    (path: string) => {
+      destinations.find((d) => d.path === path)?.navigate();
     },
     [destinations],
   );
