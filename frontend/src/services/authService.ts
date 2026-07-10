@@ -77,3 +77,28 @@ api.interceptors.request.use(
         return Promise.reject(error);
     }
 );
+
+/**
+ * A 401 from any endpoint other than login/register means our token is
+ * missing, expired, or invalid. Clear it and send the user to /login
+ * instead of leaving the app in a half-authenticated state.
+ */
+const AUTH_ENDPOINTS = ["/auth/login", "/auth/register", "/auth/me"];
+
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        const status = error?.response?.status;
+        const url: string | undefined = error?.config?.url;
+        const isAuthEndpoint = url ? AUTH_ENDPOINTS.some((path) => url.includes(path)) : false;
+
+        if (status === 401 && !isAuthEndpoint) {
+            clearToken();
+            if (window.location.pathname !== "/login") {
+                window.location.href = "/login";
+            }
+        }
+
+        return Promise.reject(error);
+    }
+);

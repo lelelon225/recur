@@ -6,7 +6,7 @@ import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 
 import ch.noseryoung.domain.recur.models.User;
 
-public class CustomOAuth2User extends DefaultOAuth2User {
+public class CustomOAuth2User extends DefaultOAuth2User implements RecurOAuth2User {
 
     private final User user;
 
@@ -19,6 +19,7 @@ public class CustomOAuth2User extends DefaultOAuth2User {
         this.user = user;
     }
 
+    @Override
     public User getUser() {
         return user;
     }

@@ -24,6 +24,7 @@ type AuthContextValue = {
     error: string | null;
     login: (request: LoginRequest) => Promise<void>;
     register: (request: RegisterRequest) => Promise<void>;
+    completeOAuthLogin: (token: string) => Promise<void>;
     logout: () => void;
 };
 
@@ -34,7 +35,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // On mount: if a valid token exists, fetch the current user
     useEffect(() => {
         let cancelled = false;
 
@@ -47,7 +47,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 const currentUser = await getCurrentUser();
                 if (!cancelled) setUser(currentUser);
             } catch {
-                // token invalid/expired/backend unreachable — clear it, don't throw
                 clearToken();
                 if (!cancelled) setUser(null);
             } finally {
@@ -87,9 +86,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     }, []);
 
+    const completeOAuthLogin = useCallback(async (token: string) => {
+        setError(null);
+        try {
+            setToken(token);
+            const currentUser = await getCurrentUser();
+            setUser(currentUser);
+        } catch (err) {
+            clearToken();
+            const message = err instanceof Error ? err.message : "Google-Login fehlgeschlagen";
+            setError(message);
+            throw err;
+        }
+    }, []);
+
     const logout = useCallback(() => {
         setUser(null);
-        logoutService(); // clears token + redirects to /login
+        logoutService();
     }, []);
 
     const value: AuthContextValue = {
@@ -99,6 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         error,
         login,
         register,
+        completeOAuthLogin,
         logout,
     };
 

@@ -12,6 +12,7 @@ import { useErrorBoundary } from "react-error-boundary";
 import { deleteTask, getTasks, patchTask } from "@/services/taskService";
 import type { Task } from "@/services/taskService";
 import { showErrorToast } from "@/lib/toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 type TasksContextValue = {
   tasks: Task[];
@@ -34,6 +35,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const { showBoundary } = useErrorBoundary();
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
 
   const tasksRef = useRef<Task[]>(tasks);
   useEffect(() => {
@@ -52,9 +54,20 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     }
   }, [showBoundary]);
 
+  // Erst laden, sobald der AuthContext fertig gebootstrapped ist UND ein
+  // gültiger User eingeloggt ist. Vorher/ohne Login gäbe es 401s, die den
+  // ganzen Baum via showBoundary() crashen würden (z.B. auf /login selbst).
   useEffect(() => {
+    if (isAuthLoading) return;
+
+    if (!isAuthenticated) {
+      setTasks([]);
+      setLoading(false);
+      return;
+    }
+
     fetchTasks();
-  }, [fetchTasks]);
+  }, [isAuthenticated, isAuthLoading, fetchTasks]);
 
   const addTask = useCallback((newTask: Task) => {
     setTasks((prev) => [...prev, newTask]);

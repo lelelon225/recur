@@ -36,6 +36,7 @@ public class SecurityConfig {
         private final CustomUserDetailsService userDetailsService;
         private final JwtAuthenticationFilter jwtAuthenticationFilter;
         private final CustomOAuth2UserService customOAuth2UserService;
+        private final CustomOidcUserService customOidcUserService;
         private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
         private final OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
 
@@ -43,11 +44,13 @@ public class SecurityConfig {
                         CustomUserDetailsService userDetailsService,
                         JwtAuthenticationFilter jwtAuthenticationFilter,
                         CustomOAuth2UserService customOAuth2UserService,
+                        CustomOidcUserService customOidcUserService,
                         OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler,
                         OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler) {
                 this.userDetailsService = userDetailsService;
                 this.jwtAuthenticationFilter = jwtAuthenticationFilter;
                 this.customOAuth2UserService = customOAuth2UserService;
+                this.customOidcUserService = customOidcUserService;
                 this.oAuth2AuthenticationSuccessHandler = oAuth2AuthenticationSuccessHandler;
                 this.oAuth2AuthenticationFailureHandler = oAuth2AuthenticationFailureHandler;
         }
@@ -81,7 +84,8 @@ public class SecurityConfig {
                                                                                 request.getRequestURI())))
                                 .oauth2Login(oauth2 -> oauth2
                                                 .userInfoEndpoint(userInfo -> userInfo
-                                                                .userService(customOAuth2UserService))
+                                                                .userService(customOAuth2UserService)
+                                                                .oidcUserService(customOidcUserService))
                                                 .successHandler(oAuth2AuthenticationSuccessHandler)
                                                 .failureHandler(oAuth2AuthenticationFailureHandler))
                                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

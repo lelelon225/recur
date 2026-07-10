@@ -13,15 +13,15 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ReactErrorBoundary>
       <AuthProvider>
-        <TasksProvider>
           <TooltipProvider>
             <SidebarProvider>
+              <TasksProvider>
               <BrowserRouter>
                 <App />
               </BrowserRouter>
+              </TasksProvider>
             </SidebarProvider>
           </TooltipProvider>
-        </TasksProvider>
       </AuthProvider>
     </ReactErrorBoundary>
   </StrictMode>

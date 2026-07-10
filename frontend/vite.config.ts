@@ -18,7 +18,7 @@ export default defineConfig({
       ".ngrok-free.dev",
       ".ngrok.app",
     ],
-    proxy: {
+   proxy: {
       "/api": {
         target: "http://localhost:8080",
         changeOrigin: true,
@@ -31,7 +31,7 @@ export default defineConfig({
         secure: false,
         xfwd: true,
       },
-      "/login": {
+      "/login/oauth2": {
         target: "http://localhost:8080",
         changeOrigin: true,
         secure: false,

@@ -30,7 +30,7 @@ public class OAuth2AuthenticationSuccessHandler
 
         OAuth2User principal = oauthToken.getPrincipal();
 
-        CustomOAuth2User customUser = (CustomOAuth2User) principal;
+        RecurOAuth2User customUser = (RecurOAuth2User) principal;
 
         User user = customUser.getUser();
 

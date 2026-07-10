@@ -11,13 +11,7 @@ import SidebarNavigation from "@/components/molecules/SideBarNavigation";
 import SidebarBrand from "@/components/molecules/SidebarBrand";
 import { Settings } from "lucide-react";
 import SidebarSettingsGroup from "./SidebarSettingsGroup";
-
-    const user = {
-    firstName: "Leonardo",
-    lastName: "Disma",
-    email: "dismami@gmail.com",
-    avatar: "https://github.com/shadcn.png",
-    };
+import useUserDetails from "@/hooks/useUserDetails";
 
 
 type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
@@ -32,6 +26,7 @@ function AppSidebar({
 }: AppSidebarProps) {
   const { activeValue, handleNavigation } = useNavigationBar(destinations);
   const navigate = useNavigate();
+  const { user } = useUserDetails();
 
   const settingsItems = [
   {
@@ -62,4 +57,4 @@ function AppSidebar({
   );
 }
 
-export default AppSidebar;
+export default AppSidebar;  
