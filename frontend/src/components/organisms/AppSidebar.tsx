@@ -2,20 +2,13 @@ import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import type { NavigationDestination } from "@/hooks/useNavigationBar";
 import { useNavigationBar } from "@/hooks/useNavigationBar";
-import DarkModeToggle from "@/components/atoms/DarkModeToggle";
-import { Separator } from "@/components/ui/separator";
 import { useNavigate } from "react-router-dom";
 import AppSidebarUser from "@/components/organisms/AppSidebarUser";
 import SidebarNavigation from "@/components/molecules/SideBarNavigation";
 import SidebarBrand from "@/components/molecules/SidebarBrand";
-import SidebarSettingsItem from "@/components/molecules/SidebarSettingsItem";
 import { Settings } from "lucide-react";
 import SidebarSettingsGroup from "./SidebarSettingsGroup";
 
