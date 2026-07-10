@@ -2,11 +2,15 @@ package ch.noseryoung.domain.recur.services;
 
 import ch.noseryoung.domain.recur.exceptions.TaskNotFoundException;
 import ch.noseryoung.domain.recur.models.Task;
+import ch.noseryoung.domain.recur.models.User;
 import ch.noseryoung.domain.recur.repositories.TaskRepository;
+import ch.noseryoung.domain.recur.security.CustomUserDetails;
 import ch.noseryoung.domain.recur.utils.TaskUtil;
 
 import java.util.*;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.http.ResponseEntity;
 
@@ -21,6 +25,20 @@ public class TaskService {
                 this.taskUtil = taskUtil;
         }
 
+        // Liest den eingeloggten User aus dem SecurityContext. Funktioniert für
+        // JWT-authentifizierte Requests, da JwtAuthenticationFilter ein
+        // CustomUserDetails als Principal setzt (siehe JwtAuthenticationFilter).
+        private User getCurrentUser() {
+                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+                if (authentication == null
+                                || !(authentication.getPrincipal() instanceof CustomUserDetails userDetails)) {
+                        throw new IllegalStateException("Kein authentifizierter User im SecurityContext gefunden");
+                }
+
+                return userDetails.getUser();
+        }
+
         // GET METHODS
         public ResponseEntity<Collection<Task>> getTasks(Boolean archived, Boolean favorite) {
                 if (archived != null && archived)
@@ -29,21 +47,24 @@ public class TaskService {
                 if (favorite != null && favorite)
                         return getFavoriteTasks();
 
-                Collection<Task> tasks = taskRepository.findAll();
+                User owner = getCurrentUser();
+                Collection<Task> tasks = taskRepository.findByOwner(owner);
                 recalculateAll(tasks);
 
                 return ResponseEntity.ok(tasks);
         }
 
         public ResponseEntity<Collection<Task>> getFavoriteTasks() {
-                List<Task> favoriteTasks = taskRepository.findByIsFavorite(true);
+                User owner = getCurrentUser();
+                List<Task> favoriteTasks = taskRepository.findByOwnerAndIsFavorite(owner, true);
                 recalculateAll(favoriteTasks);
 
                 return ResponseEntity.ok(favoriteTasks);
         }
 
         public ResponseEntity<Collection<Task>> getArchivedTasks() {
-                List<Task> archivedTasks = taskRepository.findByIsArchived(true);
+                User owner = getCurrentUser();
+                List<Task> archivedTasks = taskRepository.findByOwnerAndIsArchived(owner, true);
                 recalculateAll(archivedTasks);
 
                 return ResponseEntity.ok(archivedTasks);
@@ -57,7 +78,8 @@ public class TaskService {
         }
 
         public ResponseEntity<Task> getTask(UUID id) {
-                Task task = taskRepository.findById(id)
+                User owner = getCurrentUser();
+                Task task = taskRepository.findByIdAndOwner(id, owner)
                                 .orElseThrow(() -> new TaskNotFoundException(id));
 
                 return ResponseEntity.ok(task);
@@ -66,6 +88,7 @@ public class TaskService {
         // POST METHODS
         public ResponseEntity<Task> createTask(Task task) {
 
+                task.setOwner(getCurrentUser());
                 taskRepository.save(task);
 
                 TaskUtil.calculateDaysInSpan(task);
@@ -85,7 +108,8 @@ public class TaskService {
                         Boolean archived,
                         Integer amountDid) {
 
-                Task existingTask = taskRepository.findById(id)
+                User owner = getCurrentUser();
+                Task existingTask = taskRepository.findByIdAndOwner(id, owner)
                                 .orElseThrow(() -> new TaskNotFoundException(id));
 
                 if (task.getName() != null) {
@@ -142,7 +166,8 @@ public class TaskService {
 
         public ResponseEntity<Task> resetTask(UUID id) {
 
-                Task existingTask = taskRepository.findById(id)
+                User owner = getCurrentUser();
+                Task existingTask = taskRepository.findByIdAndOwner(id, owner)
                                 .orElseThrow(() -> new TaskNotFoundException(id));
 
                 existingTask.setAmountDid(0);
@@ -158,7 +183,8 @@ public class TaskService {
         // DELETE METHODS
         public ResponseEntity<Task> deleteTask(UUID id) {
 
-                Task task = taskRepository.findById(id)
+                User owner = getCurrentUser();
+                Task task = taskRepository.findByIdAndOwner(id, owner)
                                 .orElseThrow(() -> new TaskNotFoundException(id));
 
                 if (!Boolean.TRUE.equals(task.getIsArchived())) {
@@ -172,7 +198,8 @@ public class TaskService {
 
         public ResponseEntity<Task> deleteAllTasks() {
 
-                taskRepository.deleteAll();
+                User owner = getCurrentUser();
+                taskRepository.deleteByOwner(owner);
 
                 return ResponseEntity.ok().build();
         }

@@ -79,4 +79,8 @@ public class Task {
         @Builder.Default
         @Column(name = "is_archived", nullable = false, columnDefinition = "boolean default false")
         private Boolean isArchived = false;
+
+        @ManyToOne(fetch = FetchType.LAZY)
+        @JoinColumn(name = "user_id")
+        private User owner;
 }

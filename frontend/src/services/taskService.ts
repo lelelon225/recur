@@ -2,20 +2,24 @@ import axios from "axios";
 import api from "./api";
 
 
-export enum TaskFrequency {
-  DAILY = "DAILY",
-  WEEKLY = "WEEKLY",
-  MONTHLY = "MONTHLY",
-  YEARLY = "YEARLY",
-  ONCE = "ONCE"
-}
+export const TaskFrequency = {
+  DAILY: "DAILY",
+  WEEKLY: "WEEKLY",
+  MONTHLY: "MONTHLY",
+  YEARLY: "YEARLY",
+  ONCE: "ONCE",
+} as const;
 
-export enum TaskCategory {
-  WORK = "WORK",
-  PERSONAL = "PERSONAL",
-  SCHOOL = "SCHOOL",
-  OTHER = "OTHER"
-}
+export type TaskFrequency = (typeof TaskFrequency)[keyof typeof TaskFrequency];
+
+export const TaskCategory = {
+  WORK: "WORK",
+  PERSONAL: "PERSONAL",
+  SCHOOL: "SCHOOL",
+  OTHER: "OTHER",
+} as const;
+
+export type TaskCategory = (typeof TaskCategory)[keyof typeof TaskCategory];
 
 
 export interface Task {

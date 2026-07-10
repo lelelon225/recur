@@ -19,6 +19,18 @@ CREATE TABLE task (
     is_archived BOOLEAN DEFAULT FALSE
 );
 
+CREATE TABLE app_user (
+    id UUID PRIMARY KEY,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255),
+    first_name VARCHAR(255) NOT NULL,
+    last_name VARCHAR(255),
+    avatar_url VARCHAR(255),
+    provider VARCHAR(255) NOT NULL,
+    enabled BOOLEAN DEFAULT TRUE,
+    date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 COPY data.task (
     id,
     name,

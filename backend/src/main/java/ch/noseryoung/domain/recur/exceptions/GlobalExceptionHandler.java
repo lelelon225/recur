@@ -19,133 +19,165 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    private static final Logger logger = LogManager.getLogger(GlobalExceptionHandler.class);
+        private static final Logger logger = LogManager.getLogger(GlobalExceptionHandler.class);
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidation(
-            MethodArgumentNotValidException ex,
-            WebRequest request) {
+        @ExceptionHandler(MethodArgumentNotValidException.class)
+        public ResponseEntity<ErrorResponse> handleValidation(
+                        MethodArgumentNotValidException ex,
+                        WebRequest request) {
 
-        Map<String, String> errors = new HashMap<>();
+                Map<String, String> errors = new HashMap<>();
 
-        ex.getBindingResult()
-                .getFieldErrors()
-                .forEach(error -> errors.put(
-                        error.getField(),
-                        error.getDefaultMessage()));
+                ex.getBindingResult()
+                                .getFieldErrors()
+                                .forEach(error -> errors.put(
+                                                error.getField(),
+                                                error.getDefaultMessage()));
 
-        logger.warn("Validation failed: {}", errors);
+                logger.warn("Validation failed: {}", errors);
 
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(ErrorResponse.of(
-                        400,
-                        "Validation failed",
-                        errors.toString(),
-                        getPath(request)));
-    }
+                return ResponseEntity
+                                .status(HttpStatus.BAD_REQUEST)
+                                .body(ErrorResponse.of(
+                                                400,
+                                                "Validation failed",
+                                                errors.toString(),
+                                                getPath(request)));
+        }
 
-    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<ErrorResponse> handleTypeMismatch(
-            MethodArgumentTypeMismatchException ex,
-            WebRequest request) {
+        @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+        public ResponseEntity<ErrorResponse> handleTypeMismatch(
+                        MethodArgumentTypeMismatchException ex,
+                        WebRequest request) {
 
-        logger.warn(
-                "Invalid parameter '{}' with value '{}'",
-                ex.getName(),
-                ex.getValue());
+                logger.warn(
+                                "Invalid parameter '{}' with value '{}'",
+                                ex.getName(),
+                                ex.getValue());
 
-        return ResponseEntity
-                .badRequest()
-                .body(ErrorResponse.of(
-                        400,
-                        "Invalid parameter",
-                        "Parameter '" + ex.getName() + "' has an invalid value",
-                        getPath(request)));
-    }
+                return ResponseEntity
+                                .badRequest()
+                                .body(ErrorResponse.of(
+                                                400,
+                                                "Invalid parameter",
+                                                "Parameter '" + ex.getName() + "' has an invalid value",
+                                                getPath(request)));
+        }
 
-    @ExceptionHandler(TaskNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleTaskNotFound(
-            TaskNotFoundException ex,
-            WebRequest request) {
+        @ExceptionHandler(TaskNotFoundException.class)
+        public ResponseEntity<ErrorResponse> handleTaskNotFound(
+                        TaskNotFoundException ex,
+                        WebRequest request) {
 
-        logger.info("Task not found: {}", ex.getMessage());
+                logger.info("Task not found: {}", ex.getMessage());
 
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(ErrorResponse.of(
-                        404,
-                        "Task not found",
-                        ex.getMessage(),
-                        getPath(request)));
-    }
+                return ResponseEntity
+                                .status(HttpStatus.NOT_FOUND)
+                                .body(ErrorResponse.of(
+                                                404,
+                                                "Task not found",
+                                                ex.getMessage(),
+                                                getPath(request)));
+        }
 
-    @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<ErrorResponse> handleDatabaseError(
-            DataIntegrityViolationException ex,
-            WebRequest request) {
+        @ExceptionHandler(EmailAlreadyExistsException.class)
+        public ResponseEntity<ErrorResponse> handleEmailAlreadyExists(
+                        EmailAlreadyExistsException ex,
+                        WebRequest request) {
 
-        logger.error("Database constraint violation", ex);
+                logger.info("Registration failed, email already exists: {}", ex.getMessage());
 
-        return ResponseEntity
-                .status(HttpStatus.CONFLICT)
-                .body(ErrorResponse.of(
-                        409,
-                        "Database constraint violation",
-                        "The provided data violates a database constraint",
-                        getPath(request)));
-    }
+                return ResponseEntity
+                                .status(HttpStatus.CONFLICT)
+                                .body(ErrorResponse.of(
+                                                409,
+                                                "Email already exists",
+                                                ex.getMessage(),
+                                                getPath(request)));
+        }
 
-    @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidJson(
-            HttpMessageNotReadableException ex,
-            WebRequest request) {
+        @ExceptionHandler(InvalidCredentialsException.class)
+        public ResponseEntity<ErrorResponse> handleInvalidCredentials(
+                        InvalidCredentialsException ex,
+                        WebRequest request) {
 
-        logger.warn("Invalid JSON received: {}", ex.getMessage());
+                logger.info("Login failed: invalid credentials");
 
-        return ResponseEntity
-                .badRequest()
-                .body(ErrorResponse.of(
-                        400,
-                        "Invalid JSON",
-                        "Request body contains invalid JSON",
-                        getPath(request)));
-    }
+                return ResponseEntity
+                                .status(HttpStatus.UNAUTHORIZED)
+                                .body(ErrorResponse.of(
+                                                401,
+                                                "Invalid credentials",
+                                                ex.getMessage(),
+                                                getPath(request)));
+        }
 
-    @ExceptionHandler(MissingServletRequestParameterException.class)
-    public ResponseEntity<ErrorResponse> handleMissingParameter(
-            MissingServletRequestParameterException ex,
-            WebRequest request) {
+        @ExceptionHandler(DataIntegrityViolationException.class)
+        public ResponseEntity<ErrorResponse> handleDatabaseError(
+                        DataIntegrityViolationException ex,
+                        WebRequest request) {
 
-        logger.warn("Missing request parameter: {}", ex.getParameterName());
+                logger.error("Database constraint violation", ex);
 
-        return ResponseEntity
-                .badRequest()
-                .body(ErrorResponse.of(
-                        400,
-                        "Missing parameter",
-                        ex.getParameterName() + " is required",
-                        getPath(request)));
-    }
+                return ResponseEntity
+                                .status(HttpStatus.CONFLICT)
+                                .body(ErrorResponse.of(
+                                                409,
+                                                "Database constraint violation",
+                                                "The provided data violates a database constraint",
+                                                getPath(request)));
+        }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGeneral(
-            Exception ex,
-            WebRequest request) {
+        @ExceptionHandler(HttpMessageNotReadableException.class)
+        public ResponseEntity<ErrorResponse> handleInvalidJson(
+                        HttpMessageNotReadableException ex,
+                        WebRequest request) {
 
-        logger.error("Unexpected server error", ex);
+                logger.warn("Invalid JSON received: {}", ex.getMessage());
 
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ErrorResponse.of(
-                        500,
-                        "Internal server error",
-                        "An unexpected error occurred",
-                        getPath(request)));
-    }
+                return ResponseEntity
+                                .badRequest()
+                                .body(ErrorResponse.of(
+                                                400,
+                                                "Invalid JSON",
+                                                "Request body contains invalid JSON",
+                                                getPath(request)));
+        }
 
-    private String getPath(WebRequest request) {
-        return request.getDescription(false)
-                .replace("uri=", "");
-    }
+        @ExceptionHandler(MissingServletRequestParameterException.class)
+        public ResponseEntity<ErrorResponse> handleMissingParameter(
+                        MissingServletRequestParameterException ex,
+                        WebRequest request) {
+
+                logger.warn("Missing request parameter: {}", ex.getParameterName());
+
+                return ResponseEntity
+                                .badRequest()
+                                .body(ErrorResponse.of(
+                                                400,
+                                                "Missing parameter",
+                                                ex.getParameterName() + " is required",
+                                                getPath(request)));
+        }
+
+        @ExceptionHandler(Exception.class)
+        public ResponseEntity<ErrorResponse> handleGeneral(
+                        Exception ex,
+                        WebRequest request) {
+
+                logger.error("Unexpected server error", ex);
+
+                return ResponseEntity
+                                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                .body(ErrorResponse.of(
+                                                500,
+                                                "Internal server error",
+                                                "An unexpected error occurred",
+                                                getPath(request)));
+        }
+
+        private String getPath(WebRequest request) {
+                return request.getDescription(false)
+                                .replace("uri=", "");
+        }
 }
