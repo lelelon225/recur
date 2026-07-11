@@ -1,41 +1,39 @@
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import type { RegisterRequest } from "@/types/auth";
 
-export function useSignUpForm() {
-    const { register, error } = useAuth();
+export type SignupFormValues = RegisterRequest & { confirmPassword: string };
+
+function useSignUpForm() {
+    const { register } = useAuth();
     const navigate = useNavigate();
 
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [firstName, setFirstName] = useState("");
-    const [lastName, setLastName] = useState("");
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [backendError, setBackendError] = useState<string | undefined>(undefined);
+    const [loading, setLoading] = useState(false);
+    const [submitDisabled, setSubmitDisabled] = useState(false);
 
-    const handleSubmit = async (event: FormEvent) => {
-        event.preventDefault();
-        setIsSubmitting(true);
+    const handleSubmit = async (values: SignupFormValues) => {
+        setLoading(true);
+        setSubmitDisabled(true);
+        setBackendError(undefined);
+
         try {
-            await register({ email, password, firstName, lastName });
+            const { confirmPassword, ...request } = values;
+            void confirmPassword;
+            await register(request);
             navigate("/", { replace: true });
-        } catch {
-            // error wird bereits im AuthContext gesetzt
+        } catch (error) {
+            setBackendError(
+                error instanceof Error ? error.message : "Ein unbekannter Fehler ist aufgetreten"
+            );
         } finally {
-            setIsSubmitting(false);
+            setLoading(false);
+            setSubmitDisabled(false);
         }
     };
 
-    return {
-        email,
-        setEmail,
-        password,
-        setPassword,
-        firstName,
-        setFirstName,
-        lastName,
-        setLastName,
-        isSubmitting,
-        error,
-        handleSubmit,
-    };
+    return { handleSubmit, backendError, loading, submitDisabled };
 }
+
+export { useSignUpForm };

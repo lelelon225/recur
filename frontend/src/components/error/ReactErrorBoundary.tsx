@@ -8,6 +8,8 @@ type ReactErrorBoundaryProps = {
     errorCode?: number;
     errorMessage?: string;
     className?: string;
+    /** Nur relevant für variant="page": ist die ErrorPage eine eigenständige Route oder innerhalb eines Layouts eingebettet? Default: true. */
+    fullScreen?: boolean;
     children?: ReactNode;
 };
 
@@ -16,6 +18,7 @@ function ReactErrorBoundary({
     errorCode,
     errorMessage,
     className,
+    fullScreen = true,
     children,
 }: ReactErrorBoundaryProps) {
     return (
@@ -32,6 +35,7 @@ function ReactErrorBoundary({
                         resetErrorBoundary={resetErrorBoundary}
                         errorCode={errorCode}
                         errorMessage={errorMessage ?? error?.message}
+                        fullScreen={fullScreen}
                     />
                 )
             }

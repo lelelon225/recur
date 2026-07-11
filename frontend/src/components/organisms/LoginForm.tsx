@@ -1,57 +1,98 @@
-import { Button } from "@/components/ui/button"
-import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-  FieldSeparator,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import GoogleLoginButton from "../atoms/GoogleLoginButton"
-import { type FormEvent } from "react";
+import { Form, type FormikTouched, type FormikErrors } from "formik";
+import { Button } from "@/components/ui/button";
+import { Field, FieldDescription, FieldGroup, FieldSeparator } from "@/components/ui/field";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
+import FormTextField from "../molecules/FormTextField";
+import LoadingButton from "../atoms/LoadingButton";
+import GoogleLoginButton from "../atoms/GoogleLoginButton";
+import type { LoginRequest } from "@/types/auth";
+import type { FormEvent, ChangeEvent, FocusEvent } from "react";
+
 
 type LoginFormProps = {
-  navigate: () => void;
-  handleSubmit: (event: FormEvent<HTMLFormElement>) => void;
+    navigate: () => void;
+    onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+    values: LoginRequest;
+    errors: FormikErrors<LoginRequest>;
+    touched: FormikTouched<LoginRequest>;
+    className?: string;
+    handleChange: (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+    handleBlur: (event: FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+    loading?: boolean;
+    submitDisabled?: boolean;
+    backendError?: string;
 };
 
-function LoginForm({ handleSubmit, navigate }: LoginFormProps) {
+
+function LoginForm({
+  navigate,
+  onSubmit,
+  values,
+  handleChange,
+  handleBlur,
+  errors,
+  touched,
+  loading,
+  submitDisabled,
+  backendError,
+  }: LoginFormProps) {
   return (
-    <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
+    <Form className="flex flex-col gap-6" onSubmit={onSubmit}>
       <FieldGroup>
         <div className="flex flex-col items-center gap-1 text-center">
-          <h1 className="text-2xl font-bold">Login to your account</h1>
+          <h1 className="text-2xl font-bold">Willkommen zurück</h1>
           <p className="text-sm text-balance text-muted-foreground">
-            Enter your email below to login to your account
+            Melde dich bei deinem Konto an
           </p>
         </div>
+
+        {backendError && (
+          <Alert variant="destructive">
+            <AlertCircle />
+            <AlertDescription>{backendError}</AlertDescription>
+          </Alert>
+        )}
+
+        <FormTextField
+          name="email"
+          label="E-Mail"
+          value={values.email}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          error={(touched.email || values.email.length > 0) && !!errors.email}
+          helperText={(touched.email || values.email.length > 0) ? errors.email : undefined}
+        />
+        <FormTextField
+          name="password"
+          label="Passwort"
+          type="password"
+          value={values.password}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          error={(touched.password || values.password.length > 0) && !!errors.password}
+          helperText={(touched.password || values.password.length > 0) ? errors.password : undefined}
+        />
+
         <Field>
-          <FieldLabel htmlFor="email">Email</FieldLabel>
-          <Input id="email" type="email" placeholder="m@example.com" required />
+          <LoadingButton type="submit" className="w-full font-semibold" loading={loading} disabled={submitDisabled}>
+            Anmelden
+          </LoadingButton>
         </Field>
-        <Field>
-          <div className="flex items-center">
-            <FieldLabel htmlFor="password">Password</FieldLabel>
-          </div>
-          <Input id="password" type="password" required />
-        </Field>
-        <Field>
-          <Button type="submit">
-            Login
-          </Button>
-        </Field>
-        <FieldSeparator>Or continue with</FieldSeparator>
+
+        <FieldSeparator>Oder weiter mit</FieldSeparator>
+
         <Field>
           <GoogleLoginButton />
-          <FieldDescription className="text-center">
-            Don&apos;t have an account?{" "}
+          <FieldDescription className="px-6 text-center">
+            Noch kein Konto?{" "}
             <Button variant="link" onClick={navigate} className="p-0">
-              Sign Up  
+              Registrieren
             </Button>
           </FieldDescription>
         </Field>
       </FieldGroup>
-    </form>
+    </Form>
   )
 }
 

@@ -39,7 +39,7 @@ function App() {
             element={
               <ProtectedRoute>
                 <DefaultLayout pageTitle="Deine Habits">
-                  <ReactErrorBoundary errorMessage="Deine Habits konnten nicht angezeigt werden.">
+                  <ReactErrorBoundary errorMessage="Deine Habits konnten nicht angezeigt werden." fullScreen={false}>
                     <HomePage />
                   </ReactErrorBoundary>
                 </DefaultLayout>
@@ -52,7 +52,7 @@ function App() {
             element={
               <ProtectedRoute>
                 <DefaultLayout pageTitle="Deine Favoriten">
-                  <ReactErrorBoundary errorMessage="Deine Favoriten konnten nicht angezeigt werden.">
+                  <ReactErrorBoundary errorMessage="Deine Favoriten konnten nicht angezeigt werden." fullScreen={false}>
                     <FavoritesPage />
                   </ReactErrorBoundary>
                 </DefaultLayout>
@@ -65,7 +65,7 @@ function App() {
             element={
               <ProtectedRoute>
                 <DefaultLayout pageTitle="Dein Archiv">
-                  <ReactErrorBoundary errorMessage="Dein Archiv konnte nicht angezeigt werden.">
+                  <ReactErrorBoundary errorMessage="Dein Archiv konnte nicht angezeigt werden." fullScreen={false}>
                     <ArchivePage />
                   </ReactErrorBoundary>
                 </DefaultLayout>
@@ -76,9 +76,12 @@ function App() {
           <Route
             path="/*"
             element={
-              <DefaultLayout>
-                <ErrorPage errorCode={404} errorMessage="Seite nicht gefunden" buttonText="Zurück zur Startseite" resetErrorBoundary={() => navigate("/")} />
-              </DefaultLayout>
+              <ErrorPage
+                errorCode={404}
+                errorMessage="Seite nicht gefunden"
+                buttonText="Zurück zur Startseite"
+                resetErrorBoundary={() => navigate("/")}
+              />
             }
           />
         </Routes>

@@ -10,7 +10,7 @@ function OAuthCallbackPage() {
     const navigate = useNavigate();
 
     return (
-        <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-background px-4 py-8">
+        <div className="flex min-h-svh w-full flex-col items-center justify-center gap-6 bg-background px-4 py-8">
             <Card className="w-full max-w-sm border-none shadow-lg">
                 <CardHeader className="flex flex-col items-center gap-3 text-center pb-2">
                     <div

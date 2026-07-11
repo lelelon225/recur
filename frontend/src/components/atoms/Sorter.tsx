@@ -21,7 +21,7 @@ function Sorter({ sortBy, setSortBy }: SorterProps) {
         Sortieren nach
       </Label>
       <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOptions)}>
-        <SelectTrigger id="sortBy" className="w-[200px] gap-2">
+        <SelectTrigger id="sortBy" className="w-full gap-2 sm:w-[200px]">
           <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
           <SelectValue>
             {(value: SortOptions) =>

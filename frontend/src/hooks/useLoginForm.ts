@@ -1,35 +1,34 @@
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { type LoginRequest } from "@/types/auth";
 import { useAuth } from "@/contexts/AuthContext";
 
-export function useLoginForm() {
-    const { login, error } = useAuth();
+function useLoginForm() {
+    const [backendError, setBackendError] = useState<string | undefined>(undefined);
+    const [submitDisabled, setSubmitDisabled] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const { login } = useAuth();
     const navigate = useNavigate();
 
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const handleSubmit = async (values: LoginRequest) => {
+        setLoading(true);
+        setBackendError(undefined);
+        setSubmitDisabled(true);
 
-    const handleSubmit = async (event: FormEvent) => {
-        event.preventDefault();
-        setIsSubmitting(true);
         try {
-            await login({ email, password });
+            await login(values);
             navigate("/", { replace: true });
-        } catch {
-            // error wird bereits im AuthContext gesetzt
+        } catch (error) {
+            setBackendError(
+                error instanceof Error ? "Ungültige E-Mail oder Passwort" : "Ein unbekannter Fehler ist aufgetreten"
+            );
         } finally {
-            setIsSubmitting(false);
+            setLoading(false);
+            setSubmitDisabled(false);
         }
     };
 
-    return {
-        email,
-        setEmail,
-        password,
-        setPassword,
-        isSubmitting,
-        error,
-        handleSubmit,
-    };
+    return { handleSubmit, backendError, loading, submitDisabled };
 }
+
+export { useLoginForm };

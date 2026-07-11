@@ -1,69 +1,141 @@
-import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
   Field,
   FieldDescription,
   FieldGroup,
-  FieldLabel,
   FieldSeparator,
 } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { AlertCircle } from "lucide-react"
 import GoogleLoginButton from "../atoms/GoogleLoginButton"
-import { type FormEvent } from "react";
-import { Form as FormikForm } from "formik";
+import LoadingButton from "../atoms/LoadingButton"
+import FormTextField from "../molecules/FormTextField"
+import { Form as FormikForm, type FormikTouched, type FormikErrors } from "formik";
+import type { FormEvent, ChangeEvent, FocusEvent } from "react";
+import type { SignupFormValues } from "@/hooks/useSignUpForm";
 
 type SignupFormProps = {
   navigate: () => void;
-  handleSubmit: (e: FormEvent<HTMLFormElement>) => void;
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+  values: SignupFormValues;
+  errors: FormikErrors<SignupFormValues>;
+  touched: FormikTouched<SignupFormValues>;
+  handleChange: (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  handleBlur: (event: FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  loading?: boolean;
+  submitDisabled?: boolean;
+  backendError?: string;
 };
 
-function SignupForm({ handleSubmit, navigate }: SignupFormProps) {
+function SignupForm({
+  navigate,
+  onSubmit,
+  values,
+  errors,
+  touched,
+  handleChange,
+  handleBlur,
+  loading,
+  submitDisabled,
+  backendError,
+}: SignupFormProps) {
   return (
-    <FormikForm className="flex flex-col gap-6" onSubmit={handleSubmit}>
+    <FormikForm className="flex flex-col gap-6" onSubmit={onSubmit}>
       <FieldGroup>
         <div className="flex flex-col items-center gap-1 text-center">
-          <h1 className="text-2xl font-bold">Create your account</h1>
+          <h1 className="text-2xl font-bold">Konto erstellen</h1>
           <p className="text-sm text-balance text-muted-foreground">
-            Fill in the form below to create your account
+            Fülle das Formular aus, um dein Konto zu erstellen
           </p>
         </div>
+
+        {backendError && (
+          <Alert variant="destructive">
+            <AlertCircle />
+            <AlertDescription>{backendError}</AlertDescription>
+          </Alert>
+        )}
+
+        <FormTextField
+          name="firstName"
+          label="Vorname"
+          value={values.firstName}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          error={(touched.firstName || values.firstName.length > 0) && !!errors.firstName}
+          helperText={(touched.firstName || values.firstName.length > 0) ? errors.firstName : undefined}
+        />
+
+        <FormTextField
+          name="lastName"
+          label="Nachname"
+          value={values.lastName}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          error={(touched.lastName || values.lastName.length > 0) && !!errors.lastName}
+          helperText={(touched.lastName || values.lastName.length > 0) ? errors.lastName : undefined}
+        />
+
+        <FormTextField
+          name="email"
+          label="E-Mail"
+          type="email"
+          value={values.email}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          error={(touched.email || values.email.length > 0) && !!errors.email}
+          helperText={(touched.email || values.email.length > 0) ? errors.email : undefined}
+        />
+
+        <FormTextField
+          name="password"
+          label="Passwort"
+          type="password"
+          value={values.password}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          error={(touched.password || values.password.length > 0) && !!errors.password}
+          helperText={
+            (touched.password || values.password.length > 0)
+              ? errors.password
+              : "Muss mindestens 8 Zeichen lang sein."
+          }
+        />
+
+        <FormTextField
+          name="confirmPassword"
+          label="Passwort bestätigen"
+          type="password"
+          value={values.confirmPassword}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          error={(touched.confirmPassword || values.confirmPassword.length > 0) && !!errors.confirmPassword}
+          helperText={
+            (touched.confirmPassword || values.confirmPassword.length > 0)
+              ? errors.confirmPassword
+              : "Bitte bestätige dein Passwort."
+          }
+        />
+
         <Field>
-          <FieldLabel htmlFor="firstName">Vorname</FieldLabel>
-          <Input id="firstName" type="text" placeholder="John" required />
+          <LoadingButton
+            type="submit"
+            className="w-full font-semibold"
+            loading={loading}
+            disabled={submitDisabled}
+          >
+            Konto erstellen
+          </LoadingButton>
         </Field>
+
+        <FieldSeparator>Oder weiter mit</FieldSeparator>
+
         <Field>
-          <FieldLabel htmlFor="lastName">Nachname</FieldLabel>
-          <Input id="lastName" type="text" placeholder="Doe" required />
-        </Field>
-        <Field>
-          <FieldLabel htmlFor="email">Email</FieldLabel>
-          <Input id="email" type="email" placeholder="m@example.com" required />
-          <FieldDescription>
-            We&apos;ll use this to contact you. We will not share your email
-            with anyone else.
-          </FieldDescription>
-        </Field>
-        <Field>
-          <FieldLabel htmlFor="password">Password</FieldLabel>
-          <Input id="password" type="password" required />
-          <FieldDescription>
-            Must be at least 8 characters long.
-          </FieldDescription>
-        </Field>
-        <Field>
-          <FieldLabel htmlFor="confirm-password">Confirm Password</FieldLabel>
-          <Input id="confirm-password" type="password" required />
-          <FieldDescription>Please confirm your password.</FieldDescription>
-        </Field>
-        <Field>
-          <Button type="submit">Create Account</Button>
-        </Field>
-        <FieldSeparator>Or continue with</FieldSeparator>
-        <Field>
-        <GoogleLoginButton />
+          <GoogleLoginButton />
           <FieldDescription className="px-6 text-center">
-            Already have an account? <Button variant="link" onClick={navigate} className="p-0">
-              Sign in
+            Bereits ein Konto?{" "}
+            <Button variant="link" onClick={navigate} className="p-0">
+              Anmelden
             </Button>
           </FieldDescription>
         </Field>
