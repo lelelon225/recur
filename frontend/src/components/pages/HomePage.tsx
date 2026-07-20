@@ -1,214 +1,77 @@
-import { Box, Container } from "@mui/material";
-import {
-  getTasks,
-  patchTask,
-  deleteTask,
-  type Task,
-} from "../../services/taskService";
-import { useEffect, useState, useMemo } from "react";
-import InfoCard from "../organisms/InfoCard";
-import Fab from "../atoms/FloatingActionButton";
-import AddTaskForm from "../organisms/AddTaskForm";
-import LoadingTime from "../atoms/LoadingTime";
-import TaskCard from "../molecules/TaskCard";
-import { Select, MenuItem } from "@mui/material";
-
-type SortOptions = "date" | "progress" | "alphabetical";
+import { useMemo, useState } from "react";
+import { FilePlus2 } from "lucide-react";
+import Empty from "@/components/molecules/Empty";
+import { type SortOptions, sortTasks } from "@/utils/sortTasks";
+import TaskCardGrid from "@/components/molecules/TaskCardGrid";
+import Sorter from "@/components/atoms/Sorter";
+import { useAddTask } from "@/contexts/AddTaskContext";
+import { useTasksContext } from "@/contexts/TasksContext";
+import TaskCardGridSkeleton from "../molecules/TaskCardGridSkeleton";
 
 function HomePage() {
-  const [showAddTaskForm, setShowAddTaskForm] = useState(false);
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<SortOptions>("date");
+  const {
+    tasks,
+    loading,
+    handleToggleFavorite,
+    handleToggleArchive,
+    handleResetProgress,
+    handleDelete,
+    handleToggleDone,
+    handleUpdateTask,
+  } = useTasksContext();
 
-  function showForm() {
-    setShowAddTaskForm(true);
-  }
+  const handlers = useMemo(
+    () => ({
+      onToggleFavorite: handleToggleFavorite,
+      onToggleArchive: handleToggleArchive,
+      onResetProgress: handleResetProgress,
+      onDelete: handleDelete,
+      onToggleDone: handleToggleDone,
+      onTaskUpdated: handleUpdateTask,
+    }),
+    [
+      handleToggleFavorite,
+      handleToggleArchive,
+      handleResetProgress,
+      handleDelete,
+      handleToggleDone,
+      handleUpdateTask,
+    ],
+  );
 
-  function handleToggleFavorite(taskId: string) {
-    const previousTasks = tasks;
-    const updatedTasks = tasks.map((task) =>
-      task.id === taskId ? { ...task, isFavorite: !task.isFavorite } : task
-    );
-    setTasks(updatedTasks);
+  const [sortBy, setSortBy] = useState<SortOptions>("date descending");
+  const { openAddTaskForm } = useAddTask();
 
-    const toggledTask = updatedTasks.find((task) => task.id === taskId);
-    if (!toggledTask) {
-      return;
-    }
-
-    patchTask(taskId, { isFavorite: toggledTask.isFavorite }).catch((err) => {
-      setTasks(previousTasks);
-      console.error("Fehler beim Aktualisieren des Favoritenstatus", err);
-    });
-  }
-
-  function handleToggleArchive(taskId: string) {
-    const previousTasks = tasks;
-    const updatedTasks = tasks.filter((task) => task.id !== taskId);
-    setTasks(updatedTasks);
-
-    patchTask(taskId, { isArchived: true }).catch((err) => {
-      setTasks(previousTasks);
-      console.error("Fehler beim Archivieren der Aufgabe", err);
-    });
-  }
-
-  function handleDelete(taskId: string) {
-    const previousTasks = tasks;
-    const updatedTasks = tasks.filter((task) => task.id !== taskId);
-    setTasks(updatedTasks);
-
-    deleteTask(taskId).catch((err) => {
-      setTasks(previousTasks);
-      console.error("Fehler beim Löschen der Aufgabe", err);
-    });
-  }
-
-  function handleToggleDone(taskId: string) {
-  const targetTask = tasks.find((task) => task.id === taskId);
-  if (!targetTask) {
-    return;
-  }
-
-  const newAmountDid = (targetTask.amountDid ?? 0) + 1;
-
-  patchTask(taskId, {}, undefined, undefined, undefined, newAmountDid)
-    .then((updatedTask) => {
-      setTasks((prev) =>
-        prev.map((task) => (task.id === taskId ? updatedTask : task)),
-      );
-    })
-    .catch((err) => {
-      console.error("Fehler beim Aktualisieren der erledigten Menge", err);
-    });
-}
-
-  async function fetchTasks() {
-    try {
-      const fetchedTasks = await getTasks();
-      setTasks(fetchedTasks.filter((task) => !task.isArchived));
-    } catch (error) {
-      setError(
-        error instanceof Error
-          ? error.message
-          : "Unbekannter Fehler beim Abrufen der Aufgaben"
-      );
-    } finally {
-      setTimeout(() => {
-        setLoading(false);
-      }, 500);
-    }
-  }
-
-  function sortTaskByDateCreated(tasks: Task[]): Task[] {
-    return [...tasks].sort(
-      (a, b) =>
-        new Date(b.dateCreated).getTime() - new Date(a.dateCreated).getTime()
-    );
-  }
-  function sortTaskByProgress(tasks: Task[]): Task[] {
-    return [...tasks].sort((a, b) => a.progress - b.progress);
-  }
-
-  function sortTaskAlphabetically(tasks: Task[]): Task[] {
-    return [...tasks].sort((a, b) => a.name.localeCompare(b.name));
-  }
-
-  const sortedTasks = useMemo(() => {
-    switch (sortBy) {
-      case "progress":
-        return sortTaskByProgress(tasks);
-      case "alphabetical":
-        return sortTaskAlphabetically(tasks);
-      default:
-        return sortTaskByDateCreated(tasks);
-    }
-  }, [tasks, sortBy]);
-
-  useEffect(() => {
-    fetchTasks();
-  }, []);
+  const sortedTasks = useMemo(() => sortTasks(tasks, sortBy), [tasks, sortBy]);
 
   if (loading) {
-    return <LoadingTime loading={loading} />;
-  }
-
-  if (error) {
-    return (
-      <InfoCard
-        variant="error"
-        title="Fehler beim Abrufen der Aufgaben"
-        discription={error}
-      />
-    );
+    return <TaskCardGridSkeleton count={6} direction="row" />;
   }
 
   if (tasks.length === 0) {
     return (
-      <InfoCard
-        variant="info"
-        title="Keine Aufgaben gefunden"
-        discription="Es wurden keine Aufgaben in der Datenbank gefunden. Bitte erstellen Sie eine neue Aufgabe."
+      <Empty
+        icon={() => <FilePlus2 className="w-12 h-12 text-gray-400" />}
+        title="Keine Habits"
+        description="Es gibt derzeit keine Habits."
+        buttonText="Habit erstellen"
+        onButtonClick={openAddTaskForm}
       />
     );
   }
 
   return (
-    <>
-      <Select
-        value={sortBy}
-        onChange={(e) => setSortBy(e.target.value as SortOptions)}
-        size="small"
-        sx={{ mb: 2 }}
-      >
-        <MenuItem value="date">Neuste zuerst</MenuItem>
-        <MenuItem value="progress">Fortschritt</MenuItem>
-        <MenuItem value="alphabetical">Alphabetisch</MenuItem>
-      </Select>
+    <div>
+      <div className="flex justify-end">
+        <Sorter sortBy={sortBy} setSortBy={setSortBy} />
+      </div>
 
-      <Container maxWidth="lg">
-       {showAddTaskForm && (
-        <AddTaskForm
-          onClose={() => setShowAddTaskForm(false)}
-          onTaskCreated={(newTask) => {
-            setTasks((prev) => [...prev, newTask]);
-          }}
-        />
-      )}
-
-        <Box
-          className="homePage"
-          sx={{
-            display: "grid",
-            gridTemplateColumns: {
-              xs: "1fr",
-              sm: "repeat(2, 1fr)",
-              md: "repeat(3, 1fr)",
-            },
-            justifyContent: "center",
-            alignItems: "center",
-            margin: "auto",
-            gap: "16px",
-          }}
-        >
-          {sortedTasks.map((task) => (
-            <TaskCard
-              classname="taskCard"
-              key={task.id}
-              task={task}
-              onToggleFavorite={() => handleToggleFavorite(task.id)}
-              onToggleArchive={() => handleToggleArchive(task.id)}
-              onDelete={() => handleDelete(task.id)}
-              onToggleEdit={fetchTasks}
-              onToggleDone={() => handleToggleDone(task.id)}
-            />
-          ))}
-          <Fab onClick={showForm} />
-        </Box>
-      </Container>
-    </>
+      <TaskCardGrid
+        sortedTasks={sortedTasks}
+        handlers={handlers}
+        direction="row"
+      />
+    </div>
   );
 }
 export default HomePage;

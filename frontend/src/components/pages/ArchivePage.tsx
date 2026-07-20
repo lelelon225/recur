@@ -1,138 +1,98 @@
-import { Box, Container } from "@mui/material";
-import {
-  getTasks,
-  patchTask,
-  deleteTask,
-  type Task,
-} from "../../services/taskService";
-import { useEffect, useState } from "react";
-import InfoCard from "../organisms/InfoCard";
-import LoadingTime from "../atoms/LoadingTime";
-import TaskCard from "../molecules/TaskCard";
+import Empty from "@/components/molecules/Empty";
+import ConfirmDialog from "@/components/molecules/ConfirmDialog";
+import ArchiveSelectionToolbar from "@/components/molecules/ArchiveSelectionToolbar";
+import { OctagonXIcon } from "lucide-react";
+import { useTasksContext } from "@/contexts/TasksContext";
+import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import TaskCardGrid from "@/components/molecules/TaskCardGrid";
+import useArchiveSelection from "@/hooks/useArchiveSelection";
+import TaskCardGridSkeleton from "../molecules/TaskCardGridSkeleton";
 
 function ArchivePage() {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
-  function handleToggleFavorite(taskId: string) {
-    const previousTasks = tasks;
-    const updatedTasks = tasks.map((task) =>
-      task.id === taskId ? { ...task, isFavorite: !task.isFavorite } : task,
-    );
-    setTasks(updatedTasks);
+  const {
+    archivedTasks,
+    loading,
+    handleToggleFavorite,
+    handleToggleArchive,
+    handleDelete,
+  } = useTasksContext();
 
-    const toggledTask = updatedTasks.find((task) => task.id === taskId);
-    if (!toggledTask) {
-      return;
-    }
+  const archivedTaskIds = useMemo(() => archivedTasks.map((task) => task.id), [archivedTasks]);
 
-    patchTask(taskId, { isFavorite: toggledTask.isFavorite ?? false }).catch((err) => {
-      setTasks(previousTasks);
-      console.error("Fehler beim Aktualisieren des Favoritenstatus", err);
-    });
-  }
+  const {
+    selectMode,
+    selectedIds,
+    selectedCount,
+    allSelected,
+    toggleSelect,
+    enterSelectMode,
+    exitSelectMode,
+    toggleAllSelected,
+    confirmBulkDeleteOpen,
+    requestBulkDelete,
+    confirmBulkDelete,
+    cancelBulkDelete,
+  } = useArchiveSelection({ taskIds: archivedTaskIds, onDelete: handleDelete });
 
-  function handleToggleArchive(taskId: string) {
-    const previousTasks = tasks;
-    const updatedTasks = tasks
-      .map((task) =>
-        task.id === taskId ? { ...task, isArchived: !task.isArchived } : task,
-      )
-      .filter((task) => task.isArchived);
-    setTasks(updatedTasks);
+  const handlers = useMemo(
+    () => ({
+      onToggleFavorite: handleToggleFavorite,
+      onToggleArchive: handleToggleArchive,
+      onDelete: handleDelete,
+      onToggleSelect: toggleSelect,
+    }),
+    [handleToggleFavorite, handleToggleArchive, handleDelete, toggleSelect],
+  );
 
-    patchTask(taskId, { isArchived: false }).catch((err) => {
-      setTasks(previousTasks);
-      console.error("Fehler beim Aktualisieren Archivierungsstatus", err);
-    });
-  }
+  if (loading) return <TaskCardGridSkeleton count={6} direction="column" />;
 
-  function handleDelete(taskId: string) {
-    const previousTasks = tasks;
-    const updatedTasks = tasks.filter((task) => task.id !== taskId);
-    setTasks(updatedTasks);
-
-    deleteTask(taskId).catch((err) => {
-      setTasks(previousTasks);
-      console.error("Fehler beim Löschen der Aufgabe", err);
-    });
-  }
-
-  async function fetchArchivedTasks() {
-    try {
-      const fetchedTasks = await getTasks(true, false);
-      setTasks(fetchedTasks);
-    } catch (error) {
-      setError(
-        error instanceof Error
-          ? error.message
-          : "Unbekannter Fehler beim Abrufen der archivierten Aufgaben",
-      );
-    } finally {
-      setTimeout(() => {
-        setLoading(false);
-      }, 500);
-    }
-  }
-
-  useEffect(() => {
-    fetchArchivedTasks();
-  }, []);
-
-  if (loading) {
-    return <LoadingTime loading={loading} />;
-  }
-
-  if (error) {
+  if (archivedTasks.length === 0) {
     return (
-      <InfoCard
-        variant="error"
-        title="Fehler beim Abrufen der archivierten Aufgaben"
-        discription={error}
-      />
-    );
-  }
-
-  if (tasks.length === 0 && !loading) {
-    return (
-      <InfoCard
-        variant="info"
-        title="Keine archivierten Aufgaben gefunden"
-        discription="Archivierte Aufgaben werden hier angezeigt, sobald du welche archivierst."
+      <Empty
+        title="Keine archivierten Habits"
+        description="Es gibt derzeit keine archivierten Habits."
+        buttonText="Zurück zu den Habits"
+        onButtonClick={() => navigate("/")}
+        icon={() => <OctagonXIcon className="h-12 w-12 text-muted-foreground" />}
       />
     );
   }
 
   return (
-    <Container maxWidth="lg">
-      <Box
-        className="archivePage"
-        sx={{
-          display: "grid",
-          gridTemplateColumns: {
-            xs: "1fr",
-            sm: "repeat(2, 1fr)",
-            md: "repeat(3, 1fr)",
-          },
-          justifyContent: "center",
-          alignItems: "center",
-          margin: "auto",
-          gap: "16px",
-        }}
-      >
-        {tasks.map((task) => (
-          <TaskCard
-              key={task.id}
-              classname="taskCard"
-              task={task}
-              onToggleFavorite={() => handleToggleFavorite(task.id)}
-              onToggleArchive={() => handleToggleArchive(task.id)}
-              onDelete={() => handleDelete(task.id)}
-            />
-        ))}
-      </Box>
-    </Container>
+    <div className="w-full pb-20">
+      <ConfirmDialog
+        severity="high"
+        question="Habits löschen"
+        description={`Sind Sie sicher, dass Sie ${selectedCount} ${selectedCount === 1 ? "Habit" : "Habits"} löschen möchten? Dies kann nicht rückgängig gemacht werden.`}
+        open={confirmBulkDeleteOpen}
+        onOpenChange={(next) => !next && cancelBulkDelete()}
+        onConfirm={confirmBulkDelete}
+        onCancel={cancelBulkDelete}
+        confirmText="Löschen"
+        cancelText="Abbrechen"
+      />
+
+      <ArchiveSelectionToolbar
+        selectMode={selectMode}
+        selectedCount={selectedCount}
+        allSelected={allSelected}
+        onEnterSelectMode={enterSelectMode}
+        onExitSelectMode={exitSelectMode}
+        onToggleAllSelected={toggleAllSelected}
+        onRequestBulkDelete={requestBulkDelete}
+      />
+
+      <TaskCardGrid
+        sortedTasks={archivedTasks}
+        handlers={handlers}
+        direction="column"
+        selectMode={selectMode}
+        selectedIds={selectedIds}
+      />
+    </div>
   );
 }
 

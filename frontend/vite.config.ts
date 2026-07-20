@@ -1,7 +1,62 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig, type ProxyOptions } from "vite";
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
+import path from "path";
 
-// https://vite.dev/config/
+// Bei ngrok -> Vite -> Backend hat der Request zwei Proxy-Hops. ngrok
+// terminiert TLS und setzt bereits X-Forwarded-Proto: https, X-Forwarded-Host:
+// <ngrok-domain>. Vite selbst läuft nur über http, daher würde "xfwd: true"
+// von node-http-proxy seinen EIGENEN (falschen) "http"-Wert an den bereits
+// vorhandenen Header anhängen ("https,http"), was Spring's
+// ForwardedHeaderFilter falsch interpretiert - das Backend baut die
+// OAuth2-redirect_uri dann mit http:// statt https:// -> Google lehnt sie
+// mit redirect_uri_mismatch ab.
+// Fix: xfwd aus, Original-Header vom Client stattdessen explizit und
+// einmalig durchreichen.
+const backendProxy: ProxyOptions = {
+  target: "http://localhost:8080",
+  changeOrigin: true,
+  secure: false,
+  configure: (proxy) => {
+    proxy.on("proxyReq", (proxyReq, req) => {
+      const forwardedProto =
+        (req.headers["x-forwarded-proto"] as string) || "http";
+      const forwardedHost =
+        (req.headers["x-forwarded-host"] as string) || req.headers.host || "";
+
+      proxyReq.setHeader("x-forwarded-proto", forwardedProto);
+      proxyReq.setHeader("x-forwarded-host", forwardedHost);
+      proxyReq.setHeader(
+        "x-forwarded-port",
+        forwardedProto === "https" ? "443" : "80"
+      );
+    });
+  },
+};
+
 export default defineConfig({
-  plugins: [react()],
-})
+  plugins: [react(), tailwindcss()],
+
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
+
+  server: {
+    host: true,
+
+    allowedHosts: [".ngrok-free.dev", ".ngrok.app"],
+
+    proxy: {
+      "/api": backendProxy,
+      "/oauth2": backendProxy,
+      // Nur der OAuth2-Callback von Google muss ans Backend, NICHT "/login"
+      // selbst - das ist unsere eigene SPA-Route (LoginPage). Ein zu weiter
+      // Prefix-Match auf "/login" würde auch manuelle Aufrufe von /login
+      // abfangen und ans Backend schicken, wo es dafür keinen Handler gibt
+      // (-> 500 als JSON statt der Login-Seite).
+      "/login/oauth2": backendProxy,
+    },
+  },
+});

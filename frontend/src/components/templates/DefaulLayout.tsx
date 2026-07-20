@@ -1,35 +1,65 @@
+import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import NavigationBar from "../atoms/NavigationBar"
-import RestoreIcon from '@mui/icons-material/Restore';
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import ArchiveIcon from '@mui/icons-material/Archive';
-import AppBar from "../organisms/AppBar"
+import { History, Heart, Archive } from "lucide-react";
+import { Toaster } from "@/components/ui/sonner";
+import { AddTaskProvider } from "@/contexts/AddTaskContext";
+import Fab from "@/components/atoms/FloatingActionButton";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "../ui/sidebar";
+import { Separator } from "../ui/separator";
+import AppSidebar from "../organisms/AppSidebar";
 
 type DefaultLayoutProps = {
-  children: React.ReactNode
-}
+  children: ReactNode;
+  pageTitle?: string;
+};
 
+const NAV_ROUTES = [
+  { path: "/", label: "Neuste", icon: History },
+  { path: "/favorites", label: "Favoriten", icon: Heart },
+  { path: "/archive", label: "Archiv", icon: Archive },
+] as const;
 
-function DefaultLayout({ children }: DefaultLayoutProps) {
+function DefaultLayout({ children, pageTitle }: DefaultLayoutProps) {
   const navigate = useNavigate();
 
+  const destinations = NAV_ROUTES.map(({ path, label, icon: Icon }) => ({
+    path,
+    navigate: () => navigate(path),
+    label,
+    icon: Icon,
+  }));
 
- 
   return (
-    <div className="default-layout">
-     <AppBar position="static" className="appBar">
-        <h1>RECUR</h1>
-      </AppBar>
-      <div className="content">
-        {children}
-      </div>
-      <NavigationBar className="navigationBar" destinations={[
-        { navigate: () => navigate('/'), label: "Recent", icon: <RestoreIcon /> },
-        { navigate: () => navigate('/favorites'), label: "Favorites", icon: <FavoriteIcon /> },
-        { navigate: () => navigate('/archive'), label: "Archive", icon: <ArchiveIcon /> },
-      ]} />
-    </div>
-  )
+    <AddTaskProvider>
+      <SidebarProvider>
+        <AppSidebar destinations={destinations} />
+
+        <SidebarInset>
+          <div className="flex mx-auto w-full max-w-6xl px-4 py-6 pb-24">
+            <div className="mb-6 flex w-full flex-col gap-4">
+              <div className="flex items-center gap-2">
+                <SidebarTrigger className="-ml-1" />
+
+                <Separator
+                  orientation="vertical"
+                  className="mr-2 data-[orientation=vertical]:h-4"
+                />
+
+                <h1 className="text-xl font-semibold text-foreground">
+                  {pageTitle}
+                </h1>
+              </div>
+
+              <main>{children}</main>
+            </div>
+          </div>
+
+          <Toaster position="bottom-left" />
+          <Fab className="fixed bottom-4 right-4" />
+        </SidebarInset>
+      </SidebarProvider>
+    </AddTaskProvider>
+  );
 }
 
-export default DefaultLayout
+export default DefaultLayout;

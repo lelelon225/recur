@@ -2,11 +2,10 @@ package ch.noseryoung.domain.recur.utils;
 
 import org.springframework.stereotype.Component;
 
+import ch.noseryoung.domain.recur.enums.Frequency;
 import ch.noseryoung.domain.recur.models.Task;
-import ch.noseryoung.domain.recur.Enum.Frequency;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.util.EnumMap;
 
 @Component
@@ -23,13 +22,6 @@ public class TaskUtil {
 
     public Integer getFrequencyNumber(Frequency frequency) {
         return frequencies.get(frequency);
-    }
-
-    public static boolean isTaskValid(String name, String description, Integer daysInSpan, Integer amountDid) {
-        return name != null && !name.isEmpty() &&
-                description != null && !description.isEmpty() &&
-                daysInSpan != null && daysInSpan > 0 &&
-                amountDid != null && amountDid >= 0;
     }
 
     public static void calculateDaysInSpan(Task task) {
@@ -49,12 +41,6 @@ public class TaskUtil {
      * der Task-Laufzeit man sich befindet.
      */
     public void calculateProgress(Task task) {
-        calculateProgress(task, Instant.now());
-    }
-
-    // Overload mit "now" als Parameter bleibt bestehen, "now" wird aber nicht mehr
-    // gebraucht
-    public void calculateProgress(Task task, Instant now) {
         if (task.getAmountDid() == null || task.getFrequency() == null || task.getDaysInSpan() == null
                 || task.getDaysInSpan() <= 0) {
             task.setProgress(0.0);

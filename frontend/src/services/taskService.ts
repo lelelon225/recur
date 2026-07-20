@@ -1,27 +1,32 @@
 import axios from "axios";
 import api from "./api";
 
-export enum TaskFrequency {
-  DAILY = "DAILY",
-  WEEKLY = "WEEKLY",
-  MONTHLY = "MONTHLY",
-  YEARLY = "YEARLY",
-  ONCE = "ONCE"
-}
 
-export enum TaskCategory {
-  WORK = "WORK",
-  PERSONAL = "PERSONAL",
-  SCHOOL = "SCHOOL",
-  OTHER = "OTHER"
-}
+export const TaskFrequency = {
+  DAILY: "DAILY",
+  WEEKLY: "WEEKLY",
+  MONTHLY: "MONTHLY",
+  YEARLY: "YEARLY",
+  ONCE: "ONCE",
+} as const;
+
+export type TaskFrequency = (typeof TaskFrequency)[keyof typeof TaskFrequency];
+
+export const TaskCategory = {
+  WORK: "WORK",
+  PERSONAL: "PERSONAL",
+  SCHOOL: "SCHOOL",
+  OTHER: "OTHER",
+} as const;
+
+export type TaskCategory = (typeof TaskCategory)[keyof typeof TaskCategory];
 
 
 export interface Task {
   id: string;
   name: string;
-  category: string;
-  frequency: string;
+  category: TaskCategory;
+  frequency: TaskFrequency;
   description: string;
   dateUntil: string;
   progress: number;
@@ -38,6 +43,15 @@ export type ServerOwnedFields = "id" | "dateCreated";
 
 /** Payload shape for creating a new task (no id/dateCreated yet). */
 export type NewTask = Omit<Task, ServerOwnedFields>;
+
+/** Options for patchTask: partial task fields plus query-param flags. */
+export type PatchTaskOptions = {
+  task?: Partial<Omit<Task, ServerOwnedFields>>;
+  resetProgress?: boolean;
+  favorite?: boolean;
+  archived?: boolean;
+  amountDid?: number;
+};
 
 function extractErrorMessage(err: unknown, fallback: string): string {
   if (axios.isAxiosError(err)) {
@@ -56,7 +70,6 @@ function extractErrorMessage(err: unknown, fallback: string): string {
  */
 function toInstantString(date: string | null | undefined): string | null {
   if (date === null || date === undefined || date === "") return null;
-  // already has a time component -> just make sure Date can parse it
   const parsed = new Date(date);
   if (isNaN(parsed.getTime())) {
     throw new Error(`Ungültiges Datum: "${date}"`);
@@ -91,17 +104,11 @@ function createTask(task: NewTask): Promise<Task> {
     });
 }
 
-function patchTask(
-  id: string,
-  task: Partial<Omit<Task, ServerOwnedFields>>,
-  resetProgress?: boolean,
-  favourite?: boolean,
-  archived?: boolean,
-  amountDid?: number
-): Promise<Task> {
+function patchTask(id: string, options: PatchTaskOptions = {}): Promise<Task> {
+  const { task = {}, resetProgress, favorite, archived, amountDid } = options;
   return api
     .patch(`/task/${id}`, normalizeTaskDates(task), {
-      params: { resetProgress, favourite, archived, amountDid },
+      params: { resetProgress, favorite, archived, amountDid },
     })
     .then((response) => response.data as Task)
     .catch((err: unknown) => {
@@ -124,7 +131,7 @@ function deleteTask(id: string): Promise<void> {
 
 function deleteAllTasks(): Promise<void> {
   return api
-    .delete(`/task/all`)
+    .delete(`/task`)
     .then(() => {})
     .catch((err: unknown) => {
       throw new Error(
