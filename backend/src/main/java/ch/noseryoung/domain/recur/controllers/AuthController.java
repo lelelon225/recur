@@ -12,6 +12,9 @@ import ch.noseryoung.domain.recur.dto.LoginRequest;
 import ch.noseryoung.domain.recur.dto.RegisterRequest;
 import ch.noseryoung.domain.recur.dto.UserResponse;
 import ch.noseryoung.domain.recur.services.AuthService;
+import org.springframework.web.bind.annotation.*;
+
+
 import jakarta.validation.Valid;
 
 @RestController
@@ -37,5 +40,10 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<UserResponse> getCurrentUser() {
         return ResponseEntity.ok(authService.getCurrentUser());
+    }
+
+    @PatchMapping("/me")
+    public ResponseEntity<UserResponse> updateCurrentUser(@Valid @RequestBody UserResponse userResponse) {
+        return ResponseEntity.ok(authService.updateCurrentUser(userResponse));
     }
 }

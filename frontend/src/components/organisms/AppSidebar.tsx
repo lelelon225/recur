@@ -3,6 +3,8 @@ import {
   SidebarContent,
   SidebarFooter,
 } from "@/components/ui/sidebar";
+
+import type { ComponentProps } from "react";
 import type { NavigationDestination } from "@/hooks/useNavigationBar";
 import { useNavigationBar } from "@/hooks/useNavigationBar";
 import { useNavigate } from "react-router-dom";
@@ -13,42 +15,35 @@ import { Settings } from "lucide-react";
 import SidebarSettingsGroup from "./SidebarSettingsGroup";
 import useUserDetails from "@/hooks/useUserDetails";
 
-
 type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
   destinations: NavigationDestination[];
 };
 
-
-
-function AppSidebar({
-  destinations,
-  ...props
-}: AppSidebarProps) {
+function AppSidebar({ destinations, ...props }: AppSidebarProps) {
   const { activeValue, handleNavigation } = useNavigationBar(destinations);
   const navigate = useNavigate();
   const { user } = useUserDetails();
 
   const settingsItems = [
-  {
-    label: "Account",
-    Icon: Settings,
-    onClick: () => {
-      navigate("/setting/account");
+    {
+      label: "Account",
+      Icon: Settings,
+      onClick: () => {
+        navigate("/setting/account");
+      },
     },
-  },
-];
+  ];
 
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarBrand onClick={() => navigate("/")} />
       <SidebarContent>
-            <SidebarNavigation
-                destinations={destinations}
-                handleNavigation={handleNavigation}
-                activeValue={activeValue}
-            />
+        <SidebarNavigation
+          destinations={destinations}
+          handleNavigation={handleNavigation}
+          activeValue={activeValue}
+        />
         <SidebarSettingsGroup SettingsItem={settingsItems} />
-
       </SidebarContent>
       <SidebarFooter>
         <AppSidebarUser user={user} />
@@ -57,4 +52,4 @@ function AppSidebar({
   );
 }
 
-export default AppSidebar;  
+export default AppSidebar;

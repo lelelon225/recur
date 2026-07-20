@@ -38,9 +38,12 @@ dependencies {
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
 
+	// dotenv (.env Datei automatisch einlesen)
+	developmentOnly 'me.paulschwarz:springboot4-dotenv:5.1.0'
+
 	// Log4j2
 	implementation 'org.springframework.boot:spring-boot-starter-log4j2'
-
+	
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3'
 
 	compileOnly 'org.projectlombok:lombok'
