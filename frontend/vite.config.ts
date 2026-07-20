@@ -13,6 +13,13 @@ import path from "path";
 // mit redirect_uri_mismatch ab.
 // Fix: xfwd aus, Original-Header vom Client stattdessen explizit und
 // einmalig durchreichen.
+//
+// Zusätzlicher Fix: x-forwarded-port wurde vorher hart auf 80/443 gesetzt,
+// unabhängig vom tatsächlichen Port (z.B. 5173 bei lokalem Dev). Weil 80/443
+// Standard-Ports sind, lässt Spring beim Zusammenbauen der redirect_uri den
+// Port komplett weg -> "http://localhost/login/oauth2/code/google" statt
+// "http://localhost:5173/login/oauth2/code/google" -> redirect_uri_mismatch.
+// Fix: Port aus dem Host-Header extrahieren statt zu raten.
 const backendProxy: ProxyOptions = {
   target: "http://localhost:8080",
   changeOrigin: true,
@@ -24,12 +31,20 @@ const backendProxy: ProxyOptions = {
       const forwardedHost =
         (req.headers["x-forwarded-host"] as string) || req.headers.host || "";
 
+      // Port aus dem Host-Header extrahieren (z.B. "localhost:5173" -> "5173").
+      // Nur falls kein Port im Host steht (z.B. reines "example.com" bei
+      // ngrok/Prod ohne expliziten Port), auf den Standard-Port zurückfallen.
+      const hostParts = forwardedHost.split(":");
+      const forwardedPort =
+        hostParts.length > 1
+          ? hostParts[1]
+          : forwardedProto === "https"
+          ? "443"
+          : "80";
+
       proxyReq.setHeader("x-forwarded-proto", forwardedProto);
       proxyReq.setHeader("x-forwarded-host", forwardedHost);
-      proxyReq.setHeader(
-        "x-forwarded-port",
-        forwardedProto === "https" ? "443" : "80"
-      );
+      proxyReq.setHeader("x-forwarded-port", forwardedPort);
     });
   },
 };

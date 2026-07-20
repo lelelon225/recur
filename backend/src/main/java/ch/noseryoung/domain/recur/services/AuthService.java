@@ -72,4 +72,21 @@ public class AuthService {
 
         return UserResponse.from(user);
     }
+
+    public UserResponse updateCurrentUser(UserResponse userResponse) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalStateException("Authentifizierter User nicht gefunden: " + email));
+
+
+        user.setFirstName(userResponse.firstName());
+        user.setLastName(userResponse.lastName());
+        user.setAvatarUrl(userResponse.avatarUrl());
+
+        userRepository.save(user);
+
+        return UserResponse.from(user);
+    }
 }
