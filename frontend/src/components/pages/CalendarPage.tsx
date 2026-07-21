@@ -11,6 +11,7 @@ import {
 import { de } from "date-fns/locale";
 import { Spinner } from "../ui/spinner";
 import { useState } from "react";
+import { ArrowRight, ArrowLeft } from "lucide-react";
 
 type calendarDay = {
   date: Date;
@@ -160,6 +161,13 @@ function CalendarGrid() {
   const weeks = getFourWeeks(addWeeks(new Date(), weekOfset));
   const monthLabel = getMonthLabel(weeks);
 
+  const arrowRight = (
+    <ArrowRight className="size-5 hover:scale-125 transition-transform duration-200" />
+  );
+  const arrowLeft = (
+    <ArrowLeft className="size-5 hover:scale-125 transition-transform duration-200" />
+  );
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -167,40 +175,6 @@ function CalendarGrid() {
       </div>
     );
   }
-
-  const arrowLeft = (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 4 24 24"
-      strokeWidth={1.5}
-      stroke="currentColor"
-      className="size-5.5"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M15.75 19.5L8.25 12l7.5-7.5"
-      />
-    </svg>
-  );
-
-  const arrowRight = (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 4 24 24"
-      strokeWidth={1.5}
-      stroke="currentColor"
-      className="size-5.5"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M8.25 19.5L15.75 12l-7.5-7.5"
-      />
-    </svg>
-  );
 
   return (
     <div>
