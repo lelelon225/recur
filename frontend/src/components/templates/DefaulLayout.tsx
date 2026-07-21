@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { History, Heart, Archive } from "lucide-react";
+import { History, Heart, Archive, Calendar } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
 import { AddTaskProvider } from "@/contexts/AddTaskContext";
 import Fab from "@/components/atoms/FloatingActionButton";
@@ -17,6 +17,7 @@ const NAV_ROUTES = [
   { path: "/", label: "Neuste", icon: History },
   { path: "/favorites", label: "Favoriten", icon: Heart },
   { path: "/archive", label: "Archiv", icon: Archive },
+  { path: "/calendar", label: "Kalender", icon: Calendar },
 ] as const;
 
 function DefaultLayout({ children, pageTitle }: DefaultLayoutProps) {

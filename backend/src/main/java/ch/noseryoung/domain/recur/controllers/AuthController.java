@@ -46,4 +46,10 @@ public class AuthController {
     public ResponseEntity<UserResponse> updateCurrentUser(@Valid @RequestBody UserResponse userResponse) {
         return ResponseEntity.ok(authService.updateCurrentUser(userResponse));
     }
+
+    @DeleteMapping("/me")
+    public ResponseEntity<Void> deleteCurrentUser() {
+        authService.deleteCurrentUser();
+        return ResponseEntity.noContent().build();
+    }
 }

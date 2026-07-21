@@ -4,8 +4,10 @@ import * as yup from "yup";
 import type { UserResponse as User } from "../../types/auth";
 import { patchUser } from "../../services/authService";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
 import AccountForm from "../organisms/AccountForm";
+import { useNavigate } from "react-router-dom";
+import useUserDetails from "@/hooks/useUserDetails";
+import { Spinner } from "../ui/spinner";
 
 type AccountPageProps = {
   firstName: string;
@@ -102,4 +104,27 @@ function AccountPage({
   );
 }
 
-export default AccountPage;
+function AccountPageWrapper() {
+  const { user } = useUserDetails();
+  const navigate = useNavigate();
+
+  if (!user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Spinner className="size-8 text-primary" />
+      </div>
+    );
+  }
+
+  return (
+    <AccountPage
+      firstName={user.firstName}
+      lastName={user.lastName}
+      email={user.email}
+      avatarUrl={user.avatarUrl}
+      onClose={() => navigate(-1)}
+    />
+  );
+}
+
+export default AccountPageWrapper;

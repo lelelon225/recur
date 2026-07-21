@@ -11,7 +11,8 @@ import OAuthCallbackPage from "./components/pages/OAuthCallbackPage";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { useSearchParams } from "react-router-dom";
 import SignupPage from "./components/pages/SignupPage";
-import AccountPageWrapper from "./components/pages/AccountPageWrapper";
+import AccountPage from "./components/pages/AccountPage";
+import CalendarGrid from "./components/pages/CalendarPage";
 
 function OAuthErrorPage() {
   const [searchParams] = useSearchParams();
@@ -36,6 +37,21 @@ function App() {
       <Route path="/register" element={<SignupPage />} />
       <Route path="/oauth/success" element={<OAuthCallbackPage />} />
       <Route path="/auth/error" element={<OAuthErrorPage />} />
+      <Route
+        path="/calendar"
+        element={
+          <ProtectedRoute>
+            <DefaultLayout pageTitle="Dein Kalender">
+              <ReactErrorBoundary
+                errorMessage="Dein Kalender konnte nicht angezeigt werden."
+                fullScreen={false}
+              >
+                <CalendarGrid />
+              </ReactErrorBoundary>
+            </DefaultLayout>
+          </ProtectedRoute>
+        }
+      />
 
       <Route
         path="/setting/account"
@@ -46,7 +62,7 @@ function App() {
                 errorMessage="Dein Account konnte nicht angezeigt werden."
                 fullScreen={false}
               >
-                <AccountPageWrapper />
+                <AccountPage />
               </ReactErrorBoundary>
             </DefaultLayout>
           </ProtectedRoute>
