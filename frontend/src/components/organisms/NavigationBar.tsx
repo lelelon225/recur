@@ -26,7 +26,7 @@ function NavigationBar({ destinations, className }: NavigationBarProps) {
         "animate-in slide-in-from-bottom-8 fade-in duration-500 ease-out",
         "sm:bottom-6 sm:left-6 sm:right-6 sm:p-3",
         "max-sm:bottom-3 max-sm:left-3 max-sm:right-3 max-sm:p-2 max-sm:rounded-xl",
-        className,
+        className
       )}
     >
       <div className="flex w-full items-center justify-between gap-2 sm:gap-4">
@@ -40,7 +40,7 @@ function NavigationBar({ destinations, className }: NavigationBarProps) {
                 "transition-colors duration-200 ease-out",
                 "text-muted-foreground data-[state=active]:text-foreground",
                 "hover:bg-muted/60 active:scale-95",
-                "data-[state=active]:bg-muted",
+                "data-[state=active]:bg-muted"
               )}
             >
               <span className="[&>svg]:h-5 [&>svg]:w-5 sm:[&>svg]:h-6 sm:[&>svg]:w-6 transition-transform duration-200 group-data-[state=active]:-translate-y-0.5">
@@ -52,7 +52,7 @@ function NavigationBar({ destinations, className }: NavigationBarProps) {
               <span
                 className={cn(
                   "absolute -bottom-0.5 h-1 w-1 rounded-full bg-primary opacity-0 transition-opacity duration-200",
-                  "group-data-[state=active]:opacity-100",
+                  "group-data-[state=active]:opacity-100"
                 )}
               />
             </TabsTrigger>

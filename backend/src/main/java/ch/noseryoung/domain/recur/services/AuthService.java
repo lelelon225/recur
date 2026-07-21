@@ -89,4 +89,14 @@ public class AuthService {
 
         return UserResponse.from(user);
     }
+    public void deleteCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalStateException("Authentifizierter User nicht gefunden: " + email));
+
+        userRepository.delete(user);
+    }
+
 }
