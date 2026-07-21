@@ -1,5 +1,6 @@
 import {SidebarGroup, SidebarGroupLabel, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import type { NavigationDestination } from "@/hooks/useNavigationBar";
+import { Separator } from "@/components/ui/separator";
 
 type SidebarButtonsProps = {
     destinations: NavigationDestination[];
@@ -11,6 +12,7 @@ function SidebarNavigation({ destinations, handleNavigation, activeValue }: Side
     return (
         <SidebarGroup>
             <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+            <Separator className="my-2" />
                 <SidebarMenuItem>
                     {destinations.map((destination) => (
                     <SidebarMenuButton

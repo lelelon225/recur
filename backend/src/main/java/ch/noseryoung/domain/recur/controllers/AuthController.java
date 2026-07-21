@@ -1,8 +1,11 @@
 package ch.noseryoung.domain.recur.controllers;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,13 +15,11 @@ import ch.noseryoung.domain.recur.dto.LoginRequest;
 import ch.noseryoung.domain.recur.dto.RegisterRequest;
 import ch.noseryoung.domain.recur.dto.UserResponse;
 import ch.noseryoung.domain.recur.services.AuthService;
-import org.springframework.web.bind.annotation.*;
-
-
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/auth")
+@CrossOrigin(origins = "${app.cors.allowed-origin}")
 public class AuthController {
 
     private final AuthService authService;
