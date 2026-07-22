@@ -1,19 +1,32 @@
 import type { FormEvent, ChangeEvent, FocusEvent } from "react";
 import { Form as FormikForm } from "formik";
 import type { FormikErrors, FormikTouched } from "formik";
-import { type NewTask } from "@/services/taskService";
+import { type TaskCategory, type TaskFrequency } from "@/services/taskService";
 import FormTextField from "@/components/molecules/FormTextField";
 import FormDateField from "@/components/molecules/FormDateField";
 import FormSelector from "@/components/molecules/FormSelector";
 
+type FormValues = {
+  name: string;
+  description: string;
+  category: TaskCategory | "";
+  frequency: TaskFrequency | "";
+  dateUntil: string;
+  durationMinutes: number | null;
+};
+
 type FormProps = {
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
-  values: NewTask;
-  errors: FormikErrors<NewTask>;
-  touched: FormikTouched<NewTask>;
+  values: FormValues;
+  errors: FormikErrors<FormValues>;
+  touched: FormikTouched<FormValues>;
   className?: string;
-  handleChange: (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-  handleBlur: (event: FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  handleChange: (
+    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => void;
+  handleBlur: (
+    event: FocusEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => void;
 };
 
 function Form({
@@ -34,7 +47,9 @@ function Form({
         onChange={handleChange}
         onBlur={handleBlur}
         error={(touched.name || values.name.length > 0) && !!errors.name}
-      helperText={(touched.name || values.name.length > 0) ? errors.name : undefined}
+        helperText={
+          touched.name || values.name.length > 0 ? errors.name : undefined
+        }
       />
       <FormTextField
         name="description"
@@ -42,14 +57,36 @@ function Form({
         value={values.description}
         onChange={handleChange}
         onBlur={handleBlur}
-        error={(touched.description || values.description.length > 0) && !!errors.description}
-        helperText={(touched.description || values.description.length > 0) ? errors.description : undefined}
+        error={
+          (touched.description || values.description.length > 0) &&
+          !!errors.description
+        }
+        helperText={
+          touched.description || values.description.length > 0
+            ? errors.description
+            : undefined
+        }
       />
       <FormSelector variant="category" />
       <FormSelector variant="frequency" />
       <FormDateField name="dateUntil" label="Datum bis" />
+      <FormTextField
+        name="durationMinutes"
+        label="Dauer (Minuten)"
+        value={values.durationMinutes ?? ""}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        error={
+          (touched.durationMinutes || (values.durationMinutes ?? 0) > 0) &&
+          !!errors.durationMinutes
+        }
+        helperText={
+          touched.durationMinutes || (values.durationMinutes ?? 0) > 0
+            ? errors.durationMinutes
+            : undefined
+        }
+      />
     </FormikForm>
   );
 }
-
 export default Form;

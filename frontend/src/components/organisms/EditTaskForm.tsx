@@ -1,10 +1,11 @@
 import { Formik } from "formik";
-import Form from "@/components/organisms/Form";
-import { Separator } from "@/components/ui/separator";
 import type { Task } from "@/services/taskService";
-import useEditTaskForm from "@/hooks/useEditTaskForm";
+import * as yup from "yup";
 import AppDialog from "@/components/molecules/AppDialog";
-import { taskValidationSchema } from "@/schemas/taskSchema";
+import Form from "./Form";
+import useEditTaskForm, {
+  type EditableTaskFields,
+} from "@/hooks/useEditTaskForm";
 
 type EditTaskFormProps = {
   task: Task;
@@ -12,34 +13,61 @@ type EditTaskFormProps = {
   onTaskUpdated?: (task: Task) => void;
 };
 
+const validationSchema = yup.object().shape({
+  name: yup.string(),
+  description: yup.string(),
+  category: yup.string(),
+  progress: yup
+    .number()
+    .min(0, "Fortschritt muss mindestens 0 sein")
+    .max(100, "Fortschritt darf höchstens 100 sein"),
+  frequency: yup.string(),
+  dateUntil: yup.date().nullable(),
+  durationMinutes: yup
+    .number()
+    .min(1, "Dauer muss mindestens 1 Minute betragen")
+    .required("Dauer ist erforderlich"),
+});
+
 function EditTaskForm({ task, onClose, onTaskUpdated }: EditTaskFormProps) {
-  const { loading, handleSubmit } = useEditTaskForm({ task, onClose, onTaskUpdated });
+  const { loading, handleSubmit } = useEditTaskForm({
+    task,
+    onClose,
+    onTaskUpdated,
+  });
 
   return (
-    <Formik<Task>
+    <Formik<EditableTaskFields>
       initialValues={{
-        id: task.id,
-        name: task.name,
-        description: task.description,
-        progress: task.progress,
-        category: task.category,
-        frequency: task.frequency,
-        dateUntil: task.dateUntil?.slice(0, 10) || "",
-        dateCreated: task.dateCreated,
+        name: task.name ?? "",
+        description: task.description ?? "",
+        category: task.category ?? "",
+        frequency: task.frequency ?? "",
+        progress: task.progress ?? 0,
+        dateUntil: task.dateUntil ? task.dateUntil.slice(0, 10) : "",
+        durationMinutes: task.durationMinutes ?? null,
       }}
       onSubmit={handleSubmit}
-      validationSchema={taskValidationSchema}
+      validationSchema={validationSchema}
     >
-      {({ values, handleChange, handleSubmit: formikHandleSubmit, handleBlur, errors, touched, isValid }) => (
+      {({
+        values,
+        handleChange,
+        handleBlur,
+        handleSubmit: formikHandleSubmit,
+        errors,
+        touched,
+        dirty,
+        isValid,
+      }) => (
         <AppDialog
           open
           onClose={onClose}
-          onSubmit={formikHandleSubmit}
+          title="Bearbeite die Details der Aufgabe"
+          onSubmit={() => formikHandleSubmit()}
           loading={loading}
-          submitDisabled={loading || !isValid}
+          submitDisabled={loading || !dirty || !isValid}
         >
-          <h2 className="mb-2 text-lg font-bold">Bearbeite die Details der Aufgabe</h2>
-          <Separator className="h-px w-full" />
           <Form
             onSubmit={formikHandleSubmit}
             values={values}
@@ -47,6 +75,7 @@ function EditTaskForm({ task, onClose, onTaskUpdated }: EditTaskFormProps) {
             handleBlur={handleBlur}
             errors={errors}
             touched={touched}
+            className="addTaskForm"
           />
         </AppDialog>
       )}

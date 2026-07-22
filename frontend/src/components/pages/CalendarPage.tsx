@@ -21,37 +21,45 @@ type calendarDay = {
 
 function getMonthLabel(weeks: calendarDay[][]): string {
   const firstDay = weeks[0][0].date;
-  const lastDay = weeks[3][6].date;
+  const lastDay = weeks[0][6].date;
 
   if (firstDay.getMonth() === lastDay.getMonth()) {
-    return format(firstDay, "MMMM yyyy", { locale: de });
+    return `${format(firstDay, "d. ", { locale: de })} - ${format(
+      lastDay,
+      "d. MMMM yyyy",
+      { locale: de }
+    )}`;
   }
 
-  return `${format(firstDay, "MMMM", { locale: de })} – ${format(
+  if (firstDay.getFullYear() === lastDay.getFullYear()) {
+    return `${format(firstDay, "d. MMMM", { locale: de })} – ${format(
+      lastDay,
+      "d. MMMM yyyy",
+      { locale: de }
+    )}`;
+  }
+
+  return `${format(firstDay, "d. MMMM yyyy", { locale: de })} – ${format(
     lastDay,
-    "MMMM yyyy",
+    "d. MMMM yyyy",
     { locale: de }
   )}`;
 }
 
-function getFourWeeks(calendarDate: Date) {
+function getOneWeek(calendarDate: Date) {
   const weeks: calendarDay[][] = [];
-  for (let i = 0; i < 4; i++) {
-    const weekDays: calendarDay[] = [];
-    const weekStart = addWeeks(
-      startOfWeek(calendarDate, { weekStartsOn: 1 }),
-      i
-    );
-    for (let j = 0; j < 7; j++) {
-      const day = addDays(weekStart, j);
-      weekDays.push({
-        date: day,
-        isToday: isSameDay(day, new Date()),
-        formattedDate: format(day, "dd.MM.yyyy", { locale: de }),
-      });
-    }
-    weeks.push(weekDays);
+  const weekDays: calendarDay[] = [];
+  const weekStart = addWeeks(startOfWeek(calendarDate, { weekStartsOn: 1 }), 0);
+  for (let j = 0; j < 7; j++) {
+    const day = addDays(weekStart, j);
+    weekDays.push({
+      date: day,
+      isToday: isSameDay(day, new Date()),
+      formattedDate: format(day, "dd.MM.yyyy", { locale: de }),
+    });
   }
+  weeks.push(weekDays);
+
   return weeks;
 }
 
@@ -158,7 +166,7 @@ function CalendarGrid() {
   const [weekOfset, setWeekOfset] = useState(0);
   const [selectedDay, setSelectedDay] = useState<calendarDay | null>(null);
 
-  const weeks = getFourWeeks(addWeeks(new Date(), weekOfset));
+  const weeks = getOneWeek(addWeeks(new Date(), weekOfset));
   const monthLabel = getMonthLabel(weeks);
 
   const arrowRight = (

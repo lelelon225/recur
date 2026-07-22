@@ -132,6 +132,10 @@ public class TaskService {
                         existingTask.setFrequency(task.getFrequency());
                 }
 
+                if (task.getDurationMinutes() != null) {
+                        existingTask.setDurationMinutes(task.getDurationMinutes());
+                }
+
                 if (task.getIsFavorite() != null) {
                         existingTask.setIsFavorite(task.getIsFavorite());
                 }

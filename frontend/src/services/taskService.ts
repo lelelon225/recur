@@ -1,7 +1,6 @@
 import axios from "axios";
 import api from "./api";
 
-
 export const TaskFrequency = {
   DAILY: "DAILY",
   WEEKLY: "WEEKLY",
@@ -21,7 +20,6 @@ export const TaskCategory = {
 
 export type TaskCategory = (typeof TaskCategory)[keyof typeof TaskCategory];
 
-
 export interface Task {
   id: string;
   name: string;
@@ -34,9 +32,8 @@ export interface Task {
   daysInSpan?: number | null;
   amountDid?: number | null;
   isFavorite?: boolean | null;
-  isArchived?: boolean | null;
+  durationMinutes?: number | null;
 }
-
 
 /** Fields the server owns and the client must never send on create/patch. */
 export type ServerOwnedFields = "id" | "dateCreated";
@@ -51,6 +48,7 @@ export type PatchTaskOptions = {
   favorite?: boolean;
   archived?: boolean;
   amountDid?: number;
+  durationMinutes?: number;
 };
 
 function extractErrorMessage(err: unknown, fallback: string): string {
@@ -77,7 +75,9 @@ function toInstantString(date: string | null | undefined): string | null {
   return parsed.toISOString();
 }
 
-function normalizeTaskDates<T extends { dateUntil?: string | null }>(task: T): T {
+function normalizeTaskDates<T extends { dateUntil?: string | null }>(
+  task: T
+): T {
   if (task.dateUntil === undefined) return task;
   return { ...task, dateUntil: toInstantString(task.dateUntil) };
 }
@@ -88,7 +88,7 @@ function getTasks(archived?: boolean, favorite?: boolean): Promise<Task[]> {
     .then((response) => response.data as Task[])
     .catch((err: unknown) => {
       throw new Error(
-        extractErrorMessage(err, "Fehler beim Abrufen der Aufgaben"),
+        extractErrorMessage(err, "Fehler beim Abrufen der Aufgaben")
       );
     });
 }
@@ -99,7 +99,7 @@ function createTask(task: NewTask): Promise<Task> {
     .then((response) => response.data as Task)
     .catch((err: unknown) => {
       throw new Error(
-        extractErrorMessage(err, "Fehler beim Erstellen der Aufgabe"),
+        extractErrorMessage(err, "Fehler beim Erstellen der Aufgabe")
       );
     });
 }
@@ -113,7 +113,7 @@ function patchTask(id: string, options: PatchTaskOptions = {}): Promise<Task> {
     .then((response) => response.data as Task)
     .catch((err: unknown) => {
       throw new Error(
-        extractErrorMessage(err, "Fehler beim Aktualisieren der Aufgabe"),
+        extractErrorMessage(err, "Fehler beim Aktualisieren der Aufgabe")
       );
     });
 }
@@ -124,7 +124,7 @@ function deleteTask(id: string): Promise<void> {
     .then(() => {})
     .catch((err: unknown) => {
       throw new Error(
-        extractErrorMessage(err, "Fehler beim Löschen der Aufgabe"),
+        extractErrorMessage(err, "Fehler beim Löschen der Aufgabe")
       );
     });
 }
@@ -135,15 +135,9 @@ function deleteAllTasks(): Promise<void> {
     .then(() => {})
     .catch((err: unknown) => {
       throw new Error(
-        extractErrorMessage(err, "Fehler beim Löschen aller Aufgaben"),
+        extractErrorMessage(err, "Fehler beim Löschen aller Aufgaben")
       );
     });
 }
 
-export {
-  getTasks,
-  createTask,
-  patchTask,
-  deleteTask,
-  deleteAllTasks,
-};
+export { getTasks, createTask, patchTask, deleteTask, deleteAllTasks };
