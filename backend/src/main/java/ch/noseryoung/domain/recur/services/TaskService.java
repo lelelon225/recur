@@ -160,6 +160,10 @@ public class TaskService {
                         existingTask.setAmountDid(amountDid);
                 }
 
+                if (task.getStartTime() != null) {
+                        existingTask.setStartTime(task.getStartTime());
+                }
+
                 TaskUtil.calculateDaysInSpan(existingTask);
                 taskUtil.calculateProgress(existingTask);
 

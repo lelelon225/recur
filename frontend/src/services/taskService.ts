@@ -33,6 +33,7 @@ export interface Task {
   amountDid?: number | null;
   isFavorite?: boolean | null;
   durationMinutes?: number | null;
+  startTime?: string | null;
 }
 
 /** Fields the server owns and the client must never send on create/patch. */

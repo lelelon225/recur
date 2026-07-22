@@ -32,6 +32,7 @@ function AddTaskForm({ onClose, onTaskCreated }: AddTaskFormProps) {
         frequency: "" as TaskFrequency,
         dateUntil: "",
         durationMinutes: null,
+        startTime: "",
       }}
       onSubmit={handleSubmit}
       validationSchema={taskValidationSchema}

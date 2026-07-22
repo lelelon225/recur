@@ -98,69 +98,6 @@ function getTaskHour(task: Task): string {
   return taskDate.getHours().toString().padStart(2, "0");
 }
 
-function DayModal({
-  day,
-  tasks,
-  onClose,
-}: {
-  day: calendarDay;
-  tasks: Task[];
-  onClose: () => void;
-}) {
-  const dayTasks = tasks.filter((task) => occursOn(task, day.date));
-  const hours = Array.from({ length: 24 }, (_, i) =>
-    i.toString().padStart(2, "0")
-  );
-
-  return (
-    <div
-      className="fixed inset-0 bg-black/60 flex items-center justify-center z-50"
-      onClick={onClose}
-    >
-      <div
-        className="bg-[#141416] rounded-2xl p-6 max-h-[80vh] overflow-y-auto w-[400px] border border-white/10"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">
-            {format(day.date, "EEEE, d. MMMM", { locale: de })}
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-white/40 hover:text-white text-sm"
-          >
-            ✕
-          </button>
-        </div>
-
-        {hours.map((hour) => {
-          const hourTasks = dayTasks.filter(
-            (task) => getTaskHour(task) === hour
-          );
-
-          return (
-            <div
-              key={hour}
-              className="flex gap-3 border-t border-white/10 py-2"
-            >
-              <span className="text-xs text-white/40 w-10 shrink-0">
-                {hour}:00
-              </span>
-              <div className="flex flex-col gap-1">
-                {hourTasks.map((task) => (
-                  <div key={task.id} className="text-sm">
-                    {task.name}
-                  </div>
-                ))}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
 function CalendarGrid() {
   const { tasks, loading } = useTasksContext();
   const [weekOfset, setWeekOfset] = useState(0);
@@ -194,6 +131,7 @@ function CalendarGrid() {
           <div onClick={() => setWeekOfset(weekOfset + 1)}>{arrowRight}</div>
         </div>
       </div>
+
       {weeks.map((week, weekIndex) => (
         <div key={weekIndex} className="grid grid-cols-7 gap-2 mb-2">
           {week.map((day) => {
@@ -223,14 +161,6 @@ function CalendarGrid() {
           })}
         </div>
       ))}
-
-      {selectedDay && (
-        <DayModal
-          day={selectedDay}
-          tasks={tasks}
-          onClose={() => setSelectedDay(null)}
-        />
-      )}
     </div>
   );
 }

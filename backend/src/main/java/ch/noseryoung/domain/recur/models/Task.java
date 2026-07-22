@@ -86,4 +86,7 @@ public class Task {
 
         @Column(name = "duration_minutes")
         private Integer durationMinutes;
+
+        @Column(name = "start_time")
+        private Instant startTime;
 }
