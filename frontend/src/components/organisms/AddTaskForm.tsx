@@ -1,9 +1,14 @@
 import { Formik } from "formik";
 import { Separator } from "@/components/ui/separator";
-import type { NewTask, Task, TaskCategory, TaskFrequency } from "@/services/taskService";
+import type {
+  NewTask,
+  Task,
+  TaskCategory,
+  TaskFrequency,
+} from "@/services/taskService";
 import useAddTaskForm from "@/hooks/useAddTaskForm";
 import AppDialog from "@/components/molecules/AppDialog";
-import {taskValidationSchema} from "@/schemas/taskSchema";
+import { taskValidationSchema } from "@/schemas/taskSchema";
 import Form from "@/components/organisms/Form";
 
 type AddTaskFormProps = {
@@ -26,11 +31,21 @@ function AddTaskForm({ onClose, onTaskCreated }: AddTaskFormProps) {
         category: "" as TaskCategory,
         frequency: "" as TaskFrequency,
         dateUntil: "",
+        durationMinutes: null,
       }}
       onSubmit={handleSubmit}
       validationSchema={taskValidationSchema}
     >
-      {({ values, handleChange, handleSubmit: formikHandleSubmit, handleBlur, errors, touched, isValid, dirty }) => (
+      {({
+        values,
+        handleChange,
+        handleSubmit: formikHandleSubmit,
+        handleBlur,
+        errors,
+        touched,
+        isValid,
+        dirty,
+      }) => (
         <AppDialog
           open
           onClose={onClose}

@@ -83,4 +83,7 @@ public class Task {
         @ManyToOne(fetch = FetchType.LAZY)
         @JoinColumn(name = "user_id")
         private User owner;
+
+        @Column(name = "duration_minutes")
+        private Integer durationMinutes;
 }

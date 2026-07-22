@@ -16,7 +16,8 @@ CREATE TABLE task (
     days_in_span INTEGER,
     amount_did INTEGER,
     is_favorite BOOLEAN DEFAULT FALSE,
-    is_archived BOOLEAN DEFAULT FALSE
+    is_archived BOOLEAN DEFAULT FALSE,
+    duration_minutes INTEGER DEFAULT 60
 );
 
 CREATE TABLE app_user (
@@ -42,6 +43,7 @@ COPY data.task (
     date_created,
     amount_did,
     is_favorite,
-    is_archived
+    is_archived,
+    duration_minutes
 )
 FROM '/docker-entrypoint-initdb.d/data.csv' DELIMITER ',' CSV HEADER;
