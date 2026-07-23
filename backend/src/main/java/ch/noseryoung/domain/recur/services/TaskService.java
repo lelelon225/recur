@@ -89,7 +89,7 @@ public class TaskService {
         public ResponseEntity<Task> createTask(Task task) {
 
                 task.setOwner(getCurrentUser());
-                taskRepository.save(task);
+                
 
                 TaskUtil.calculateDaysInSpan(task);
                 taskUtil.calculateProgress(task);

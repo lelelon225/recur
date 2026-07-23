@@ -27,6 +27,8 @@ const validationSchema = yup.object().shape({
     .number()
     .min(1, "Dauer muss mindestens 1 Minute betragen")
     .required("Dauer ist erforderlich"),
+  startDate: yup.date().required("Startdatum ist erforderlich"),
+  startTimeOfDay: yup.string().required("Startzeit ist erforderlich"),
 });
 
 function EditTaskForm({ task, onClose, onTaskUpdated }: EditTaskFormProps) {
@@ -46,6 +48,8 @@ function EditTaskForm({ task, onClose, onTaskUpdated }: EditTaskFormProps) {
         progress: task.progress ?? 0,
         dateUntil: task.dateUntil ? task.dateUntil.slice(0, 10) : "",
         durationMinutes: task.durationMinutes ?? null,
+        startDate: task.startTime ? task.startTime.slice(0, 10) : "",
+        startTimeOfDay: task.startTime ? task.startTime.slice(11, 16) : "",
       }}
       onSubmit={handleSubmit}
       validationSchema={validationSchema}

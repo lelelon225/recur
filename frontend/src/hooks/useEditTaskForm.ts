@@ -12,6 +12,8 @@ export type EditableTaskFields = Pick<
   "name" | "description" | "category" | "frequency" | "progress" | "dateUntil"
 > & {
   durationMinutes: number | null;
+  startDate: string;
+  startTimeOfDay: string;
 };
 
 function valuesChanged(values: EditableTaskFields, original: Task): boolean {
@@ -21,6 +23,18 @@ function valuesChanged(values: EditableTaskFields, original: Task): boolean {
   const origDate = original.dateUntil ? original.dateUntil.slice(0, 10) : "";
   const valDate = values.dateUntil ? values.dateUntil.slice(0, 10) : "";
 
+  const origStartDate = original.startTime
+    ? original.startTime.slice(0, 10)
+    : "";
+  const valStartDate = values.startDate ? values.startDate.slice(0, 10) : "";
+
+  const origStartTime = original.startTime
+    ? original.startTime.slice(11, 16)
+    : "";
+  const valStartTime = values.startTimeOfDay
+    ? values.startTimeOfDay.slice(0, 5)
+    : "";
+
   return !(
     normStr(values.name) === normStr(original.name) &&
     normStr(values.description) === normStr(original.description) &&
@@ -29,7 +43,9 @@ function valuesChanged(values: EditableTaskFields, original: Task): boolean {
     values.progress === original.progress &&
     normDuration(values.durationMinutes) ===
       normDuration(original.durationMinutes) &&
-    valDate === origDate
+    valDate === origDate &&
+    valStartDate === origStartDate &&
+    valStartTime === origStartTime
   );
 }
 

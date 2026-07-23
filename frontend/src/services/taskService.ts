@@ -50,6 +50,7 @@ export type PatchTaskOptions = {
   archived?: boolean;
   amountDid?: number;
   durationMinutes?: number;
+  startTime?: string;
 };
 
 function extractErrorMessage(err: unknown, fallback: string): string {
