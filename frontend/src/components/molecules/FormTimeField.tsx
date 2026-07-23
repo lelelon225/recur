@@ -2,7 +2,7 @@ import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
-type FormTextFieldProps = {
+type FormTimeFieldProps = {
   name: string;
   label: string;
   value: string | number | null;
@@ -15,18 +15,18 @@ type FormTextFieldProps = {
   onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
 };
 
-function FormTextField({
+function FormTimeField({
   name,
   label,
   value,
   error,
   className,
   helperText,
-  type = "text",
+  type = "time",
   required,
   onChange,
   onBlur,
-}: FormTextFieldProps) {
+}: FormTimeFieldProps) {
   return (
     <Field data-invalid={error ? "true" : "false"}>
       <FieldLabel className="mt-3" htmlFor={name}>
@@ -56,4 +56,4 @@ function FormTextField({
   );
 }
 
-export default FormTextField;
+export default FormTimeField;

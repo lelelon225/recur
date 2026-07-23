@@ -5,14 +5,18 @@ import { type TaskCategory, type TaskFrequency } from "@/services/taskService";
 import FormTextField from "@/components/molecules/FormTextField";
 import FormDateField from "@/components/molecules/FormDateField";
 import FormSelector from "@/components/molecules/FormSelector";
+import FormTimeField from "@/components/molecules/FormTimeField";
 
-type FormValues = {
+export type FormValues = {
   name: string;
   description: string;
   category: TaskCategory | "";
   frequency: TaskFrequency | "";
   dateUntil: string;
   durationMinutes: number | null;
+  startDate: string;
+  startTimeOfDay: string;
+  startTime: string | null;
 };
 
 type FormProps = {
@@ -69,7 +73,6 @@ function Form({
       />
       <FormSelector variant="category" />
       <FormSelector variant="frequency" />
-      <FormDateField name="dateUntil" label="Datum bis" />
       <FormTextField
         name="durationMinutes"
         label="Dauer (Minuten)"
@@ -86,6 +89,16 @@ function Form({
             : undefined
         }
       />
+      <FormDateField name="startDate" label="Startdatum" />
+      <FormTimeField
+        name="startTimeOfDay"
+        label="Startzeit"
+        value={values.startTimeOfDay}
+        onChange={handleChange}
+        onBlur={handleBlur}
+      />
+
+      <FormDateField name="dateUntil" label="Datum bis" />
     </FormikForm>
   );
 }

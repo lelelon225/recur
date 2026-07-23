@@ -33,6 +33,7 @@ export interface Task {
   amountDid?: number | null;
   isFavorite?: boolean | null;
   durationMinutes?: number | null;
+  startTime?: string | null;
 }
 
 /** Fields the server owns and the client must never send on create/patch. */
@@ -49,6 +50,7 @@ export type PatchTaskOptions = {
   archived?: boolean;
   amountDid?: number;
   durationMinutes?: number;
+  startTime?: string;
 };
 
 function extractErrorMessage(err: unknown, fallback: string): string {
