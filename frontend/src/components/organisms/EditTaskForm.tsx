@@ -31,7 +31,23 @@ const validationSchema = yup.object().shape({
   startTimeOfDay: yup.string().required("Startzeit ist erforderlich"),
 });
 
+function toLocalDateParts(isoString: string) {
+  const d = new Date(isoString);
+  const pad = (n: number) => String(n).padStart(2, "0");
+
+  const date = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(
+    d.getDate()
+  )}`;
+  const time = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+
+  return { date, time };
+}
+
 function EditTaskForm({ task, onClose, onTaskUpdated }: EditTaskFormProps) {
+  const { date: localStartDate, time: localStartTime } = task.startTime
+    ? toLocalDateParts(task.startTime)
+    : { date: "", time: "" };
+
   const { loading, handleSubmit } = useEditTaskForm({
     task,
     onClose,
@@ -48,8 +64,8 @@ function EditTaskForm({ task, onClose, onTaskUpdated }: EditTaskFormProps) {
         progress: task.progress ?? 0,
         dateUntil: task.dateUntil ? task.dateUntil.slice(0, 10) : "",
         durationMinutes: task.durationMinutes ?? null,
-        startDate: task.startTime ? task.startTime.slice(0, 10) : "",
-        startTimeOfDay: task.startTime ? task.startTime.slice(11, 16) : "",
+        startDate: localStartDate,
+        startTimeOfDay: localStartTime,
       }}
       onSubmit={handleSubmit}
       validationSchema={validationSchema}

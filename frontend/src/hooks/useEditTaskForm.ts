@@ -29,11 +29,12 @@ function valuesChanged(values: EditableTaskFields, original: Task): boolean {
   const valStartDate = values.startDate ? values.startDate.slice(0, 10) : "";
 
   const origStartTime = original.startTime
-    ? original.startTime.slice(11, 16)
+    ? new Date(original.startTime).toISOString()
     : "";
-  const valStartTime = values.startTimeOfDay
-    ? values.startTimeOfDay.slice(0, 5)
-    : "";
+  const valStartTime =
+    values.startDate && values.startTimeOfDay
+      ? new Date(`${values.startDate}T${values.startTimeOfDay}`).toISOString()
+      : "";
 
   return !(
     normStr(values.name) === normStr(original.name) &&
@@ -83,8 +84,18 @@ function useEditTaskForm({
 
       setLoading(true);
 
+      const combined = new Date(`${values.startDate}T${values.startTimeOfDay}`);
+      const startTimeIso = combined.toISOString();
+
+      const { startDate, startTimeOfDay, ...restValues } = values;
+
+      const payload = {
+        ...restValues,
+        startTime: startTimeIso,
+      };
+
       try {
-        const updatedTask = await patchTask(task.id, { task: values });
+        const updatedTask = await patchTask(task.id, { task: payload });
         showSuccessToast("Aufgabe erfolgreich aktualisiert");
         onTaskUpdated?.(updatedTask);
 
