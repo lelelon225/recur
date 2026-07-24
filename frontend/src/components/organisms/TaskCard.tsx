@@ -113,7 +113,7 @@ function TaskCard({
           <TaskDescription description={task.description} />
         </div>
         <div className="mt-auto flex items-center gap-4 justify-between">
-          <TaskTimeFrame start={task.dateCreated} end={task.dateUntil} />
+          <TaskTimeFrame start={task.startTime} end={task.dateUntil} />
           <TaskFavorite
             isFavorite={task.isFavorite || false}
             onClick={handleToggleFavorite}

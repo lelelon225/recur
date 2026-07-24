@@ -287,7 +287,7 @@ function CalendarGrid() {
                   gridRow: `${startRow} / span ${rowSpan}`,
                   zIndex: 10,
                 }}
-                className={`border rounded px-1 py-0.5 text-[10px] truncate overflow-hidden font-medium ${categoryClass}`}
+                className={`border rounded px-1 py-0.1 text-[10px] truncate overflow-hidden font-medium ${categoryClass}`}
                 title={task.name}
               >
                 {task.name}
