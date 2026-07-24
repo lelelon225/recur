@@ -13,7 +13,7 @@ type AppDialogProps = {
   open: boolean;
   onClose: () => void;
   title?: string;
-  children: ReactNode;
+  children?: ReactNode;
   onSubmit?: () => void;
   loading?: boolean;
   submitDisabled?: boolean;
@@ -43,7 +43,11 @@ function AppDialog({
           <Button variant="outline" onClick={onClose}>
             Close
           </Button>
-          <LoadingButton onClick={onSubmit} disabled={submitDisabled} loading={loading}>
+          <LoadingButton
+            onClick={onSubmit}
+            disabled={submitDisabled}
+            loading={loading}
+          >
             Submit
           </LoadingButton>
         </DialogFooter>

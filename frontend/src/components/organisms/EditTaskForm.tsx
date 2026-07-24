@@ -39,7 +39,6 @@ function toLocalDateParts(isoString: string) {
     d.getDate()
   )}`;
   const time = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
-
   return { date, time };
 }
 
