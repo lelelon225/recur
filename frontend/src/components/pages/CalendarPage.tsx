@@ -14,6 +14,8 @@ import { useState } from "react";
 import { ArrowRight, ArrowLeft } from "lucide-react";
 import { TaskCategory } from "@/services/taskService";
 import { Button } from "../ui/button";
+import AppDialog from "../molecules/AppDialog";
+import DetailDialog from "../molecules/DetailDialog";
 type calendarDay = {
   date: Date;
   isToday: boolean;
@@ -117,6 +119,8 @@ function CalendarGrid() {
   const [activeCategory, setActiveCategory] = useState<TaskCategory | "All">(
     "All"
   );
+
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   const categoryStyles: Record<TaskCategory, string> = {
     [TaskCategory.WORK]:
@@ -231,6 +235,7 @@ function CalendarGrid() {
 
         {hours.map((hour, hourIdx) => {
           const rowIndex = hourIdx * 4 + 2;
+
           return (
             <div
               key={hour}
@@ -276,6 +281,7 @@ function CalendarGrid() {
             return (
               <div
                 key={`${task.id}-${day.formattedDate}`}
+                onClick={() => setSelectedTask(task)}
                 style={{
                   gridColumn: colIndex,
                   gridRow: `${startRow} / span ${rowSpan}`,
@@ -290,6 +296,42 @@ function CalendarGrid() {
           });
         })}
       </div>
+      <DetailDialog
+        open={selectedTask !== null}
+        onClose={() => setSelectedTask(null)}
+        title={selectedTask?.name}
+      >
+        <span className="text-sm text-muted-foreground">
+          {selectedTask?.description && (
+            <div className="mt-2" style={{ wordWrap: "break-word" }}>
+              <strong>Beschreibung:</strong> {selectedTask.description}
+            </div>
+          )}
+          {selectedTask?.durationMinutes && (
+            <div className="mt-2">
+              <strong>Dauer:</strong> {selectedTask.durationMinutes} Minuten
+            </div>
+          )}
+          {selectedTask?.startTime && (
+            <div className="mt-2">
+              <strong>Startdatum:</strong>{" "}
+              {format(selectedTask.startTime, "dd.MM.yyyy", { locale: de })}
+            </div>
+          )}
+          {selectedTask?.startTime && (
+            <div className="mt-2">
+              <strong>Uhrzeit:</strong>{" "}
+              {format(selectedTask.startTime, "HH:mm", { locale: de })}
+            </div>
+          )}
+          {selectedTask?.dateUntil && (
+            <div className="mt-2">
+              <strong>Endzeit:</strong>{" "}
+              {format(selectedTask.dateUntil, "dd.MM.yyyy", { locale: de })}
+            </div>
+          )}
+        </span>
+      </DetailDialog>
     </div>
   );
 }
