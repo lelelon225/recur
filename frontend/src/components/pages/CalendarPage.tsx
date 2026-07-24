@@ -124,13 +124,13 @@ function CalendarGrid() {
 
   const categoryStyles: Record<TaskCategory, string> = {
     [TaskCategory.WORK]:
-      "bg-red-100 text-red-800 border-red-300 dark:bg-red-950 dark:text-red-200 dark:border-red-800",
+      "bg-rose-500/20 text-black-200 border-rose-500/25 dark:bg-red-950 dark:text-red-200 dark:border-red-500/25",
     [TaskCategory.PERSONAL]:
-      "bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-200 dark:border-emerald-800",
+      "bg-emerald-500/20 text-black-200 border-emerald-500/25 dark:bg-emerald-950 dark:text-emerald-200 dark:border-emerald-500/25",
     [TaskCategory.SCHOOL]:
-      "bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-950 dark:text-blue-200 dark:border-blue-800",
+      "bg-sky-500/20 text-black-200 border-sky-500/25 dark:bg-blue-950 dark:text-blue-200 dark:border-blue-500/25",
     [TaskCategory.OTHER]:
-      "bg-gray-100 text-gray-800 border-gray-300 dark:bg-gray-900 dark:text-gray-200 dark:border-gray-800",
+      "bg-zinc-500/20 text-black-200 border-zinc-500/25 dark:bg-zinc-600 dark:text-gray-200 dark:border-zinc-500/25",
   };
 
   const categoryLabels: Record<TaskCategory | "All", string> = {
