@@ -1,10 +1,10 @@
 import { Formik } from "formik";
 import { Separator } from "@/components/ui/separator";
-import type { NewTask, Task, TaskCategory, TaskFrequency } from "@/services/taskService";
+import type { Task, TaskCategory, TaskFrequency } from "@/services/taskService";
 import useAddTaskForm from "@/hooks/useAddTaskForm";
 import AppDialog from "@/components/molecules/AppDialog";
-import {taskValidationSchema} from "@/schemas/taskSchema";
-import Form from "@/components/organisms/Form";
+import { taskValidationSchema } from "@/schemas/taskSchema";
+import Form, { type FormValues } from "@/components/organisms/Form";
 
 type AddTaskFormProps = {
   onClose: () => void;
@@ -18,19 +18,30 @@ function AddTaskForm({ onClose, onTaskCreated }: AddTaskFormProps) {
   });
 
   return (
-    <Formik<NewTask>
+    <Formik<FormValues>
       initialValues={{
         name: "",
         description: "",
-        progress: 0,
         category: "" as TaskCategory,
         frequency: "" as TaskFrequency,
         dateUntil: "",
+        durationMinutes: null,
+        startDate: "",
+        startTimeOfDay: "",
       }}
       onSubmit={handleSubmit}
       validationSchema={taskValidationSchema}
     >
-      {({ values, handleChange, handleSubmit: formikHandleSubmit, handleBlur, errors, touched, isValid, dirty }) => (
+      {({
+        values,
+        handleChange,
+        handleSubmit: formikHandleSubmit,
+        handleBlur,
+        errors,
+        touched,
+        isValid,
+        dirty,
+      }) => (
         <AppDialog
           open
           onClose={onClose}

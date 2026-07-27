@@ -11,7 +11,11 @@ import {
 import { de } from "date-fns/locale";
 import { Spinner } from "../ui/spinner";
 import { useState } from "react";
-
+import { ArrowRight, ArrowLeft } from "lucide-react";
+import { TaskCategory } from "@/services/taskService";
+import { Button } from "../ui/button";
+import AppDialog from "../molecules/AppDialog";
+import DetailDialog from "../molecules/DetailDialog";
 type calendarDay = {
   date: Date;
   isToday: boolean;
@@ -20,42 +24,50 @@ type calendarDay = {
 
 function getMonthLabel(weeks: calendarDay[][]): string {
   const firstDay = weeks[0][0].date;
-  const lastDay = weeks[3][6].date;
+  const lastDay = weeks[0][6].date;
 
   if (firstDay.getMonth() === lastDay.getMonth()) {
-    return format(firstDay, "MMMM yyyy", { locale: de });
+    return `${format(firstDay, "d. ", { locale: de })} - ${format(
+      lastDay,
+      "d. MMMM yyyy",
+      { locale: de }
+    )}`;
   }
 
-  return `${format(firstDay, "MMMM", { locale: de })} – ${format(
+  if (firstDay.getFullYear() === lastDay.getFullYear()) {
+    return `${format(firstDay, "d. MMMM", { locale: de })} – ${format(
+      lastDay,
+      "d. MMMM yyyy",
+      { locale: de }
+    )}`;
+  }
+
+  return `${format(firstDay, "d. MMMM yyyy", { locale: de })} – ${format(
     lastDay,
-    "MMMM yyyy",
+    "d. MMMM yyyy",
     { locale: de }
   )}`;
 }
 
-function getFourWeeks(calendarDate: Date) {
+function getOneWeek(calendarDate: Date) {
   const weeks: calendarDay[][] = [];
-  for (let i = 0; i < 4; i++) {
-    const weekDays: calendarDay[] = [];
-    const weekStart = addWeeks(
-      startOfWeek(calendarDate, { weekStartsOn: 1 }),
-      i
-    );
-    for (let j = 0; j < 7; j++) {
-      const day = addDays(weekStart, j);
-      weekDays.push({
-        date: day,
-        isToday: isSameDay(day, new Date()),
-        formattedDate: format(day, "dd.MM.yyyy", { locale: de }),
-      });
-    }
-    weeks.push(weekDays);
+  const weekDays: calendarDay[] = [];
+  const weekStart = addWeeks(startOfWeek(calendarDate, { weekStartsOn: 1 }), 0);
+  for (let j = 0; j < 7; j++) {
+    const day = addDays(weekStart, j);
+    weekDays.push({
+      date: day,
+      isToday: isSameDay(day, new Date()),
+      formattedDate: format(day, "dd.MM.yyyy", { locale: de }),
+    });
   }
+  weeks.push(weekDays);
+
   return weeks;
 }
 
 function occursOn(task: Task, date: Date): boolean {
-  const taskDate = new Date(task.dateCreated);
+  const taskDate = new Date(task.startTime);
   const taskUntilDate = new Date(task.dateUntil);
 
   if (
@@ -84,81 +96,68 @@ function occursOn(task: Task, date: Date): boolean {
   }
 }
 
-function getTaskHour(task: Task): string {
-  const taskDate = new Date(task.dateCreated);
-  return taskDate.getHours().toString().padStart(2, "0");
-}
+function getTaskStartRow(task: Task) {
+  const taskDate = new Date(task.startTime);
+  const hoursFromEight = taskDate.getHours() - 8 + taskDate.getMinutes() / 60;
 
-function DayModal({
-  day,
-  tasks,
-  onClose,
-}: {
-  day: calendarDay;
-  tasks: Task[];
-  onClose: () => void;
-}) {
-  const dayTasks = tasks.filter((task) => occursOn(task, day.date));
-  const hours = Array.from({ length: 24 }, (_, i) =>
-    i.toString().padStart(2, "0")
-  );
+  const calculatedRow = Math.floor(hoursFromEight * 4) + 2;
+  const startRow = Math.max(2, calculatedRow);
 
-  return (
-    <div
-      className="fixed inset-0 bg-black/60 flex items-center justify-center z-50"
-      onClick={onClose}
-    >
-      <div
-        className="bg-[#141416] rounded-2xl p-6 max-h-[80vh] overflow-y-auto w-[400px] border border-white/10"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">
-            {format(day.date, "EEEE, d. MMMM", { locale: de })}
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-white/40 hover:text-white text-sm"
-          >
-            ✕
-          </button>
-        </div>
+  const rowSpan = Math.max(1, Math.ceil((task.durationMinutes || 0) / 15));
 
-        {hours.map((hour) => {
-          const hourTasks = dayTasks.filter(
-            (task) => getTaskHour(task) === hour
-          );
-
-          return (
-            <div
-              key={hour}
-              className="flex gap-3 border-t border-white/10 py-2"
-            >
-              <span className="text-xs text-white/40 w-10 shrink-0">
-                {hour}:00
-              </span>
-              <div className="flex flex-col gap-1">
-                {hourTasks.map((task) => (
-                  <div key={task.id} className="text-sm">
-                    {task.name}
-                  </div>
-                ))}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
+  return { startRow, rowSpan };
 }
 
 function CalendarGrid() {
   const { tasks, loading } = useTasksContext();
   const [weekOfset, setWeekOfset] = useState(0);
-  const [selectedDay, setSelectedDay] = useState<calendarDay | null>(null);
 
-  const weeks = getFourWeeks(addWeeks(new Date(), weekOfset));
+  const weeks = getOneWeek(addWeeks(new Date(), weekOfset));
   const monthLabel = getMonthLabel(weeks);
+  const currentWeek = weeks[0];
+
+  const [activeCategory, setActiveCategory] = useState<TaskCategory | "All">(
+    "All"
+  );
+
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+
+  const categoryStyles: Record<TaskCategory, string> = {
+    [TaskCategory.WORK]:
+      "bg-rose-500/20 text-black-200 border-rose-500/25 dark:bg-red-950 dark:text-red-200 dark:border-red-500/25",
+    [TaskCategory.PERSONAL]:
+      "bg-emerald-500/20 text-black-200 border-emerald-500/25 dark:bg-emerald-950 dark:text-emerald-200 dark:border-emerald-500/25",
+    [TaskCategory.SCHOOL]:
+      "bg-sky-500/20 text-black-200 border-sky-500/25 dark:bg-blue-950 dark:text-blue-200 dark:border-blue-500/25",
+    [TaskCategory.OTHER]:
+      "bg-zinc-500/20 text-black-200 border-zinc-500/25 dark:bg-zinc-600 dark:text-gray-200 dark:border-zinc-500/25",
+  };
+
+  const categoryLabels: Record<TaskCategory | "All", string> = {
+    [TaskCategory.WORK]: "Arbeit",
+    [TaskCategory.PERSONAL]: "Persönlich",
+    [TaskCategory.SCHOOL]: "Bildung",
+    [TaskCategory.OTHER]: "Sonstiges",
+    All: "Alle",
+  };
+
+  const categories = Object.values(TaskCategory);
+
+  const visibleTasks =
+    activeCategory === "All"
+      ? tasks
+      : tasks.filter((task) => task.category === activeCategory);
+
+  const hours = Array.from({ length: 16 }, (_, i) =>
+    (i + 8).toString().padStart(2, "0")
+  );
+
+  const arrowRight = (
+    <ArrowRight className="size-5 hover:scale-125 transition-transform duration-200" />
+  );
+  const arrowLeft = (
+    <ArrowLeft className="size-5 hover:scale-125 transition-transform duration-200" />
+  );
 
   if (loading) {
     return (
@@ -167,40 +166,6 @@ function CalendarGrid() {
       </div>
     );
   }
-
-  const arrowLeft = (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 4 24 24"
-      strokeWidth={1.5}
-      stroke="currentColor"
-      className="size-5.5"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M15.75 19.5L8.25 12l7.5-7.5"
-      />
-    </svg>
-  );
-
-  const arrowRight = (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 4 24 24"
-      strokeWidth={1.5}
-      stroke="currentColor"
-      className="size-5.5"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M8.25 19.5L15.75 12l-7.5-7.5"
-      />
-    </svg>
-  );
 
   return (
     <div>
@@ -212,43 +177,161 @@ function CalendarGrid() {
           <div onClick={() => setWeekOfset(weekOfset + 1)}>{arrowRight}</div>
         </div>
       </div>
-      {weeks.map((week, weekIndex) => (
-        <div key={weekIndex} className="grid grid-cols-7 gap-2 mb-2">
-          {week.map((day) => {
-            const dayTasks = tasks.filter((task) => occursOn(task, day.date));
+
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "left",
+          gap: "0.5rem",
+          marginBottom: "1rem",
+        }}
+      >
+        <Button
+          onClick={() => setActiveCategory("All")}
+          className={activeCategory === "All" ? "..." : "..."}
+        >
+          Alle
+        </Button>
+        {categories.map((cat) => (
+          <Button
+            key={cat}
+            onClick={() => setActiveCategory(cat)}
+            variant={activeCategory === cat ? "default" : "outline"}
+          >
+            <span
+              className={`size-2 rounded-full mr-2 ${
+                categoryStyles[cat].split(" ")[0]
+              }`}
+            />
+            {categoryLabels[cat]}
+          </Button>
+        ))}
+      </div>
+      <div
+        className="grid border rounded-lg overflow-x-auto"
+        style={{
+          gridTemplateColumns: "80px repeat(7, minmax(120px, 1fr))",
+          gridTemplateRows: "auto repeat(64, 15px)",
+        }}
+      >
+        <div className="p-2 font-bold text-center border-b border-r bg-muted/50 flex items-center justify-center">
+          Zeit
+        </div>
+
+        {currentWeek.map((day, index) => (
+          <div
+            key={day.formattedDate}
+            className="p-2 border-b border-r text-center font-medium text-xs bg-muted/30"
+            style={{ gridColumn: index + 2, gridRow: 1 }}
+          >
+            <div style={{ textAlign: "center", fontWeight: "bold" }}>
+              {format(day.date, "EEEE", { locale: de })}
+            </div>
+            <div className="text-[10px] text-muted-foreground">
+              {format(day.date, "dd.MM.", { locale: de })}
+            </div>
+          </div>
+        ))}
+
+        {hours.map((hour, hourIdx) => {
+          const rowIndex = hourIdx * 4 + 2;
+
+          return (
+            <div
+              key={hour}
+              className="contents"
+              style={{ fontWeight: "bold", fontSize: "0.875rem" }}
+            >
+              <div
+                style={{
+                  gridColumn: 1,
+                  gridRow: `${rowIndex} / span 4`,
+                  textAlign: "center",
+                }}
+              >
+                {hour}:00
+              </div>
+              {currentWeek.map((day, dayIdx) => (
+                <div
+                  key={`${day.formattedDate}-${hour}`}
+                  style={{
+                    gridColumn: dayIdx + 2,
+                    gridRow: `${rowIndex} / span 4`,
+                  }}
+                  className="border-b border-r p-1 relative cursor-pointer hover:bg-muted/20"
+                ></div>
+              ))}
+            </div>
+          );
+        })}
+
+        {currentWeek.map((day, dayIdx) => {
+          const dayTasks = visibleTasks.filter((task) =>
+            occursOn(task, day.date)
+          );
+          const colIndex = dayIdx + 2;
+
+          return dayTasks.map((task) => {
+            const { startRow, rowSpan } = getTaskStartRow(task);
+
+            const categoryClass =
+              categoryStyles[task.category] ??
+              "bg-gray-100 text-gray-800 border-gray-300";
 
             return (
               <div
-                key={day.formattedDate}
-                onClick={() => setSelectedDay(day)}
-                className={`flex flex-col items-start justify-start gap-1 rounded-lg p-2 min-h-[100px] border border-white/10 cursor-pointer hover:border-white/30 transition ${
-                  day.isToday ? "bg-blue-600/25" : ""
-                }`}
+                key={`${task.id}-${day.formattedDate}`}
+                onClick={() => setSelectedTask(task)}
+                style={{
+                  gridColumn: colIndex,
+                  gridRow: `${startRow} / span ${rowSpan}`,
+                  zIndex: 10,
+                }}
+                className={`border rounded px-1 py-0.1 text-[10px] truncate overflow-hidden font-medium ${categoryClass}`}
+                title={task.name}
               >
-                <span className="text-sm font-semibold">
-                  {day.date.getDate()}
-                </span>
-                {dayTasks.map((task) => (
-                  <div
-                    key={task.id}
-                    className="text-xs text-gray-400 truncate w-full"
-                  >
-                    {task.name}
-                  </div>
-                ))}
+                {task.name}
               </div>
             );
-          })}
-        </div>
-      ))}
-
-      {selectedDay && (
-        <DayModal
-          day={selectedDay}
-          tasks={tasks}
-          onClose={() => setSelectedDay(null)}
-        />
-      )}
+          });
+        })}
+      </div>
+      <DetailDialog
+        open={selectedTask !== null}
+        onClose={() => setSelectedTask(null)}
+        title={selectedTask?.name}
+      >
+        <span className="text-sm text-muted-foreground">
+          {selectedTask?.description && (
+            <div className="mt-2" style={{ wordWrap: "break-word" }}>
+              <strong>Beschreibung:</strong> {selectedTask.description}
+            </div>
+          )}
+          {selectedTask?.durationMinutes && (
+            <div className="mt-2">
+              <strong>Dauer:</strong> {selectedTask.durationMinutes} Minuten
+            </div>
+          )}
+          {selectedTask?.startTime && (
+            <div className="mt-2">
+              <strong>Startdatum:</strong>{" "}
+              {format(selectedTask.startTime, "dd.MM.yyyy", { locale: de })}
+            </div>
+          )}
+          {selectedTask?.startTime && (
+            <div className="mt-2">
+              <strong>Uhrzeit:</strong>{" "}
+              {format(selectedTask.startTime, "HH:mm", { locale: de })}
+            </div>
+          )}
+          {selectedTask?.dateUntil && (
+            <div className="mt-2">
+              <strong>Endzeit:</strong>{" "}
+              {format(selectedTask.dateUntil, "dd.MM.yyyy", { locale: de })}
+            </div>
+          )}
+        </span>
+      </DetailDialog>
     </div>
   );
 }

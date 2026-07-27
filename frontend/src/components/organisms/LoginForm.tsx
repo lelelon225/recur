@@ -1,6 +1,11 @@
 import { Form, type FormikTouched, type FormikErrors } from "formik";
 import { Button } from "@/components/ui/button";
-import { Field, FieldDescription, FieldGroup, FieldSeparator } from "@/components/ui/field";
+import {
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldSeparator,
+} from "@/components/ui/field";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import FormTextField from "../molecules/FormTextField";
@@ -8,22 +13,25 @@ import LoadingButton from "../atoms/LoadingButton";
 import GoogleLoginButton from "../atoms/GoogleLoginButton";
 import type { LoginRequest } from "@/types/auth";
 import type { FormEvent, ChangeEvent, FocusEvent } from "react";
-
+import FormPasswordField from "../molecules/FormPasswordField";
 
 type LoginFormProps = {
-    navigate: () => void;
-    onSubmit: (event: FormEvent<HTMLFormElement>) => void;
-    values: LoginRequest;
-    errors: FormikErrors<LoginRequest>;
-    touched: FormikTouched<LoginRequest>;
-    className?: string;
-    handleChange: (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-    handleBlur: (event: FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-    loading?: boolean;
-    submitDisabled?: boolean;
-    backendError?: string;
+  navigate: () => void;
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+  values: LoginRequest;
+  errors: FormikErrors<LoginRequest>;
+  touched: FormikTouched<LoginRequest>;
+  className?: string;
+  handleChange: (
+    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => void;
+  handleBlur: (
+    event: FocusEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => void;
+  loading?: boolean;
+  submitDisabled?: boolean;
+  backendError?: string;
 };
-
 
 function LoginForm({
   navigate,
@@ -36,7 +44,7 @@ function LoginForm({
   loading,
   submitDisabled,
   backendError,
-  }: LoginFormProps) {
+}: LoginFormProps) {
   return (
     <Form className="flex flex-col gap-6" onSubmit={onSubmit}>
       <FieldGroup>
@@ -61,21 +69,34 @@ function LoginForm({
           onChange={handleChange}
           onBlur={handleBlur}
           error={(touched.email || values.email.length > 0) && !!errors.email}
-          helperText={(touched.email || values.email.length > 0) ? errors.email : undefined}
+          helperText={
+            touched.email || values.email.length > 0 ? errors.email : undefined
+          }
         />
-        <FormTextField
+        <FormPasswordField
           name="password"
           label="Passwort"
-          type="password"
           value={values.password}
           onChange={handleChange}
           onBlur={handleBlur}
-          error={(touched.password || values.password.length > 0) && !!errors.password}
-          helperText={(touched.password || values.password.length > 0) ? errors.password : undefined}
+          error={
+            (touched.password || values.password.length > 0) &&
+            !!errors.password
+          }
+          helperText={
+            touched.password || values.password.length > 0
+              ? errors.password
+              : undefined
+          }
         />
 
         <Field>
-          <LoadingButton type="submit" className="w-full font-semibold" loading={loading} disabled={submitDisabled}>
+          <LoadingButton
+            type="submit"
+            className="w-full font-semibold"
+            loading={loading}
+            disabled={submitDisabled}
+          >
             Anmelden
           </LoadingButton>
         </Field>
@@ -93,7 +114,7 @@ function LoginForm({
         </Field>
       </FieldGroup>
     </Form>
-  )
+  );
 }
 
-export default LoginForm
+export default LoginForm;

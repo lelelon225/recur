@@ -1,16 +1,20 @@
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldSeparator,
-} from "@/components/ui/field"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { AlertCircle } from "lucide-react"
-import GoogleLoginButton from "../atoms/GoogleLoginButton"
-import LoadingButton from "../atoms/LoadingButton"
-import FormTextField from "../molecules/FormTextField"
-import { Form as FormikForm, type FormikTouched, type FormikErrors } from "formik";
+} from "@/components/ui/field";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
+import GoogleLoginButton from "../atoms/GoogleLoginButton";
+import LoadingButton from "../atoms/LoadingButton";
+import FormTextField from "../molecules/FormTextField";
+import {
+  Form as FormikForm,
+  type FormikTouched,
+  type FormikErrors,
+} from "formik";
 import type { FormEvent, ChangeEvent, FocusEvent } from "react";
 import type { SignupFormValues } from "@/hooks/useSignUpForm";
 
@@ -20,8 +24,12 @@ type SignupFormProps = {
   values: SignupFormValues;
   errors: FormikErrors<SignupFormValues>;
   touched: FormikTouched<SignupFormValues>;
-  handleChange: (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-  handleBlur: (event: FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  handleChange: (
+    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => void;
+  handleBlur: (
+    event: FocusEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => void;
   loading?: boolean;
   submitDisabled?: boolean;
   backendError?: string;
@@ -62,8 +70,15 @@ function SignupForm({
           value={values.firstName}
           onChange={handleChange}
           onBlur={handleBlur}
-          error={(touched.firstName || values.firstName.length > 0) && !!errors.firstName}
-          helperText={(touched.firstName || values.firstName.length > 0) ? errors.firstName : undefined}
+          error={
+            (touched.firstName || values.firstName.length > 0) &&
+            !!errors.firstName
+          }
+          helperText={
+            touched.firstName || values.firstName.length > 0
+              ? errors.firstName
+              : undefined
+          }
         />
 
         <FormTextField
@@ -72,8 +87,15 @@ function SignupForm({
           value={values.lastName}
           onChange={handleChange}
           onBlur={handleBlur}
-          error={(touched.lastName || values.lastName.length > 0) && !!errors.lastName}
-          helperText={(touched.lastName || values.lastName.length > 0) ? errors.lastName : undefined}
+          error={
+            (touched.lastName || values.lastName.length > 0) &&
+            !!errors.lastName
+          }
+          helperText={
+            touched.lastName || values.lastName.length > 0
+              ? errors.lastName
+              : undefined
+          }
         />
 
         <FormTextField
@@ -84,7 +106,9 @@ function SignupForm({
           onChange={handleChange}
           onBlur={handleBlur}
           error={(touched.email || values.email.length > 0) && !!errors.email}
-          helperText={(touched.email || values.email.length > 0) ? errors.email : undefined}
+          helperText={
+            touched.email || values.email.length > 0 ? errors.email : undefined
+          }
         />
 
         <FormTextField
@@ -94,9 +118,12 @@ function SignupForm({
           value={values.password}
           onChange={handleChange}
           onBlur={handleBlur}
-          error={(touched.password || values.password.length > 0) && !!errors.password}
+          error={
+            (touched.password || values.password.length > 0) &&
+            !!errors.password
+          }
           helperText={
-            (touched.password || values.password.length > 0)
+            touched.password || values.password.length > 0
               ? errors.password
               : "Muss mindestens 8 Zeichen lang sein."
           }
@@ -109,9 +136,12 @@ function SignupForm({
           value={values.confirmPassword}
           onChange={handleChange}
           onBlur={handleBlur}
-          error={(touched.confirmPassword || values.confirmPassword.length > 0) && !!errors.confirmPassword}
+          error={
+            (touched.confirmPassword || values.confirmPassword.length > 0) &&
+            !!errors.confirmPassword
+          }
           helperText={
-            (touched.confirmPassword || values.confirmPassword.length > 0)
+            touched.confirmPassword || values.confirmPassword.length > 0
               ? errors.confirmPassword
               : "Bitte bestätige dein Passwort."
           }
@@ -141,7 +171,7 @@ function SignupForm({
         </Field>
       </FieldGroup>
     </FormikForm>
-  )
+  );
 }
 
-export default SignupForm
+export default SignupForm;

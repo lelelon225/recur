@@ -1,6 +1,13 @@
 import { useEffect, useRef, useState } from "react";
-import { createTask, type NewTask, type Task } from "@/services/taskService";
+import {
+  createTask,
+  TaskFrequency,
+  TaskCategory,
+  type NewTask,
+  type Task,
+} from "@/services/taskService";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import type { FormValues } from "@/components/organisms/Form";
 
 type UseAddTaskFormParams = {
   onClose: () => void;
@@ -26,12 +33,26 @@ function useAddTaskForm({ onClose, onTaskCreated }: UseAddTaskFormParams) {
     };
   }, []);
 
-  const handleSubmit = async (values: NewTask) => {
+  const handleSubmit = async (values: FormValues) => {
     setLoading(true);
     setSubmitDisabled(true);
 
+    const combined = new Date(`${values.startDate}T${values.startTimeOfDay}`);
+    const startTimeIso = combined.toISOString();
+
+    const payload: NewTask = {
+      name: values.name,
+      description: values.description,
+      category: values.category as TaskCategory,
+      frequency: values.frequency as TaskFrequency,
+      dateUntil: values.dateUntil,
+      progress: 0,
+      durationMinutes: Number(values.durationMinutes),
+      startTime: startTimeIso,
+    };
+
     try {
-      const createdTask = await createTask(values);
+      const createdTask = await createTask(payload);
       showSuccessToast("Aufgabe erfolgreich erstellt.");
       onTaskCreated?.(createdTask);
 
@@ -41,7 +62,11 @@ function useAddTaskForm({ onClose, onTaskCreated }: UseAddTaskFormParams) {
         onClose();
       }, 1500);
     } catch (err) {
-      showErrorToast(err instanceof Error ? err.message : "Fehler beim Erstellen der Aufgabe.");
+      showErrorToast(
+        err instanceof Error
+          ? err.message
+          : "Fehler beim Erstellen der Aufgabe."
+      );
       if (isMountedRef.current) {
         setLoading(false);
         setSubmitDisabled(false);

@@ -89,7 +89,7 @@ public class TaskService {
         public ResponseEntity<Task> createTask(Task task) {
 
                 task.setOwner(getCurrentUser());
-                taskRepository.save(task);
+                
 
                 TaskUtil.calculateDaysInSpan(task);
                 taskUtil.calculateProgress(task);
@@ -132,6 +132,10 @@ public class TaskService {
                         existingTask.setFrequency(task.getFrequency());
                 }
 
+                if (task.getDurationMinutes() != null) {
+                        existingTask.setDurationMinutes(task.getDurationMinutes());
+                }
+
                 if (task.getIsFavorite() != null) {
                         existingTask.setIsFavorite(task.getIsFavorite());
                 }
@@ -154,6 +158,10 @@ public class TaskService {
 
                 if (amountDid != null) {
                         existingTask.setAmountDid(amountDid);
+                }
+
+                if (task.getStartTime() != null) {
+                        existingTask.setStartTime(task.getStartTime());
                 }
 
                 TaskUtil.calculateDaysInSpan(existingTask);

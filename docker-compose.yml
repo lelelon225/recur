@@ -1,0 +1,30 @@
+services:
+  backend:
+    build: ./backend
+    container_name: recur-backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/recur
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+  db:
+    build: ./database
+    container_name: recur-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: recur
+    ports:
+      - "5436:5432"
+    volumes:
+      - recur-db-data:/var/lib/postgresql/data
+
+volumes:
+  recur-db-data:

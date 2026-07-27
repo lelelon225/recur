@@ -28,12 +28,36 @@ export const taskValidationSchema = yup.object({
   dateUntil: yup
     .date()
     .required("Fälligkeitsdatum ist erforderlich")
-    .test(
-      "future",
-      "Fälligkeitsdatum muss in der Zukunft liegen",
-      (value) => {
-        if (!value) return false;
-        return value.getTime() > Date.now();
-      }
+    .min(
+      yup.ref("startDate"),
+      "Fälligkeitsdatum muss nach dem Startdatum liegen"
     ),
+
+  durationMinutes: yup
+    .number()
+    .min(1, "Dauer muss mindestens 1 Minute betragen"),
+
+  startDate: yup
+    .date()
+    .required("Startdatum ist erforderlich")
+    .test("future", "Startdatum muss in der Zukunft liegen", (value) => {
+      if (!value) return false;
+      return value.getTime() >= Date.now();
+    }),
+
+  startTimeOfDay: yup
+    .string()
+    .required("Startzeit ist erforderlich")
+    .matches(
+      /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/,
+      "Ungültiges Zeitformat (Format muss HH:mm sein)"
+    )
+    .test("min-time", "Die Zeit muss ab 08:00 Uhr liegen", (value) => {
+      if (!value) return false;
+      return value >= "08:00";
+    })
+    .test("max-time", "Die Zeit muss vor oder um 23:00 Uhr liegen", (value) => {
+      if (!value) return false;
+      return value <= "23:00";
+    }),
 });
