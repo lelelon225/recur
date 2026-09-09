@@ -23,12 +23,43 @@ const validationSchema = yup.object().shape({
     .max(100, "Fortschritt darf höchstens 100 sein"),
   frequency: yup.string(),
   dateUntil: yup.date().nullable(),
+  // Leere Strings müssen explizit auf null transformiert werden: Yups
+  // number()/date()-Cast wandelt "" sonst in NaN/Invalid Date um, was trotz
+  // .nullable() als Typfehler durchfällt statt als "leer" zu gelten.
   durationMinutes: yup
     .number()
+    .transform((value, originalValue) => (originalValue === "" ? null : value))
     .min(1, "Dauer muss mindestens 1 Minute betragen")
-    .required("Dauer ist erforderlich"),
-  startDate: yup.date().required("Startdatum ist erforderlich"),
-  startTimeOfDay: yup.string().required("Startzeit ist erforderlich"),
+    .nullable(),
+  // Startdatum/-zeit sind optional (z.B. aus dem Quartalsplan importierte
+  // Aufgaben haben keine), aber wenn eines gesetzt ist, muss auch das andere
+  // gesetzt sein - sonst lässt sich kein vollständiger startTime bilden.
+  startDate: yup
+    .date()
+    .transform((value, originalValue) => (originalValue === "" ? null : value))
+    .nullable()
+    .test(
+      "start-pair",
+      "Datum und Uhrzeit müssen beide gesetzt sein oder beide leer bleiben",
+      function (value) {
+        return Boolean(value) === Boolean(this.parent.startTimeOfDay);
+      }
+    ),
+  startTimeOfDay: yup
+    .string()
+    .nullable()
+    .test(
+      "start-pair",
+      "Datum und Uhrzeit müssen beide gesetzt sein oder beide leer bleiben",
+      function (value) {
+        return Boolean(value) === Boolean(this.parent.startDate);
+      }
+    )
+    .test(
+      "time-format",
+      "Ungültiges Zeitformat (Format muss HH:mm sein)",
+      (value) => !value || /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/.test(value)
+    ),
 });
 
 function toLocalDateParts(isoString: string) {

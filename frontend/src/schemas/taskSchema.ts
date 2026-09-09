@@ -6,13 +6,13 @@ export const taskValidationSchema = yup.object({
     .string()
     .trim()
     .min(2, "Name muss mindestens 2 Zeichen lang sein")
-    .max(20, "Name darf maximal 20 Zeichen lang sein")
+    .max(40, "Name darf maximal 40 Zeichen lang sein")
     .required("Name ist erforderlich"),
 
   description: yup
     .string()
     .trim()
-    .max(50, "Beschreibung darf maximal 50 Zeichen lang sein")
+    .max(200, "Beschreibung darf maximal 200 Zeichen lang sein")
     .required("Beschreibung ist erforderlich"),
 
   category: yup

@@ -8,15 +8,17 @@ import { taskValidationSchema } from "@/schemas/taskSchema";
 import Form, { type FormValues } from "@/components/organisms/Form";
 import { Button } from "@/components/ui/button";
 
+import type { AddTaskPrefill } from "@/contexts/AddTaskContext";
 
 type AddTaskFormProps = {
   onClose: () => void;
   onTaskCreated?: (task: Task) => void;
+  prefill?: AddTaskPrefill;
 };
 
 const CACHE_KEY = "add-task-form";
 
-function AddTaskForm({ onClose, onTaskCreated }: AddTaskFormProps) {
+function AddTaskForm({ onClose, onTaskCreated, prefill }: AddTaskFormProps) {
   const { loading, submitDisabled, handleSubmit } = useAddTaskForm({
     onClose,
     onTaskCreated,
@@ -42,8 +44,10 @@ function AddTaskForm({ onClose, onTaskCreated }: AddTaskFormProps) {
         localStorage.removeItem(CACHE_KEY);
 
         formikHelpers.resetForm();
+        ...prefill,
       }}
       validationSchema={taskValidationSchema}
+      enableReinitialize
     >
       {({
         values,

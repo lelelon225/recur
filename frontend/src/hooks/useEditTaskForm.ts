@@ -84,8 +84,10 @@ function useEditTaskForm({
 
       setLoading(true);
 
-      const combined = new Date(`${values.startDate}T${values.startTimeOfDay}`);
-      const startTimeIso = combined.toISOString();
+      const startTimeIso =
+        values.startDate && values.startTimeOfDay
+          ? new Date(`${values.startDate}T${values.startTimeOfDay}`).toISOString()
+          : null;
 
       const { startDate, startTimeOfDay, ...restValues } = values;
 
