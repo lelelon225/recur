@@ -17,6 +17,7 @@ type AppDialogProps = {
   onSubmit?: () => void;
   loading?: boolean;
   submitDisabled?: boolean;
+  contentClassName?: string;
 };
 
 function AppDialog({
@@ -27,10 +28,11 @@ function AppDialog({
   onSubmit,
   loading,
   submitDisabled,
+  contentClassName,
 }: AppDialogProps) {
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent>
+      <DialogContent className={contentClassName}>
         {title && (
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>

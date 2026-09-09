@@ -35,7 +35,7 @@ public class Task {
         private UUID id;
 
         @NotBlank(message = "Name ist erforderlich", groups = OnCreate.class)
-        @Size(min = 2, max = 20, message = "Name muss zwischen 2 und 20 Zeichen lang sein", groups = OnCreate.class)
+        @Size(min = 2, max = 40, message = "Name muss zwischen 2 und 40 Zeichen lang sein", groups = OnCreate.class)
         @Column(name = "name")
         private String name;
 
@@ -50,7 +50,7 @@ public class Task {
         private Frequency frequency;
 
         @NotBlank(message = "Beschreibung ist erforderlich", groups = OnCreate.class)
-        @Size(max = 50, message = "Beschreibung darf maximal 50 Zeichen lang sein", groups = OnCreate.class)
+        @Size(max = 200, message = "Beschreibung darf maximal 200 Zeichen lang sein", groups = OnCreate.class)
         @Column(name = "description")
         private String description;
 
