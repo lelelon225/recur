@@ -5,13 +5,15 @@ import useAddTaskForm from "@/hooks/useAddTaskForm";
 import AppDialog from "@/components/molecules/AppDialog";
 import { taskValidationSchema } from "@/schemas/taskSchema";
 import Form, { type FormValues } from "@/components/organisms/Form";
+import type { AddTaskPrefill } from "@/contexts/AddTaskContext";
 
 type AddTaskFormProps = {
   onClose: () => void;
   onTaskCreated?: (task: Task) => void;
+  prefill?: AddTaskPrefill;
 };
 
-function AddTaskForm({ onClose, onTaskCreated }: AddTaskFormProps) {
+function AddTaskForm({ onClose, onTaskCreated, prefill }: AddTaskFormProps) {
   const { loading, submitDisabled, handleSubmit } = useAddTaskForm({
     onClose,
     onTaskCreated,
@@ -28,9 +30,12 @@ function AddTaskForm({ onClose, onTaskCreated }: AddTaskFormProps) {
         durationMinutes: null,
         startDate: "",
         startTimeOfDay: "",
+        startTime: null,
+        ...prefill,
       }}
       onSubmit={handleSubmit}
       validationSchema={taskValidationSchema}
+      enableReinitialize
     >
       {({
         values,

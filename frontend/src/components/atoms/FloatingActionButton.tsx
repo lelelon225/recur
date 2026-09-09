@@ -13,7 +13,7 @@ function FloatingActionButton({ onClick, className }: FloatingActionButtonProps)
   return (
     <Button
       size="icon"
-      onClick={onClick || openAddTaskForm}
+      onClick={() => (onClick ? onClick() : openAddTaskForm())}
       className={cn(className, "z-10 h-18 w-18 sm:h-14 sm:w-14 rounded-full shadow-lg shrink-0")}
     >
       <Plus className="h-6 w-6 sm:h-7 sm:w-7" />

@@ -16,8 +16,9 @@ export const categoryLabels: Record<TaskCategory, string> = {
   [TaskCategory.PERSONAL]: "Persönlich",
   [TaskCategory.SCHOOL]: "Schule",
   [TaskCategory.OTHER]: "Andere",
-  All: "Alle",
 };
+
+export const ALL_CATEGORIES_LABEL = "Alle";
 
 export const frequencyLabels: Record<string, string> = {
   DAILY: "Täglich",

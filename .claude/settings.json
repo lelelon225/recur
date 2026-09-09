@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/eslint-fix.cjs\" 2>/dev/null || true",
+            "statusMessage": "Linting edited frontend file..."
+          }
+        ]
+      }
+    ]
+  }
+}

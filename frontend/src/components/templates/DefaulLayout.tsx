@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { History, Heart, Archive, Calendar } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
 import { AddTaskProvider } from "@/contexts/AddTaskContext";
+import { ImportQuartalsplanProvider } from "@/contexts/ImportQuartalsplanContext";
 import Fab from "@/components/atoms/FloatingActionButton";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "../ui/sidebar";
 import { Separator } from "../ui/separator";
@@ -32,33 +33,35 @@ function DefaultLayout({ children, pageTitle }: DefaultLayoutProps) {
 
   return (
     <AddTaskProvider>
-      <SidebarProvider>
-        <AppSidebar destinations={destinations} />
+      <ImportQuartalsplanProvider>
+        <SidebarProvider>
+          <AppSidebar destinations={destinations} />
 
-        <SidebarInset>
-          <div className="flex mx-auto w-full max-w-6xl px-4 py-6 pb-24">
-            <div className="mb-6 flex w-full flex-col gap-4">
-              <div className="flex items-center gap-2">
-                <SidebarTrigger className="-ml-1" />
+          <SidebarInset>
+            <div className="flex mx-auto w-full max-w-6xl px-4 py-6 pb-24">
+              <div className="mb-6 flex w-full flex-col gap-4">
+                <div className="flex items-center gap-2">
+                  <SidebarTrigger className="-ml-1" />
 
-                <Separator
-                  orientation="vertical"
-                  className="mr-2 data-[orientation=vertical]:h-4"
-                />
+                  <Separator
+                    orientation="vertical"
+                    className="mr-2 data-[orientation=vertical]:h-4"
+                  />
 
-                <h1 className="text-xl font-semibold text-foreground">
-                  {pageTitle}
-                </h1>
+                  <h1 className="text-xl font-semibold text-foreground">
+                    {pageTitle}
+                  </h1>
+                </div>
+
+                <main>{children}</main>
               </div>
-
-              <main>{children}</main>
             </div>
-          </div>
 
-          <Toaster position="bottom-left" />
-          <Fab className="fixed bottom-4 right-4" />
-        </SidebarInset>
-      </SidebarProvider>
+            <Toaster position="bottom-left" />
+            <Fab className="fixed bottom-4 right-4" />
+          </SidebarInset>
+        </SidebarProvider>
+      </ImportQuartalsplanProvider>
     </AddTaskProvider>
   );
 }
