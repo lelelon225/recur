@@ -13,6 +13,8 @@ function TaskFavorite({ isFavorite, onClick }: TaskFavoriteProps) {
       variant="ghost"
       size="icon"
       className="hover:bg-accent"
+      aria-label={isFavorite ? "Aus Favoriten entfernen" : "Zu Favoriten hinzufügen"}
+      aria-pressed={isFavorite}
       onClick={(e) => {
         e.stopPropagation();
         onClick(e);

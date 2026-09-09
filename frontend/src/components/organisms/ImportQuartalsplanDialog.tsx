@@ -134,6 +134,7 @@ function ImportQuartalsplanDialog({ onClose }: ImportQuartalsplanDialogProps) {
       loading={loading}
       submitDisabled={step === "paste" || selectedCount === 0}
       contentClassName="sm:max-w-3xl"
+      submitLabel="Importieren"
     >
       {step === "paste" && (
         <div className="flex flex-col gap-3">

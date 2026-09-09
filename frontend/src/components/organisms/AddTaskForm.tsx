@@ -53,6 +53,7 @@ function AddTaskForm({ onClose, onTaskCreated, prefill }: AddTaskFormProps) {
           onSubmit={formikHandleSubmit}
           loading={loading}
           submitDisabled={submitDisabled || !dirty || !isValid}
+          submitLabel="Erstellen"
         >
           <h2 className="mb-2 text-lg font-bold">Neue Aufgabe hinzufügen</h2>
           <Separator className="h-px w-full" />

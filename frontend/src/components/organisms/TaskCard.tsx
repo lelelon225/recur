@@ -9,6 +9,8 @@ import TaskTimeFrame from "@/components/atoms/TaskTimeFrame";
 import TaskTitle from "@/components/atoms/TaskTitle";
 import ProgressIndicator from "@/components/atoms/ProgressIndicator";
 import useTaskCard from "@/hooks/useTaskCard";
+import { categoryLabels } from "@/lib/taskCategoryStyles";
+import { categoryDot } from "@/utils/calendarGrid";
 
 type TaskCardProps = {
   task: Task;
@@ -79,6 +81,21 @@ function TaskCard({
         className
       )}
       onClick={handleCardClick}
+      role="button"
+      tabIndex={0}
+      aria-label={
+        selectMode
+          ? selected
+            ? `${task.name} abwählen`
+            : `${task.name} auswählen`
+          : `${task.name}, Fortschritt erhöhen`
+      }
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          handleCardClick();
+        }
+      }}
     >
       <CardHeader
         className="flex flex-row items-center justify-between gap-4"
@@ -89,7 +106,7 @@ function TaskCard({
           <Checkbox
             checked={selected}
             onCheckedChange={() => onToggleSelect?.()}
-            aria-label={selected ? "Habit abwählen" : "Habit auswählen"}
+            aria-label={selected ? "Aufgabe abwählen" : "Aufgabe auswählen"}
           />
         ) : (
           <TaskCardMenu
@@ -106,6 +123,10 @@ function TaskCard({
         )}
       </CardHeader>
       <CardContent className="flex flex-1 flex-col gap-2">
+        <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+          <span className={cn("size-1.5 rounded-full", categoryDot[task.category])} />
+          {categoryLabels[task.category]}
+        </div>
         <div className="line-clamp-1">
           <TaskTitle title={task.name} />
         </div>

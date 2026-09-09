@@ -33,7 +33,7 @@ export function showUndoToast(message: string, onUndo: () => void) {
 export function showInfoToast(message: string) {
   toast.info(message, {
     ...commonOptions,
-    className: "!bg-blue-500 !text-white dark:!bg-blue-600",
+    className: "!bg-info !text-info-foreground",
   });
 }
 
@@ -47,13 +47,13 @@ export function showErrorToast(message: string) {
 export function showSuccessToast(message: string) {
   toast.success(message, {
     ...commonOptions,
-    className: "!bg-green-500 !text-white dark:!bg-green-600",
+    className: "!bg-success !text-success-foreground",
   });
 }
 
 export function showWarningToast(message: string) {
   toast.warning(message, {
     ...commonOptions,
-    className: "!bg-amber-500 !text-white dark:!bg-amber-600",
+    className: "!bg-warning !text-warning-foreground",
   });
 }

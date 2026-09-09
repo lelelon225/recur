@@ -1,7 +1,7 @@
 import type { FormEvent, ChangeEvent, FocusEvent } from "react";
 import { Form as FormikForm } from "formik";
 import type { FormikErrors, FormikTouched } from "formik";
-import { type TaskCategory, type TaskFrequency } from "@/services/taskService";
+import { TaskFrequency, type TaskCategory } from "@/services/taskService";
 import FormTextField from "@/components/molecules/FormTextField";
 import FormDateField from "@/components/molecules/FormDateField";
 import FormSelector from "@/components/molecules/FormSelector";
@@ -96,9 +96,25 @@ function Form({
         value={values.startTimeOfDay}
         onChange={handleChange}
         onBlur={handleBlur}
+        error={
+          (touched.startTimeOfDay || values.startTimeOfDay.length > 0) &&
+          !!errors.startTimeOfDay
+        }
+        helperText={
+          touched.startTimeOfDay || values.startTimeOfDay.length > 0
+            ? errors.startTimeOfDay
+            : undefined
+        }
       />
 
-      <FormDateField name="dateUntil" label="Datum bis" />
+      <FormDateField
+        name="dateUntil"
+        label={
+          values.frequency === TaskFrequency.ONCE || values.frequency === ""
+            ? "Fälligkeitsdatum"
+            : "Wiederholt bis"
+        }
+      />
     </FormikForm>
   );
 }

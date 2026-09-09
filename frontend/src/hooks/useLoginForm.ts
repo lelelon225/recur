@@ -23,7 +23,7 @@ function useLoginForm() {
     } catch (error) {
       setBackendError(
         error instanceof Error
-          ? "Ungültige E-Mail oder Passwort"
+          ? error.message
           : "Ein unbekannter Fehler ist aufgetreten"
       );
     } finally {

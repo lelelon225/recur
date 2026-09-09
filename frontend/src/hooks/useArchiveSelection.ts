@@ -61,7 +61,7 @@ function useArchiveSelection({ taskIds, onDelete }: UseArchiveSelectionParams) {
   const confirmBulkDelete = useCallback(async () => {
     await Promise.all(Array.from(selectedIds).map((id) => onDelete(id)));
     setConfirmBulkDeleteOpen(false);
-    showSuccessToast(`${selectedCount} Habits wurden gelöscht.`);
+    showSuccessToast(`${selectedCount} ${selectedCount === 1 ? "Aufgabe wurde" : "Aufgaben wurden"} gelöscht.`);
     exitSelectMode();
   }, [selectedIds, selectedCount, onDelete, exitSelectMode]);
 
