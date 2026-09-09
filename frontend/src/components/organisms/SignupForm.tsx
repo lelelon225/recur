@@ -10,6 +10,7 @@ import { AlertCircle } from "lucide-react";
 import GoogleLoginButton from "../atoms/GoogleLoginButton";
 import LoadingButton from "../atoms/LoadingButton";
 import FormTextField from "../molecules/FormTextField";
+import FormPasswordField from "../molecules/FormPasswordField";
 import {
   Form as FormikForm,
   type FormikTouched,
@@ -111,10 +112,9 @@ function SignupForm({
           }
         />
 
-        <FormTextField
+        <FormPasswordField
           name="password"
           label="Passwort"
-          type="password"
           value={values.password}
           onChange={handleChange}
           onBlur={handleBlur}
@@ -129,10 +129,9 @@ function SignupForm({
           }
         />
 
-        <FormTextField
+        <FormPasswordField
           name="confirmPassword"
           label="Passwort bestätigen"
-          type="password"
           value={values.confirmPassword}
           onChange={handleChange}
           onBlur={handleBlur}

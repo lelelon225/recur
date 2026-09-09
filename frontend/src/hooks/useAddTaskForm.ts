@@ -37,8 +37,10 @@ function useAddTaskForm({ onClose, onTaskCreated }: UseAddTaskFormParams) {
     setLoading(true);
     setSubmitDisabled(true);
 
-    const combined = new Date(`${values.startDate}T${values.startTimeOfDay}`);
-    const startTimeIso = combined.toISOString();
+    const startTimeIso =
+      values.startDate && values.startTimeOfDay
+        ? new Date(`${values.startDate}T${values.startTimeOfDay}`).toISOString()
+        : null;
 
     const payload: NewTask = {
       name: values.name,
@@ -47,7 +49,8 @@ function useAddTaskForm({ onClose, onTaskCreated }: UseAddTaskFormParams) {
       frequency: values.frequency as TaskFrequency,
       dateUntil: values.dateUntil,
       progress: 0,
-      durationMinutes: Number(values.durationMinutes),
+      durationMinutes:
+        values.durationMinutes !== null ? Number(values.durationMinutes) : null,
       startTime: startTimeIso,
     };
 

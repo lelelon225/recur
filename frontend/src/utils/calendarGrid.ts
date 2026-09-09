@@ -12,10 +12,9 @@ import { de } from "date-fns/locale";
 import { TaskCategory, type Task, type TaskCategory as TaskCategoryType } from "@/services/taskService";
 
 /**
- * Calendar-only accent colors, deliberately separate from lib/taskCategoryStyles.ts
- * (the tinted-badge palette used on task cards elsewhere in the app). The calendar
- * uses a quieter neutral chip with a small saturated marker instead, so it needs a
- * more solid, dot-legible color per category rather than a pale badge tint.
+ * Canonical per-category accent colors, shared by the calendar's category
+ * dots/filter chips and TaskCard's category badge - the single color source
+ * for a task's category across the app.
  */
 export const categoryDot: Record<TaskCategoryType, string> = {
   [TaskCategory.WORK]: "bg-rose-500",

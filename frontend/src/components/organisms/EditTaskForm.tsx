@@ -22,7 +22,10 @@ const validationSchema = yup.object().shape({
     .min(0, "Fortschritt muss mindestens 0 sein")
     .max(100, "Fortschritt darf höchstens 100 sein"),
   frequency: yup.string(),
-  dateUntil: yup.date().nullable(),
+  dateUntil: yup
+    .date()
+    .nullable()
+    .min(yup.ref("startDate"), "Fälligkeitsdatum muss nach dem Startdatum liegen"),
   // Leere Strings müssen explizit auf null transformiert werden: Yups
   // number()/date()-Cast wandelt "" sonst in NaN/Invalid Date um, was trotz
   // .nullable() als Typfehler durchfällt statt als "leer" zu gelten.
@@ -59,7 +62,15 @@ const validationSchema = yup.object().shape({
       "time-format",
       "Ungültiges Zeitformat (Format muss HH:mm sein)",
       (value) => !value || /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/.test(value)
-    ),
+    )
+    .test("min-time", "Die Zeit muss ab 08:00 Uhr liegen", (value) => {
+      if (!value) return true;
+      return value >= "08:00";
+    })
+    .test("max-time", "Die Zeit muss vor oder um 23:00 Uhr liegen", (value) => {
+      if (!value) return true;
+      return value <= "23:00";
+    }),
 });
 
 function toLocalDateParts(isoString: string) {

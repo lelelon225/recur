@@ -37,7 +37,7 @@ function ErrorPage({ resetErrorBoundary, errorCode, errorMessage, buttonText, fu
                 {resetErrorBoundary && (
                     <CardFooter className="flex flex-col justify-center pt-4">
                         <Button className="w-full font-semibold" onClick={resetErrorBoundary}>
-                            {buttonText || "Try Again"}
+                            {buttonText || "Erneut versuchen"}
                         </Button>
                     </CardFooter>
                 )}

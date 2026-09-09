@@ -73,9 +73,9 @@ function App() {
         path="/"
         element={
           <ProtectedRoute>
-            <DefaultLayout pageTitle="Deine Habits">
+            <DefaultLayout pageTitle="Deine Aufgaben">
               <ReactErrorBoundary
-                errorMessage="Deine Habits konnten nicht angezeigt werden."
+                errorMessage="Deine Aufgaben konnten nicht angezeigt werden."
                 fullScreen={false}
               >
                 <HomePage />

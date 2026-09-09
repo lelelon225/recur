@@ -13,7 +13,7 @@ export async function register(
     .post("/auth/register", request)
     .then((response) => response.data as AuthResponse)
     .catch((error) => {
-      throw new Error(error?.response?.data?.message ?? "Registration failed");
+      throw new Error(error?.response?.data?.message ?? "Registrierung fehlgeschlagen");
     });
 }
 
@@ -22,7 +22,7 @@ export async function login(request: LoginRequest): Promise<AuthResponse> {
     .post("/auth/login", request)
     .then((response) => response.data as AuthResponse)
     .catch((error) => {
-      throw new Error(error?.response?.data?.message ?? "Login failed");
+      throw new Error(error?.response?.data?.message ?? "Anmeldung fehlgeschlagen");
     });
 }
 
@@ -32,7 +32,7 @@ export async function getCurrentUser(): Promise<UserResponse> {
     .then((response) => response.data as UserResponse)
     .catch((error) => {
       throw new Error(
-        error?.response?.data?.message ?? "Failed to fetch current user"
+        error?.response?.data?.message ?? "Fehler beim Laden der Benutzerdaten"
       );
     });
 }
@@ -87,7 +87,7 @@ export function patchUser(user: Partial<UserResponse>): Promise<UserResponse> {
     .then((response) => response.data as UserResponse)
     .catch((error) => {
       throw new Error(
-        error?.response?.data?.message ?? "Failed to update user"
+        error?.response?.data?.message ?? "Fehler beim Aktualisieren des Benutzers"
       );
     });
 }

@@ -15,6 +15,7 @@ type NavigationBarProps = {
 function NavigationBar({ destinations, className }: NavigationBarProps) {
   const { openAddTaskForm } = useAddTask();
   const { activeValue, handleNavigation } = useNavigationBar(destinations);
+  
 
   return (
     <Tabs

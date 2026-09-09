@@ -47,6 +47,14 @@ public class TaskUtil {
             return;
         }
 
+        // Einmalige Termine haben keine Wiederholungs-Intervalltage (nicht in
+        // `frequencies` enthalten) und lassen sich daher nicht als Bruchteil
+        // erwarteter Wiederholungen berechnen: hier zählt nur erledigt/nicht.
+        if (task.getFrequency() == Frequency.ONCE) {
+            task.setProgress(task.getAmountDid() > 0 ? 100.0 : 0.0);
+            return;
+        }
+
         Integer intervalDays = getFrequencyNumber(task.getFrequency());
         if (intervalDays == null || intervalDays <= 0) {
             task.setProgress(0.0);

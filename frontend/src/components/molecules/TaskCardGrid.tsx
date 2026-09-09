@@ -43,7 +43,7 @@ function TaskCardGrid({
         <ReactErrorBoundary
           key={task.id}
           variant="inline"
-          errorMessage="Dieses Habit konnte nicht angezeigt werden."
+          errorMessage="Diese Aufgabe konnte nicht angezeigt werden."
         >
           <TaskCard
             task={task}
