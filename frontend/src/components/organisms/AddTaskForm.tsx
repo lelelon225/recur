@@ -36,6 +36,7 @@ function AddTaskForm({ onClose, onTaskCreated, prefill }: AddTaskFormProps) {
         startDate: "",
         startTimeOfDay: "",
         startTime: null,
+        ...prefill,
       }}
       onSubmit={async (values, formikHelpers) => {
         await handleSubmit(values);
@@ -44,7 +45,6 @@ function AddTaskForm({ onClose, onTaskCreated, prefill }: AddTaskFormProps) {
         localStorage.removeItem(CACHE_KEY);
 
         formikHelpers.resetForm();
-        ...prefill,
       }}
       validationSchema={taskValidationSchema}
       enableReinitialize
@@ -78,11 +78,10 @@ function AddTaskForm({ onClose, onTaskCreated, prefill }: AddTaskFormProps) {
 
             <Separator className="flex" />
           <Button
-                variant="outline"
                 variant="link"
                 className="text-sm text-gray-500 hover:text-gray-700 flex flex-col items-end "
                 onClick={() => {
-                  clearCache("add-task-form");
+                  clearCache();
 
                   setValues({
                     name: "",
