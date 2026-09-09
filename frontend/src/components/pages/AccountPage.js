@@ -1,0 +1,70 @@
+import { Formik } from "formik";
+import { useState } from "react";
+import * as yup from "yup";
+import { patchUser } from "../../services/authService";
+import { Button } from "@/components/ui/button";
+import AccountForm from "../organisms/AccountForm";
+import { useNavigate } from "react-router-dom";
+import useUserDetails from "@/hooks/useUserDetails";
+import { Spinner } from "../ui/spinner";
+const validationSchema = yup.object().shape({
+    firstName: yup.string().required("Vorname ist erforderlich"),
+    lastName: yup.string().required("Nachname ist erforderlich"),
+    email: yup
+        .string()
+        .email("Ungültige E-Mail-Adresse")
+        .required("E-Mail ist erforderlich"),
+    avatarUrl: yup.string().url("Ungültige URL").nullable().notRequired(),
+});
+function AccountPage({ firstName, lastName, email, avatarUrl, }) {
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const handleSubmit = async (values) => {
+        setLoading(true);
+        setError(null);
+        try {
+            await patchUser({
+                firstName: values.firstName,
+                lastName: values.lastName,
+                email: values.email,
+                avatarUrl: values.avatarUrl,
+            });
+        }
+        catch (error) {
+            setError(error instanceof Error
+                ? error.message
+                : "Unbekannter Fehler beim Bearbeiten des Accounts");
+        }
+        finally {
+            setLoading(false);
+            window.location.reload();
+        }
+    };
+    return (<div className="mx-auto max-w-xl px-4 py-6">
+      <Formik initialValues={{
+            firstName: firstName,
+            lastName: lastName,
+            email: email,
+            avatarUrl: avatarUrl,
+        }} onSubmit={handleSubmit} validationSchema={validationSchema}>
+        {({ values, errors, touched, handleChange, handleBlur, handleSubmit, }) => (<>
+            <AccountForm onSubmit={handleSubmit} values={values} errors={errors} touched={touched} handleChange={handleChange} handleBlur={handleBlur} className="flex flex-col gap-2"/>
+            {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
+            <Button type="submit" onClick={() => handleSubmit()} disabled={loading} className="mt-4">
+              {loading ? "Speichern..." : "Speichern"}
+            </Button>
+          </>)}
+      </Formik>
+    </div>);
+}
+function AccountPageWrapper() {
+    const { user } = useUserDetails();
+    const navigate = useNavigate();
+    if (!user) {
+        return (<div className="flex min-h-screen items-center justify-center">
+        <Spinner className="size-8 text-primary"/>
+      </div>);
+    }
+    return (<AccountPage firstName={user.firstName} lastName={user.lastName} email={user.email} avatarUrl={user.avatarUrl} onClose={() => navigate(-1)}/>);
+}
+export default AccountPageWrapper;
