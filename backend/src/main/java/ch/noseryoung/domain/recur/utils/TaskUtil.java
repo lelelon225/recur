@@ -41,8 +41,7 @@ public class TaskUtil {
      * der Task-Laufzeit man sich befindet.
      */
     public void calculateProgress(Task task) {
-        if (task.getAmountDid() == null || task.getFrequency() == null || task.getDaysInSpan() == null
-                || task.getDaysInSpan() <= 0) {
+        if (task.getAmountDid() == null || task.getFrequency() == null) {
             task.setProgress(0.0);
             return;
         }
@@ -50,8 +49,16 @@ public class TaskUtil {
         // Einmalige Termine haben keine Wiederholungs-Intervalltage (nicht in
         // `frequencies` enthalten) und lassen sich daher nicht als Bruchteil
         // erwarteter Wiederholungen berechnen: hier zählt nur erledigt/nicht.
+        // Unabhängig von daysInSpan, da ein ONCE-Task (z.B. Start- und
+        // Fälligkeitsdatum am selben Tag) sonst durch die daysInSpan<=0-Guard
+        // faelschlicherweise auf 0% zurückfaellt.
         if (task.getFrequency() == Frequency.ONCE) {
             task.setProgress(task.getAmountDid() > 0 ? 100.0 : 0.0);
+            return;
+        }
+
+        if (task.getDaysInSpan() == null || task.getDaysInSpan() <= 0) {
+            task.setProgress(0.0);
             return;
         }
 

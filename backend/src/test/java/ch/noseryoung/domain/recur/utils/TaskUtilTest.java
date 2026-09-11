@@ -121,6 +121,21 @@ class TaskUtilTest {
     }
 
     @Test
+    void calculateProgress_onceTaskWithZeroDaysInSpan_isStillFullyComplete() {
+        // Start- und Fälligkeitsdatum am selben Tag (z.B. Task via Kalender
+        // Tages-Klick angelegt) => daysInSpan=0. ONCE darf davon unabhängig sein.
+        Task task = Task.builder()
+                .frequency(Frequency.ONCE)
+                .daysInSpan(0)
+                .amountDid(1)
+                .build();
+
+        taskUtil.calculateProgress(task);
+
+        assertThat(task.getProgress()).isEqualTo(100.0);
+    }
+
+    @Test
     void calculateProgress_zeroOrNegativeDaysInSpan_isZero() {
         Task task = Task.builder()
                 .frequency(Frequency.DAILY)
