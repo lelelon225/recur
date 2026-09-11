@@ -91,6 +91,13 @@ function TaskCard({
           : `${task.name}, Fortschritt erhöhen`
       }
       onKeyDown={(e) => {
+        // Nur reagieren, wenn die Card selbst (nicht ein verschachteltes
+        // Steuerelement wie TaskCardMenu/TaskFavorite oder ein daraus
+        // geöffneter Dialog) das Ziel des Events ist. Sonst bubbelt z.B. ein
+        // Leerzeichen beim Tippen im Bearbeiten-Dialog hierher hoch und
+        // erhöht ungewollt den Fortschritt, während es im Eingabefeld
+        // verschluckt wird.
+        if (e.target !== e.currentTarget) return;
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
           handleCardClick();
