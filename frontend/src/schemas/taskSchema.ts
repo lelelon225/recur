@@ -28,9 +28,14 @@ export const taskValidationSchema = yup.object({
   dateUntil: yup
     .date()
     .required("Fälligkeitsdatum ist erforderlich")
-    .min(
-      yup.ref("startDate"),
-      "Fälligkeitsdatum muss nach dem Startdatum liegen"
+    .test(
+      "after-start",
+      "Fälligkeitsdatum muss nach dem Startdatum liegen",
+      function (value) {
+        const startDate = this.parent.startDate;
+        if (!value || !startDate) return true;
+        return value.getTime() >= startDate.getTime();
+      }
     ),
 
   // Leere Strings müssen explizit auf null transformiert werden: Yups
