@@ -17,7 +17,6 @@ export type FormValues = {
   durationMinutes: number | null;
   startDate: string;
   startTimeOfDay: string;
-  startTime: string | null;
   projectId: string;
 };
 

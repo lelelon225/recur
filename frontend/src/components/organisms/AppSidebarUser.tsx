@@ -15,7 +15,7 @@ import AppSidebarUserPopover from "../molecules/AppSidebarUserPopover";
 
 
 type AppSidebarUserProps = {
-    user: UserResponse;
+    user: UserResponse | null;
 };
 
 function AppSidebarUser({ user }: AppSidebarUserProps) {
