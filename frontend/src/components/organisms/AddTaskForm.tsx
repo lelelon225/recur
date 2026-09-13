@@ -35,7 +35,6 @@ function AddTaskForm({ onClose, onTaskCreated, prefill }: AddTaskFormProps) {
         durationMinutes: null,
         startDate: "",
         startTimeOfDay: "",
-        startTime: null,
         projectId: "",
         ...prefill,
       }}
@@ -93,7 +92,6 @@ function AddTaskForm({ onClose, onTaskCreated, prefill }: AddTaskFormProps) {
                     durationMinutes: null,
                     startDate: "",
                     startTimeOfDay: "",
-                    startTime: null,
                     projectId: "",
                   });
                 }}
