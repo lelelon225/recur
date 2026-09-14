@@ -9,8 +9,12 @@ export function useOAuthCallback() {
     const router = useRouter();
     const { completeOAuthLogin } = useAuth();
 
-    const [status, setStatus] = useState<OAuthCallbackStatus>("loading");
-    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const token = searchParams.get("token");
+
+    const [status, setStatus] = useState<OAuthCallbackStatus>(token ? "loading" : "error");
+    const [errorMessage, setErrorMessage] = useState<string | null>(
+        token ? null : "Kein Token in der Antwort von Google erhalten."
+    );
 
     const hasRun = useRef(false);
 
@@ -18,13 +22,7 @@ export function useOAuthCallback() {
         if (hasRun.current) return;
         hasRun.current = true;
 
-        const token = searchParams.get("token");
-
-        if (!token) {
-            setStatus("error");
-            setErrorMessage("Kein Token in der Antwort von Google erhalten.");
-            return;
-        }
+        if (!token) return;
 
         completeOAuthLogin(token)
             .then(() => router.replace("/"))
@@ -32,7 +30,7 @@ export function useOAuthCallback() {
                 setStatus("error");
                 setErrorMessage(err instanceof Error ? err.message : "Google-Login fehlgeschlagen.");
             });
-    }, [searchParams, completeOAuthLogin, router]);
+    }, [token, completeOAuthLogin, router]);
 
     return { status, errorMessage };
 }
