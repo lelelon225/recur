@@ -55,6 +55,14 @@ jobs:
             ghcr.io/rem1706/recur-frontend:${{ steps.tag.outputs.tag }}
             ghcr.io/rem1706/recur-frontend:${{ steps.tag.outputs.moving_tag }}
 
+      - uses: docker/build-push-action@v6
+        with:
+          context: ./database
+          push: true
+          tags: |
+            ghcr.io/rem1706/recur-db:${{ steps.tag.outputs.tag }}
+            ghcr.io/rem1706/recur-db:${{ steps.tag.outputs.moving_tag }}
+
   deploy-dev:
     needs: build
     if: github.ref == 'refs/heads/dev'
@@ -68,8 +76,8 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - run: docker compose -f /opt/recur/compose.yml pull backend-dev frontend-dev
-      - run: docker compose -f /opt/recur/compose.yml up -d backend-dev frontend-dev
+      - run: docker compose -f /opt/recur/compose.yml pull backend-dev frontend-dev db-dev
+      - run: docker compose -f /opt/recur/compose.yml up -d backend-dev frontend-dev db-dev
 
   deploy-prod:
     needs: build
@@ -82,5 +90,5 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - run: docker compose -f /opt/recur/compose.yml pull backend-prod frontend-prod
-      - run: docker compose -f /opt/recur/compose.yml up -d backend-prod frontend-prod
+      - run: docker compose -f /opt/recur/compose.yml pull backend-prod frontend-prod db-prod
+      - run: docker compose -f /opt/recur/compose.yml up -d backend-prod frontend-prod db-prod
