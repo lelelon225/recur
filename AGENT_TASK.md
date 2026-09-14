@@ -213,6 +213,80 @@ middleware-based auth guard — was deliberately **not** done; see below.
 
 ---
 
+## T11 — Home-server deployment compose (branch `feat/deployment-home-server-compose`)
+
+**Status as of 2026-09-14: done.** This is a separate branch off
+`feat/frontend/migrate-next.js` (needs its Next.js Docker/proxy work — see
+T9 — to make sense), not part of the Next.js migration itself. Documented
+here since it's the same repo-root `AGENT_TASK.md` convention.
+
+**Goal:** T9 flagged that `.github/workflows/deploy.yml` drives an external
+`/opt/recur/compose.yml` on the self-hosted homelab runner that isn't in
+this repo at all — hand-edited on the host, un-reviewed, drifting silently
+from whatever the CI/CD pipeline and the actual Docker images expect.
+`compose.deployment.yml` (repo root) brings that file under version control
+as the source of truth.
+
+**What it defines:** six services matching exactly what `deploy.yml`
+already expects by name (`backend-dev`, `frontend-dev`, `backend-prod`,
+`frontend-prod`), plus `db-dev`/`db-prod` (not referenced by CI, named
+freely). `backend-*` pull prebuilt GHCR images (`:dev` / `:latest`, matching
+`deploy.yml`'s own tag scheme) rather than building locally — this is a
+deployment file, not a dev one. `db-*` still `build: ./database`, matching
+the existing local `docker-compose.yml` convention, since that Dockerfile
+lives in this repo too.
+
+**Custom, non-default ports** (the other explicit ask): `frontend-dev` →
+host `3080`, `frontend-prod` → host `3081`, `db-dev` → host `5480`,
+`db-prod` → host `5481` (all containers keep their normal internal ports -
+3000/5432 - only the host-side mapping changed). **`backend-dev` and
+`backend-prod` publish no host port at all** - this is a deliberate design
+choice, not an oversight: the frontend is the only service that needs to be
+reachable from outside the Docker network (through the Cloudflare Tunnel),
+and it already reaches its paired backend over the internal compose network
+via `BACKEND_URL` (the mechanism built in T9's `src/proxy.ts`). Exposing the
+backend to the host at all would just be unnecessary attack surface given
+that path already works end-to-end.
+
+**No secret or credential is hardcoded.** Every sensitive value (`DB_PASSWORD`/
+`POSTGRES_PASSWORD`, `JWT_SECRET`, `GOOGLE_CLIENT_ID`/`_SECRET`, the public
+CORS origin per environment) is a `${VAR:?VAR is required}` Compose
+interpolation, resolved from a `.env` file that must sit next to
+`compose.deployment.yml` **on the host**, outside version control (not this
+repo's `frontend/.env` or `backend/.env`, and not committed anywhere -
+`docker compose config`/`up` fails loudly listing exactly which variable is
+missing if that file isn't there, rather than silently running with a
+guessable default like the original draft of this file did before catching
+it in review). The required variable names are listed in the file's own
+header comment.
+
+**Verified:** `docker compose -f compose.deployment.yml config` was run
+twice - once with a scratch `.env` file supplying dummy values for every
+required variable (produced valid, fully-resolved service definitions), and
+once with no `.env` file at all, confirming it fails with a clear
+"`PROD_DB_PASSWORD is required`"-style error instead of silently defaulting.
+The images it references (`ghcr.io/rem1706/recur-*:dev`/`:latest`) were
+**not** pulled or run here - that needs real GHCR credentials/network access
+this session didn't have, and real secret values this session doesn't have
+either.
+
+**Not done - real follow-up work for whoever manages the home server:**
+- Copy/sync this file to `/opt/recur/compose.yml` on the actual host (or
+  change how the host gets its compose file) - committing it here doesn't
+  by itself make the CI/CD pipeline use it.
+- Create the actual `.env` file next to it on the host with real generated
+  secrets (a strong `JWT_SECRET`, real Postgres passwords, the real Google
+  OAuth2 app credentials, the real public hostnames).
+- Point the Cloudflare Tunnel config (external, not in this repo) at the
+  new custom ports (`3080`/`3081`) if it currently points at port 80 or
+  some other value.
+- If a database already exists on the host under the *old* local
+  `docker-compose.yml`'s volume name/port, decide whether to migrate that
+  data into `recur-db-prod-data` or start fresh - this file doesn't attempt
+  a data migration.
+
+---
+
 ## Appendix — pre-existing issues, NOT fixed by this migration
 
 Carried forward from the original plan; still accurate as of 2026-09-14. Do
