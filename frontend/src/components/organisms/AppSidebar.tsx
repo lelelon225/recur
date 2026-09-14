@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import AppSidebarUser from "@/components/organisms/AppSidebarUser";
 import SidebarNavigation from "@/components/molecules/SidebarNavigation";
 import SidebarBrand from "@/components/molecules/SidebarBrand";
-import { Settings, ClipboardPaste } from "lucide-react";
+import { Settings, ClipboardPaste, Scale } from "lucide-react";
 import SidebarSettingsGroup from "./SidebarSettingsGroup";
 import useUserDetails from "@/hooks/useUserDetails";
 import { useImportQuartalsplan } from "@/contexts/ImportQuartalsplanContext";
@@ -37,6 +37,13 @@ function AppSidebar({ destinations, ...props }: AppSidebarProps) {
       label: "Quartalsplan importieren",
       Icon: ClipboardPaste,
       onClick: openImportQuartalsplan,
+    },
+    {
+      label: "Impressum & Datenschutz",
+      Icon: Scale,
+      onClick: () => {
+        router.push("/impressum");
+      },
     },
   ];
 
