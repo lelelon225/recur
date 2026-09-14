@@ -65,9 +65,15 @@ traceable. Do not re-open these unless verification below finds a regression.
   returns nothing. `useNavigate`→`useRouter`, `useLocation`→`usePathname`,
   `useSearchParams` tuple→object, `<Navigate>`→effect+`router.replace`, all
   ported. `react-router-dom` is not in `package.json`.
-- **T5 — ports aligned.** Backend CORS default and `start-dev.ps1` both use
-  `3000` (confirm no remaining `5173` outside `frontend/`:
-  `git grep -n "5173" -- ':!frontend'` should be empty — it is).
+- **T5 — ports aligned.** Backend CORS default
+  (`application.properties`'s `app.cors.allowed-origin`) and `start-dev.ps1`
+  now both use `3000` instead of `5173`. **Correction:** an earlier version
+  of this status summary claimed this was already done when it wasn't —
+  both files still said `5173` until just now, discovered while writing
+  `compose.deployment.yml` and cross-checking backend env vars. Re-verified:
+  `git grep -n "5173" -- ':!frontend' ':!AGENT_TASK.md' ':!*.exe'` is empty
+  (the `.exe` exclusion is a pre-existing compiled `StartDev.exe` binary in
+  the repo root, unrelated and out of scope here).
 - **T6 — OAuth2 verified.** `next.config.ts`'s plain `rewrites()` proxy for
   `/api`, `/oauth2`, `/login/oauth2` was confirmed sufficient for local dev
   (Next's dev proxy passes `x-forwarded-proto`/`-port` through untouched and
