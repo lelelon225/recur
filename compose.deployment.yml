@@ -53,13 +53,11 @@
 #
 # frontend-www is the public www./main placeholder: a frontend image with
 # COMING_SOON_MODE=true - proxy.ts then redirects every request (API/OAuth2
-# paths included) to /coming-soon, so it needs no backend or db of its own
-# (see the image tag comment below for which tag and why). This isn't part
-# of deploy.yml's automated pull/up (it only touches the -dev/-prod service
-# names) - pull and start it by hand on the host, same as pointing the
-# Cloudflare Tunnel at it:
-#   docker compose -f /opt/recur/compose.yml pull frontend-www
-#   docker compose -f /opt/recur/compose.yml up -d frontend-www
+# paths included, except /impressum and /datenschutz) to /coming-soon, so it
+# needs no backend or db of its own. deploy.yml's deploy-www job builds and
+# pulls it automatically on a `coming-soon-*` tag push (its own release
+# channel, independent of dev/prod - see the image tag comment below); the
+# Cloudflare Tunnel route pointing at it is still manual, set up once.
 
 services:
   backend-dev:
@@ -143,11 +141,11 @@ services:
       - recur-db-prod-data:/var/lib/postgresql/data
 
   frontend-www:
-    # :dev, not :latest - no version tag has been pushed yet, so :latest
-    # doesn't exist in the registry. The underlying app version is moot
-    # anyway while COMING_SOON_MODE gates every route before it matters;
-    # switch to :latest once an actual prod release exists.
-    image: ghcr.io/lelelon225/recur-frontend:dev
+    # :coming-soon - the moving tag deploy.yml's build job pushes on every
+    # `coming-soon-*` tag push (see deploy-www). Independent of :dev/:latest
+    # since the underlying app version is moot while COMING_SOON_MODE gates
+    # every route before it matters.
+    image: ghcr.io/lelelon225/recur-frontend:coming-soon
     container_name: recur-frontend-www
     restart: unless-stopped
     environment:
