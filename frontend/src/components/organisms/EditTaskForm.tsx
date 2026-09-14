@@ -1,5 +1,5 @@
 import { Formik } from "formik";
-import type { Task } from "@/services/taskService";
+import type { Task, TaskCategory, TaskFrequency } from "@/services/taskService";
 import * as yup from "yup";
 import AppDialog from "@/components/molecules/AppDialog";
 import Form from "./Form";
@@ -101,8 +101,8 @@ function EditTaskForm({ task, onClose, onTaskUpdated }: EditTaskFormProps) {
       initialValues={{
         name: task.name ?? "",
         description: task.description ?? "",
-        category: task.category ?? "",
-        frequency: task.frequency ?? "",
+        category: task.category ?? ("" as TaskCategory),
+        frequency: task.frequency ?? ("" as TaskFrequency),
         progress: task.progress ?? 0,
         dateUntil: task.dateUntil ? task.dateUntil.slice(0, 10) : "",
         durationMinutes: task.durationMinutes ?? null,

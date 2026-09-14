@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter, useParams } from "next/navigation";
 import { LinkIcon, PlusIcon, TrashIcon, ArchiveIcon, ArchiveRestoreIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -18,7 +18,7 @@ function initials(firstName: string, lastName: string) {
 
 function GroupDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
+  const router = useRouter();
   const { user } = useAuth();
   const { groups, projectsByGroupId, leaveGroup, removeMember, deleteGroup, patchProject, deleteProject } =
     useGroupsContext();
@@ -27,6 +27,18 @@ function GroupDetailPage() {
   const [showCreateProject, setShowCreateProject] = useState(false);
   const [confirmDeleteGroupOpen, setConfirmDeleteGroupOpen] = useState(false);
   const [confirmDeleteProjectId, setConfirmDeleteProjectId] = useState<string | null>(null);
+
+  // window.location.origin doesn't exist during Next's server-render pass
+  // for this route (it's server-rendered on demand, not statically
+  // prerendered) - starts empty and fills in once mounted client-side.
+  const [origin, setOrigin] = useState("");
+  useEffect(() => {
+    // Intentional: window.location.origin can only be read after mount -
+    // no synchronous SSR-safe equivalent exists (unlike next/navigation's
+    // searchParams, which Next provides consistently on both sides).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setOrigin(window.location.origin);
+  }, []);
 
   const group = groups.find((g) => g.id === id);
   const projects = useMemo(() => projectsByGroupId[id ?? ""] ?? [], [projectsByGroupId, id]);
@@ -40,7 +52,7 @@ function GroupDetailPage() {
     return null;
   }
 
-  const inviteLink = `${window.location.origin}/groups/join/${group.inviteCode}`;
+  const inviteLink = `${origin}/groups/join/${group.inviteCode}`;
 
   const handleCopyInviteLink = async () => {
     try {
@@ -55,7 +67,7 @@ function GroupDetailPage() {
     try {
       if (memberId === user?.id) {
         await leaveGroup(id);
-        navigate("/groups");
+        router.push("/groups");
         return;
       }
       await removeMember(id, memberId);
@@ -69,7 +81,7 @@ function GroupDetailPage() {
     try {
       await deleteGroup(id);
       showSuccessToast("Gruppe gelöscht.");
-      navigate("/groups");
+      router.push("/groups");
     } catch (err) {
       showErrorToast(err instanceof Error ? err.message : "Fehler beim Löschen der Gruppe.");
     } finally {

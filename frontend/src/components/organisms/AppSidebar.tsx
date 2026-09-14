@@ -6,7 +6,7 @@ import {
 
 import type { NavigationDestination } from "@/hooks/useNavigationBar";
 import { useNavigationBar } from "@/hooks/useNavigationBar";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import AppSidebarUser from "@/components/organisms/AppSidebarUser";
 import SidebarNavigation from "@/components/molecules/SidebarNavigation";
 import SidebarBrand from "@/components/molecules/SidebarBrand";
@@ -21,7 +21,7 @@ type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
 
 function AppSidebar({ destinations, ...props }: AppSidebarProps) {
   const { activeValue, handleNavigation } = useNavigationBar(destinations);
-  const navigate = useNavigate();
+  const router = useRouter();
   const { user } = useUserDetails();
   const { openImportQuartalsplan } = useImportQuartalsplan();
 
@@ -30,7 +30,7 @@ function AppSidebar({ destinations, ...props }: AppSidebarProps) {
       label: "Account",
       Icon: Settings,
       onClick: () => {
-        navigate("/setting/account");
+        router.push("/setting/account");
       },
     },
     {
@@ -42,7 +42,7 @@ function AppSidebar({ destinations, ...props }: AppSidebarProps) {
 
   return (
     <Sidebar variant="inset" {...props}>    
-      <SidebarBrand onClick={() => navigate("/")} />
+      <SidebarBrand onClick={() => router.push("/")} />
       <SidebarContent>
         <SidebarNavigation
           destinations={destinations}

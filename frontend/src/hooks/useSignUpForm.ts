@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import type { RegisterRequest } from "@/types/auth";
 
@@ -7,7 +7,7 @@ export type SignupFormValues = RegisterRequest & { confirmPassword: string };
 
 function useSignUpForm() {
     const { register } = useAuth();
-    const navigate = useNavigate();
+    const router = useRouter();
 
     const [backendError, setBackendError] = useState<string | undefined>(undefined);
     const [loading, setLoading] = useState(false);
@@ -22,7 +22,7 @@ function useSignUpForm() {
             const { confirmPassword, ...request } = values;
             void confirmPassword;
             await register(request);
-            navigate("/", { replace: true });
+            router.replace("/");
         } catch (error) {
             setBackendError(
                 error instanceof Error ? error.message : "Ein unbekannter Fehler ist aufgetreten"
