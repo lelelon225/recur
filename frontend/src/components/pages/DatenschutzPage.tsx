@@ -7,7 +7,7 @@ function DatenschutzPage() {
   return (
     <LegalPageLayout
       title="Datenschutzerklärung"
-      lastUpdated="[TODO: Datum einfügen]"
+      lastUpdated="14. September 2026"
     >
       <p className="text-muted-foreground">
         Diese Datenschutzerklärung informiert dich darüber, welche
@@ -21,11 +21,11 @@ function DatenschutzPage() {
           Verantwortliche Stelle
         </h2>
         <p>
-          [TODO: Firmenname / Name]
+          Leon Hebeisen
           <br />
-          [TODO: Adresse]
+          Brunismattweg 5, 3665 Wattenwil, Schweiz
           <br />
-          E-Mail: [TODO: kontakt@example.com]
+          E-Mail: leonhebeisen@proton.me
         </p>
       </section>
 

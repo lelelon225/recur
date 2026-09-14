@@ -5,7 +5,7 @@ function ImpressumPage() {
   const router = useRouter();
 
   return (
-    <LegalPageLayout title="Impressum" lastUpdated="[TODO: Datum einfügen]">
+    <LegalPageLayout title="Impressum" lastUpdated="14. September 2026">
       <p className="text-muted-foreground">
         Angaben gemäss Art. 3 UWG (Schweiz) sowie § 5 TMG (Deutschland).
       </p>
@@ -15,40 +15,19 @@ function ImpressumPage() {
           Anbieter
         </h2>
         <p>
-          [TODO: Firmenname / Name der verantwortlichen Person]
+          Leon Hebeisen
           <br />
-          [TODO: Strasse und Hausnummer]
+          Brunismattweg 5
           <br />
-          [TODO: PLZ und Ort]
+          3665 Wattenwil
           <br />
-          [TODO: Land]
+          Schweiz
         </p>
-      </section>
-
-      <section className="flex flex-col gap-2">
-        <h2 className="text-base font-semibold text-foreground">
-          Vertretungsberechtigte Person
-        </h2>
-        <p>[TODO: Vor- und Nachname]</p>
       </section>
 
       <section className="flex flex-col gap-2">
         <h2 className="text-base font-semibold text-foreground">Kontakt</h2>
-        <p>
-          E-Mail: [TODO: kontakt@example.com]
-          <br />
-          Telefon: [TODO: optional]
-        </p>
-      </section>
-
-      <section className="flex flex-col gap-2">
-        <h2 className="text-base font-semibold text-foreground">
-          Handelsregister- / UID-Nummer
-        </h2>
-        <p>
-          [TODO: falls vorhanden, z.B. UID-Nummer (CH) oder
-          Handelsregisternummer (DE) — sonst diesen Abschnitt entfernen]
-        </p>
+        <p>E-Mail: leonhebeisen@proton.me</p>
       </section>
 
       <section className="flex flex-col gap-2">
@@ -92,10 +71,9 @@ function ImpressumPage() {
         <p>
           Die Urheber- und alle anderen Rechte an Inhalten, Bildern, Fotos
           oder anderen Dateien auf dieser Website gehören ausschliesslich
-          [TODO: Firmenname/Name] oder den speziell genannten
-          Rechteinhabern. Für die Reproduktion jeglicher Elemente ist die
-          schriftliche Zustimmung des Urheberrechtsträgers im Voraus
-          einzuholen.
+          Leon Hebeisen oder den speziell genannten Rechteinhabern. Für die
+          Reproduktion jeglicher Elemente ist die schriftliche Zustimmung
+          des Urheberrechtsträgers im Voraus einzuholen.
         </p>
       </section>
 
