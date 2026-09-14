@@ -32,7 +32,8 @@ next-env.d.ts
 *.sw?
 
 
-*._
+._*
+*.tsbuildinfo
 
 # design-sync
 .ds-sync/

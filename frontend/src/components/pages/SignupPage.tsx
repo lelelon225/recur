@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import SignupForm from "../organisms/SignupForm"
 import { Card, CardContent } from "../ui/card"
 import { useSignUpForm, type SignupFormValues } from "@/hooks/useSignUpForm";
@@ -17,7 +17,7 @@ const signupSchema = yup.object().shape({
 });
 
 export default function SignupPage() {
-  const navigate = useNavigate();
+  const router = useRouter();
   const { handleSubmit, loading, submitDisabled, backendError } = useSignUpForm();
 
   return (
@@ -31,7 +31,7 @@ export default function SignupPage() {
             >
                 {({ values, handleChange, handleSubmit: formikHandleSubmit, handleBlur, errors, touched }) => (
                     <SignupForm
-                        navigate={() => navigate("/login")}
+                        navigate={() => router.push("/login")}
                         onSubmit={formikHandleSubmit}
                         values={values}
                         errors={errors}

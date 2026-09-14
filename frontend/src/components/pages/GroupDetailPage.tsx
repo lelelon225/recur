@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useRouter, useParams } from "next/navigation";
 import { LinkIcon, PlusIcon, TrashIcon, ArchiveIcon, ArchiveRestoreIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -18,7 +18,7 @@ function initials(firstName: string, lastName: string) {
 
 function GroupDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
+  const router = useRouter();
   const { user } = useAuth();
   const { groups, projectsByGroupId, leaveGroup, removeMember, deleteGroup, patchProject, deleteProject } =
     useGroupsContext();
@@ -55,7 +55,7 @@ function GroupDetailPage() {
     try {
       if (memberId === user?.id) {
         await leaveGroup(id);
-        navigate("/groups");
+        router.push("/groups");
         return;
       }
       await removeMember(id, memberId);
@@ -69,7 +69,7 @@ function GroupDetailPage() {
     try {
       await deleteGroup(id);
       showSuccessToast("Gruppe gelöscht.");
-      navigate("/groups");
+      router.push("/groups");
     } catch (err) {
       showErrorToast(err instanceof Error ? err.message : "Fehler beim Löschen der Gruppe.");
     } finally {

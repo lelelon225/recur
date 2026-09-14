@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 
 type OAuthCallbackStatus = "loading" | "error";
 
 export function useOAuthCallback() {
-    const [searchParams] = useSearchParams();
-    const navigate = useNavigate();
+    const searchParams = useSearchParams();
+    const router = useRouter();
     const { completeOAuthLogin } = useAuth();
 
     const [status, setStatus] = useState<OAuthCallbackStatus>("loading");
@@ -27,12 +27,12 @@ export function useOAuthCallback() {
         }
 
         completeOAuthLogin(token)
-            .then(() => navigate("/", { replace: true }))
+            .then(() => router.replace("/"))
             .catch((err) => {
                 setStatus("error");
                 setErrorMessage(err instanceof Error ? err.message : "Google-Login fehlgeschlagen.");
             });
-    }, [searchParams, completeOAuthLogin, navigate]);
+    }, [searchParams, completeOAuthLogin, router]);
 
     return { status, errorMessage };
 }

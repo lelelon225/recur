@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import { History, Heart, Archive, Calendar, Users } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
 import { AddTaskProvider } from "@/contexts/AddTaskContext";
@@ -23,11 +23,11 @@ const NAV_ROUTES = [
 ] as const;
 
 function DefaultLayout({ children, pageTitle }: DefaultLayoutProps) {
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const destinations = NAV_ROUTES.map(({ path, label, icon: Icon }) => ({
     path,
-    navigate: () => navigate(path),
+    navigate: () => router.push(path),
     label,
     icon: Icon,
   }));

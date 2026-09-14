@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import LoginForm from "@/components/organisms/LoginForm";
 import { Card, CardContent } from "../ui/card";
 import { useLoginForm } from "@/hooks/useLoginForm";
@@ -15,7 +15,7 @@ const loginSchema = yup.object().shape({
 });
 
 function LoginPage() {
-  const navigate = useNavigate();
+  const router = useRouter();
   const { handleSubmit, submitDisabled, loading, backendError } =
     useLoginForm();
 
@@ -37,7 +37,7 @@ function LoginPage() {
               touched,
             }) => (
               <LoginForm
-                navigate={() => navigate("/register")}
+                navigate={() => router.push("/register")}
                 onSubmit={formikHandleSubmit}
                 values={values}
                 errors={errors}
