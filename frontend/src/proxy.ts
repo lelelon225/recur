@@ -11,7 +11,24 @@ export default function proxy(request: NextRequest) {
   const backend = process.env.BACKEND_URL ?? "http://localhost:8080";
   const { pathname, search } = request.nextUrl;
   const url = new URL(pathname + search, backend);
-  return NextResponse.rewrite(url);
+
+  // Rewriting to an absolute URL replaces the Host header with the
+  // backend's own address, so without these the backend has no way to
+  // know the public origin it's actually being reached through - Spring's
+  // OAuth2 redirect-uri templating ({baseUrl}/login/oauth2/code/{id})
+  // would otherwise resolve to the internal backend address instead of
+  // the public one, breaking Google's redirect_uri check.
+  const headers = new Headers(request.headers);
+  headers.set(
+    "x-forwarded-host",
+    request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? url.host,
+  );
+  headers.set(
+    "x-forwarded-proto",
+    request.headers.get("x-forwarded-proto") ?? "https",
+  );
+
+  return NextResponse.rewrite(url, { request: { headers } });
 }
 
 export const config = {
