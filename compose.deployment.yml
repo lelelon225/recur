@@ -4,8 +4,8 @@
 #
 # This represents /opt/recur/compose.yml, which .github/workflows/deploy.yml
 # expects to already exist on the self-hosted runner and drives with:
-#   docker compose -f /opt/recur/compose.yml pull backend-dev frontend-dev
-#   docker compose -f /opt/recur/compose.yml up -d backend-dev frontend-dev
+#   docker compose -f /opt/recur/compose.yml pull backend-dev frontend-dev db-dev
+#   docker compose -f /opt/recur/compose.yml up -d backend-dev frontend-dev db-dev
 # (and the -prod equivalents on a version tag push). Service names below
 # match those exactly - do not rename them without also updating that
 # workflow. Until now that file only existed on the host itself, hand-
@@ -13,6 +13,12 @@
 # source of truth. Whoever manages the host needs to copy this file to
 # /opt/recur/compose.yml (or point the deploy workflow at a synced copy)
 # for it to actually take effect - this repo change alone doesn't do that.
+#
+# All three services (backend/frontend/db) are pre-built images pulled from
+# GHCR - the host needs no repo source checked out, only this compose.yml
+# and the ".env" described below. The db image bakes in the schema/seed
+# init scripts from ./database (see that directory's Dockerfile) at build
+# time in CI; it is never built on the host.
 #
 # No secret or credential value is hardcoded here - everything sensitive is
 # a ${VARIABLE} that Docker Compose resolves from a ".env" file sitting next
@@ -73,7 +79,7 @@ services:
       - backend-dev
 
   db-dev:
-    build: ./database
+    image: ghcr.io/rem1706/recur-db:dev
     container_name: recur-db-dev
     restart: unless-stopped
     environment:
@@ -113,7 +119,7 @@ services:
       - backend-prod
 
   db-prod:
-    build: ./database
+    image: ghcr.io/rem1706/recur-db:latest
     container_name: recur-db-prod
     restart: unless-stopped
     environment:
