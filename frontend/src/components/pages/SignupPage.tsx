@@ -1,5 +1,6 @@
 import { useRouter } from "next/navigation";
 import SignupForm from "../organisms/SignupForm"
+import LegalFooterLinks from "@/components/molecules/LegalFooterLinks";
 import { Card, CardContent } from "../ui/card"
 import { useSignUpForm, type SignupFormValues } from "@/hooks/useSignUpForm";
 import { Formik } from "formik";
@@ -21,7 +22,7 @@ export default function SignupPage() {
   const { handleSubmit, loading, submitDisabled, backendError } = useSignUpForm();
 
   return (
-    <div className="flex min-h-svh items-center justify-center bg-background w-full h-full px-4 py-8">
+    <div className="flex min-h-svh flex-col items-center justify-center bg-background w-full h-full px-4 py-8">
         <Card className="w-full max-w-md border-none shadow-lg">
         <CardContent className="p-6">
             <Formik<SignupFormValues>
@@ -46,6 +47,7 @@ export default function SignupPage() {
             </Formik>
         </CardContent>
       </Card>
+      <LegalFooterLinks />
     </div>
   )
 }
