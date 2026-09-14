@@ -2,6 +2,9 @@ import { NextResponse, type NextRequest } from "next/server";
 
 const BACKEND_PROXY_PREFIXES = ["/api", "/oauth2", "/login/oauth2"];
 const COMING_SOON_PATH = "/coming-soon";
+// The coming-soon page itself links to these - without this they'd redirect
+// straight back to /coming-soon, making the links dead.
+const COMING_SOON_ALLOWED_PATHS = new Set([COMING_SOON_PATH, "/impressum", "/datenschutz"]);
 
 // next.config.ts's rewrites() is resolved once at `next build` time and its
 // destination gets frozen into .next/routes-manifest.json - reading
@@ -16,7 +19,10 @@ export default function proxy(request: NextRequest) {
   // www./main runs the same image as dev/prod with this env var set, so the
   // whole app stays behind a single placeholder route instead of shipping a
   // separate codebase for it.
-  if (process.env.COMING_SOON_MODE === "true" && pathname !== COMING_SOON_PATH) {
+  if (
+    process.env.COMING_SOON_MODE === "true" &&
+    !COMING_SOON_ALLOWED_PATHS.has(pathname)
+  ) {
     return NextResponse.redirect(new URL(COMING_SOON_PATH, request.url));
   }
 
