@@ -19,14 +19,20 @@ export default function proxy(request: NextRequest) {
   // would otherwise resolve to the internal backend address instead of
   // the public one, breaking Google's redirect_uri check.
   const headers = new Headers(request.headers);
-  headers.set(
-    "x-forwarded-host",
-    request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? url.host,
-  );
-  headers.set(
-    "x-forwarded-proto",
-    request.headers.get("x-forwarded-proto") ?? "https",
-  );
+  const forwardedHost =
+    request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? url.host;
+  headers.set("x-forwarded-host", forwardedHost);
+  headers.set("x-forwarded-proto", request.headers.get("x-forwarded-proto") ?? "https");
+  // Next's own rewrite machinery sets x-forwarded-port to the port this
+  // container's dev server is actually listening on (e.g. 3000), which
+  // Spring then appends to the host above, producing a public-facing
+  // redirect_uri with a stray internal port baked in. forwardedHost only
+  // carries its own port when the original request explicitly had one
+  // (e.g. local dev), so only keep x-forwarded-port then - otherwise drop
+  // it and let the scheme's default port apply.
+  if (!forwardedHost.includes(":")) {
+    headers.delete("x-forwarded-port");
+  }
 
   return NextResponse.rewrite(url, { request: { headers } });
 }
