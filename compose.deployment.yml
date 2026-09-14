@@ -52,7 +52,7 @@
 
 services:
   backend-dev:
-    image: ghcr.io/rem1706/recur-backend:dev
+    image: ghcr.io/lelelon225/recur-backend:dev
     container_name: recur-backend-dev
     restart: unless-stopped
     environment:
@@ -67,7 +67,7 @@ services:
       - db-dev
 
   frontend-dev:
-    image: ghcr.io/rem1706/recur-frontend:dev
+    image: ghcr.io/lelelon225/recur-frontend:dev
     container_name: recur-frontend-dev
     restart: unless-stopped
     environment:
@@ -79,7 +79,7 @@ services:
       - backend-dev
 
   db-dev:
-    image: ghcr.io/rem1706/recur-db:dev
+    image: ghcr.io/lelelon225/recur-db:dev
     container_name: recur-db-dev
     restart: unless-stopped
     environment:
@@ -92,7 +92,7 @@ services:
       - recur-db-dev-data:/var/lib/postgresql/data
 
   backend-prod:
-    image: ghcr.io/rem1706/recur-backend:latest
+    image: ghcr.io/lelelon225/recur-backend:latest
     container_name: recur-backend-prod
     restart: unless-stopped
     environment:
@@ -107,7 +107,7 @@ services:
       - db-prod
 
   frontend-prod:
-    image: ghcr.io/rem1706/recur-frontend:latest
+    image: ghcr.io/lelelon225/recur-frontend:latest
     container_name: recur-frontend-prod
     restart: unless-stopped
     environment:
@@ -119,7 +119,7 @@ services:
       - backend-prod
 
   db-prod:
-    image: ghcr.io/rem1706/recur-db:latest
+    image: ghcr.io/lelelon225/recur-db:latest
     container_name: recur-db-prod
     restart: unless-stopped
     environment:
