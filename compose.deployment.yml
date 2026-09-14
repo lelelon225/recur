@@ -40,19 +40,29 @@
 # other service on the same host:
 #   frontend-dev  -> host 3080  (container 3000)
 #   frontend-prod -> host 3081  (container 3000)
+#   frontend-www  -> host 3082  (container 3000)
 #   db-dev        -> host 5480  (container 5432, for direct psql/debugging)
 #   db-prod       -> host 5481  (container 5432, for direct psql/debugging)
 # backend-dev/backend-prod publish no host port at all - the frontend
 # containers are the only public-facing service; they reach their paired
 # backend purely over the internal compose network (see BACKEND_URL below),
 # and src/proxy.ts forwards /api, /oauth2, and /login/oauth2 to it from
-# there. Adjust the four host ports here (and the Cloudflare Tunnel config,
+# there. Adjust the host ports here (and the Cloudflare Tunnel config,
 # which lives outside this repo) if they clash with something else already
 # running on the host.
+#
+# frontend-www is the public www./main placeholder: the same prod image as
+# frontend-prod, just with COMING_SOON_MODE=true - proxy.ts then redirects
+# every request (API/OAuth2 paths included) to /coming-soon, so it needs no
+# backend or db of its own. This isn't part of deploy.yml's automated
+# pull/up (it only touches the -dev/-prod service names) - pull and start it
+# by hand on the host, same as pointing the Cloudflare Tunnel at it:
+#   docker compose -f /opt/recur/compose.yml pull frontend-www
+#   docker compose -f /opt/recur/compose.yml up -d frontend-www
 
 services:
   backend-dev:
-    image: ghcr.io/rem1706/recur-backend:dev
+    image: ghcr.io/lelelon225/recur-backend:dev
     container_name: recur-backend-dev
     restart: unless-stopped
     environment:
@@ -67,7 +77,7 @@ services:
       - db-dev
 
   frontend-dev:
-    image: ghcr.io/rem1706/recur-frontend:dev
+    image: ghcr.io/lelelon225/recur-frontend:dev
     container_name: recur-frontend-dev
     restart: unless-stopped
     environment:
@@ -79,7 +89,7 @@ services:
       - backend-dev
 
   db-dev:
-    image: ghcr.io/rem1706/recur-db:dev
+    image: ghcr.io/lelelon225/recur-db:dev
     container_name: recur-db-dev
     restart: unless-stopped
     environment:
@@ -92,7 +102,7 @@ services:
       - recur-db-dev-data:/var/lib/postgresql/data
 
   backend-prod:
-    image: ghcr.io/rem1706/recur-backend:latest
+    image: ghcr.io/lelelon225/recur-backend:latest
     container_name: recur-backend-prod
     restart: unless-stopped
     environment:
@@ -107,7 +117,7 @@ services:
       - db-prod
 
   frontend-prod:
-    image: ghcr.io/rem1706/recur-frontend:latest
+    image: ghcr.io/lelelon225/recur-frontend:latest
     container_name: recur-frontend-prod
     restart: unless-stopped
     environment:
@@ -119,7 +129,7 @@ services:
       - backend-prod
 
   db-prod:
-    image: ghcr.io/rem1706/recur-db:latest
+    image: ghcr.io/lelelon225/recur-db:latest
     container_name: recur-db-prod
     restart: unless-stopped
     environment:
@@ -130,6 +140,15 @@ services:
       - "5481:5432"
     volumes:
       - recur-db-prod-data:/var/lib/postgresql/data
+
+  frontend-www:
+    image: ghcr.io/lelelon225/recur-frontend:latest
+    container_name: recur-frontend-www
+    restart: unless-stopped
+    environment:
+      COMING_SOON_MODE: "true"
+    ports:
+      - "3082:3000"
 
 volumes:
   recur-db-dev-data:

@@ -44,24 +44,24 @@ jobs:
           context: ./backend
           push: true
           tags: |
-            ghcr.io/rem1706/recur-backend:${{ steps.tag.outputs.tag }}
-            ghcr.io/rem1706/recur-backend:${{ steps.tag.outputs.moving_tag }}
+            ghcr.io/lelelon225/recur-backend:${{ steps.tag.outputs.tag }}
+            ghcr.io/lelelon225/recur-backend:${{ steps.tag.outputs.moving_tag }}
 
       - uses: docker/build-push-action@v6
         with:
           context: ./frontend
           push: true
           tags: |
-            ghcr.io/rem1706/recur-frontend:${{ steps.tag.outputs.tag }}
-            ghcr.io/rem1706/recur-frontend:${{ steps.tag.outputs.moving_tag }}
+            ghcr.io/lelelon225/recur-frontend:${{ steps.tag.outputs.tag }}
+            ghcr.io/lelelon225/recur-frontend:${{ steps.tag.outputs.moving_tag }}
 
       - uses: docker/build-push-action@v6
         with:
           context: ./database
           push: true
           tags: |
-            ghcr.io/rem1706/recur-db:${{ steps.tag.outputs.tag }}
-            ghcr.io/rem1706/recur-db:${{ steps.tag.outputs.moving_tag }}
+            ghcr.io/lelelon225/recur-db:${{ steps.tag.outputs.tag }}
+            ghcr.io/lelelon225/recur-db:${{ steps.tag.outputs.moving_tag }}
 
   deploy-dev:
     needs: build
