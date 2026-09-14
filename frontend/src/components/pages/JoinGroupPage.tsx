@@ -45,7 +45,7 @@ function JoinGroupPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center py-12">
+      <div className="flex min-h-screen items-center justify-center">
         <Spinner className="size-8 text-primary" />
       </div>
     );

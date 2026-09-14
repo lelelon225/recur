@@ -7,13 +7,14 @@ subagent per task, one task at a time. Each task is self-contained — read
 only the "Context" it lists, don't assume you have this document's authors'
 conversation.
 
-**Status as of 2026-09-14: T1–T9 are all done and committed on this
-branch.** The framework swap, App Router tree, routing, an eslint-driven
-correctness pass, an SSR-safety audit, and the Docker/deployment rewrite
-are complete and verified (`yarn lint`/`yarn typecheck`/`yarn build` all
-green, and the new Docker image was actually built and run locally against
-the real backend — see T9 below for how). What's left (T10) is explicitly
-optional, not required for "complete."
+**Status as of 2026-09-14: T1–T9 are done, and T10's low-risk frontend
+items are done too** (dark-mode flash, `next/font`, `next/image` audit,
+spinner centering). The one T10 item genuinely out of scope for this
+migration — a middleware-based auth guard requiring a JWT-storage/security
+change — was deliberately left undone; see T10 below for why. Everything
+is committed on this branch, `yarn lint`/`yarn typecheck`/`yarn build` are
+all green, and the Docker image was built and run locally against the real
+backend.
 
 ## Ground rules for every task
 
@@ -34,9 +35,7 @@ optional, not required for "complete."
 ## Wave plan
 
 ```
-Waves 1–6 (T1–T9): DONE. See "Done" below.
-
-Wave 7:  T10 (optional — only if the user asks for it; not required for "complete")
+Waves 1–7 (T1–T10): DONE. See "Done" below and T10's own status note.
 ```
 
 ---
@@ -149,37 +148,62 @@ yarn build
 
 ---
 
-## T10 — Optional idiomatic-Next follow-ups (not required for "complete")
+## T10 — Optional idiomatic-Next follow-ups
 
-Everything above is what's needed for the migration to be finished and
-deployable. This task is explicitly **out of scope unless the user asks for
-it** — it converts the current "Next.js running an SPA" shape into something
-that uses more of what Next actually offers. Don't start it speculatively;
-list it here so it's not lost, and because a couple of items (theme flash,
-auth-guard flash) are visible quality issues a user might reasonably want
-fixed even without wanting the deeper Server Components rework.
+**Status as of 2026-09-14: the low-risk frontend-only items are done.** The
+one item that was a real backend/security-architecture change — the
+middleware-based auth guard — was deliberately **not** done; see below.
 
-- **Middleware-based auth guard.** Replace/supplement the client-side
-  `ProtectedRoute` (effect-based redirect, causes a loading-spinner flash on
-  every protected page) with auth logic in `src/proxy.ts` (already exists —
-  see T9 — and would need extending, not a new file) reading the JWT (would
-  require moving the token out of `localStorage` into a cookie the proxy
-  can read — a real behavior change, not a pure refactor; see the appendix's
-  "JWT in URL/localStorage" note, they're related).
-- **Fix the dark-mode flash.** `useDarkMode.ts` sets initial theme via
-  `useEffect`, so there's a flash of the wrong theme on load. A blocking
-  inline `<script>` in `src/app/layout.tsx` (reading `localStorage`/
-  `matchMedia` before hydration, paired with `suppressHydrationWarning` on
-  `<html>`), or adopting `next-themes` properly (already a dependency, not
-  actually wired up as the theme mechanism), would fix this.
-- **`next/font`** instead of `@fontsource-variable/geist` — self-hosts and
-  preloads the font via Next's own pipeline, avoiding a separate CSS import.
-- **`next/image`** for any `<img>` tags currently in `src/components/` — not
-  audited as part of this document; would need its own grep+review pass.
-- **Server Components for genuinely static parts** of pages (rare in this
-  app — most of it is interactive/context-driven) and **`eslint-config-next`**
-  adoption (deferred in T1 over an eslint 10 peer-dep concern — revisit once
-  that plugin has caught up).
+- **Done — dark-mode flash fixed.** A blocking inline `<script>` was added
+  to the `<head>` in `src/app/layout.tsx` that reads `localStorage`/
+  `matchMedia` and sets the `dark` class on `<html>` before hydration,
+  paired with `suppressHydrationWarning` on `<html>`. `useDarkMode.ts` no
+  longer has an initializing `useEffect` at all — it just reads the class
+  the script already set via a `useState` lazy initializer, which also
+  removed the `eslint-disable` comment that hook needed before (there's no
+  longer a setState-in-effect to suppress).
+- **Done — `next/font` instead of `@fontsource-variable/geist`.** Next 16
+  ships "Geist" directly via `next/font/google` (confirmed in
+  `next/dist/compiled/@next/font/dist/google/font-data.json`, not assumed).
+  `src/app/layout.tsx` now loads it with `variable: "--font-geist-sans"`
+  and applies `geistSans.variable` as a class on `<html>`;
+  `globals.css`'s `--font-sans` now points at `var(--font-geist-sans)`
+  instead of the literal `'Geist Variable'` string. The
+  `@fontsource-variable/geist` CSS `@import` and package dependency are
+  both gone.
+- **Done — `next/image` audited.** Zero raw `<img>` tags exist anywhere in
+  `src/` — every avatar goes through the shadcn `ui/avatar.tsx` primitive.
+  Nothing to migrate; there was nothing found, not nothing done.
+- **Done — all loading spinners centered.** Every full-page loading state
+  used `flex min-h-screen items-center justify-center` except
+  `JoinGroupPage.tsx`'s (`flex justify-center py-12` — horizontal-only, no
+  `min-h-screen`), which now matches the same pattern as its siblings
+  (`CalendarPage.tsx`, `AccountPage.tsx`, `ProtectedRoute.tsx`,
+  `OAuthCallbackPage.tsx`). `LoadingTime.tsx`'s spinner is unrelated (an
+  inline label+spinner combo, not a full-page state) and unused anywhere in
+  the app — left alone.
+- **Side effect found and fixed while testing this:** Next 16's dev server
+  auto-generates `AGENTS.md`/`CLAUDE.md` in `frontend/` on first `yarn dev`
+  (a new "agent rules" feature) — collided with this repo's own
+  hand-maintained root `CLAUDE.md` and would've shown up as untracked-file
+  noise in every session. Disabled via `agentRules: false` in
+  `next.config.ts`; the two generated files were deleted (never committed).
+- **Not done, deliberately: middleware-based auth guard.** Replacing the
+  client-side `ProtectedRoute` (effect-based redirect, causes a
+  loading-spinner flash on every protected page) with auth logic in
+  `src/proxy.ts` would require moving the JWT out of `localStorage` into a
+  cookie the proxy can read at request time — a real backend + security
+  architecture change (CSRF considerations, `SameSite` cookie policy, the
+  backend needs to actually set the cookie), not a pure frontend refactor.
+  Explicitly deferred — if picked up later, treat it as its own feature and
+  run it through `grill-mich` first per this repo's CLAUDE.md convention
+  rather than improvising the design here.
+- **Not done, deliberately: `eslint-config-next` adoption.** Still deferred
+  from T1 over the eslint 10 peer-dependency risk — nothing changed here to
+  revisit that.
+- **Not done: Server Components for genuinely static parts of pages.** Rare
+  in this app (most of it is interactive/context-driven) and not concretely
+  scoped — left as a vague future idea, not something actionable right now.
 
 ---
 

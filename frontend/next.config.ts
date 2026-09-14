@@ -3,6 +3,11 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
 
+  // Next 16's dev server auto-generates AGENTS.md/CLAUDE.md in this
+  // directory otherwise, which collides with the repo's own hand-maintained
+  // root CLAUDE.md and just adds noise on every `yarn dev`.
+  agentRules: false,
+
   // Standalone output for a small production Docker image (server.js +
   // a pruned node_modules) - see frontend/Dockerfile.
   output: "standalone",
