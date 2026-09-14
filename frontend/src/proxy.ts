@@ -1,5 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 
+const BACKEND_PROXY_PREFIXES = ["/api", "/oauth2", "/login/oauth2"];
+const COMING_SOON_PATH = "/coming-soon";
+
 // next.config.ts's rewrites() is resolved once at `next build` time and its
 // destination gets frozen into .next/routes-manifest.json - reading
 // process.env.BACKEND_URL there only ever sees the *build* container's
@@ -8,8 +11,20 @@ import { NextResponse, type NextRequest } from "next/server";
 // at request time - the actual replacement for nginx's ${BACKEND_HOST}
 // template substitution, not next.config.ts's rewrites().
 export default function proxy(request: NextRequest) {
-  const backend = process.env.BACKEND_URL ?? "http://localhost:8080";
   const { pathname, search } = request.nextUrl;
+
+  // www./main runs the same image as dev/prod with this env var set, so the
+  // whole app stays behind a single placeholder route instead of shipping a
+  // separate codebase for it.
+  if (process.env.COMING_SOON_MODE === "true" && pathname !== COMING_SOON_PATH) {
+    return NextResponse.redirect(new URL(COMING_SOON_PATH, request.url));
+  }
+
+  if (!BACKEND_PROXY_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
+    return NextResponse.next();
+  }
+
+  const backend = process.env.BACKEND_URL ?? "http://localhost:8080";
   const url = new URL(pathname + search, backend);
 
   // Rewriting to an absolute URL replaces the Host header with the
@@ -38,12 +53,9 @@ export default function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    "/api/:path*",
-    "/oauth2/:path*",
-    // Only the OAuth2 callback path under /login, not /login itself -
-    // /login is our own route (LoginPage). This matcher is strictly more
-    // specific than the bare "/login" route, so it doesn't intercept it.
-    "/login/oauth2/:path*",
-  ],
+  // Broad on purpose: the coming-soon gate above needs to see every
+  // navigation, not just the backend-proxy prefixes. Static assets/Next
+  // internals are excluded since they're never gated and don't need the
+  // backend-proxy check either.
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };
