@@ -39,7 +39,7 @@ function ArchiveSelectionToolbar({
         {selectedCount > 0 && (
           <Button variant="destructive" size="sm" onClick={onRequestBulkDelete}>
             <Trash2Icon className="h-4 w-4 mr-1" />
-            {selectedCount} {selectedCount === 1 ? "Habit" : "Habits"} löschen
+            {selectedCount} {selectedCount === 1 ? "Aufgabe" : "Aufgaben"} löschen
           </Button>
         )}
         <Button variant="ghost" size="sm" onClick={onToggleAllSelected}>

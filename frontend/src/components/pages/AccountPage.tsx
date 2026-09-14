@@ -4,10 +4,12 @@ import * as yup from "yup";
 import type { UserResponse as User } from "../../types/auth";
 import { patchUser } from "../../services/authService";
 import { Button } from "@/components/ui/button";
+import LoadingButton from "@/components/atoms/LoadingButton";
 import AccountForm from "../organisms/AccountForm";
 import { useNavigate } from "react-router-dom";
 import useUserDetails from "@/hooks/useUserDetails";
 import { Spinner } from "../ui/spinner";
+
 
 type AccountPageProps = {
   firstName: string;
@@ -32,6 +34,7 @@ function AccountPage({
   lastName,
   email,
   avatarUrl,
+  onClose,
 }: AccountPageProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,15 +49,14 @@ function AccountPage({
         email: values.email,
         avatarUrl: values.avatarUrl,
       } as User);
+      window.location.reload();
     } catch (error) {
       setError(
         error instanceof Error
           ? error.message
           : "Unbekannter Fehler beim Bearbeiten des Accounts"
       );
-    } finally {
       setLoading(false);
-      window.location.reload();
     }
   };
 
@@ -89,14 +91,18 @@ function AccountPage({
               className="flex flex-col gap-2"
             />
             {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
-            <Button
-              type="submit"
-              onClick={() => handleSubmit()}
-              disabled={loading}
-              className="mt-4"
-            >
-              {loading ? "Speichern..." : "Speichern"}
-            </Button>
+            <div className="mt-4 flex gap-2">
+              <Button type="button" variant="outline" onClick={onClose}>
+                Zurück
+              </Button>
+              <LoadingButton
+                type="submit"
+                onClick={() => handleSubmit()}
+                loading={loading}
+              >
+                Speichern
+              </LoadingButton>
+            </div>
           </>
         )}
       </Formik>

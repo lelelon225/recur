@@ -34,9 +34,9 @@ function FavoritesPage() {
     return (
       <Empty
         icon={() => <OctagonXIcon className="w-12 h-12 text-gray-400" />}
-        title="Keine favorisierten Habits"
-        description="Es gibt derzeit keine favorisierten Habits."
-        buttonText="Zurück zu den Habits"
+        title="Keine favorisierten Aufgaben"
+        description="Es gibt derzeit keine favorisierten Aufgaben."
+        buttonText="Zurück zu den Aufgaben"
         onButtonClick={() => navigate("/")}
       />
     );

@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { type Task } from "@/services/taskService";
 import TaskFavorite from "@/components/atoms/TaskFavorite";
@@ -9,6 +10,8 @@ import TaskTimeFrame from "@/components/atoms/TaskTimeFrame";
 import TaskTitle from "@/components/atoms/TaskTitle";
 import ProgressIndicator from "@/components/atoms/ProgressIndicator";
 import useTaskCard from "@/hooks/useTaskCard";
+import { categoryLabels } from "@/lib/taskCategoryStyles";
+import { categoryDot } from "@/utils/calendarGrid";
 
 type TaskCardProps = {
   task: Task;
@@ -79,6 +82,28 @@ function TaskCard({
         className
       )}
       onClick={handleCardClick}
+      role="button"
+      tabIndex={0}
+      aria-label={
+        selectMode
+          ? selected
+            ? `${task.name} abwählen`
+            : `${task.name} auswählen`
+          : `${task.name}, Fortschritt erhöhen`
+      }
+      onKeyDown={(e) => {
+        // Nur reagieren, wenn die Card selbst (nicht ein verschachteltes
+        // Steuerelement wie TaskCardMenu/TaskFavorite oder ein daraus
+        // geöffneter Dialog) das Ziel des Events ist. Sonst bubbelt z.B. ein
+        // Leerzeichen beim Tippen im Bearbeiten-Dialog hierher hoch und
+        // erhöht ungewollt den Fortschritt, während es im Eingabefeld
+        // verschluckt wird.
+        if (e.target !== e.currentTarget) return;
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          handleCardClick();
+        }
+      }}
     >
       <CardHeader
         className="flex flex-row items-center justify-between gap-4"
@@ -89,7 +114,7 @@ function TaskCard({
           <Checkbox
             checked={selected}
             onCheckedChange={() => onToggleSelect?.()}
-            aria-label={selected ? "Habit abwählen" : "Habit auswählen"}
+            aria-label={selected ? "Aufgabe abwählen" : "Aufgabe auswählen"}
           />
         ) : (
           <TaskCardMenu
@@ -101,11 +126,19 @@ function TaskCard({
             onResetProgress={handleResetProgress}
             onTaskUpdated={onTaskUpdated}
             isArchived={task.isArchived || false}
-            durationMinutes={task.durationMinutes}
           />
         )}
       </CardHeader>
       <CardContent className="flex flex-1 flex-col gap-2">
+        <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+          <span className={cn("size-1.5 rounded-full", categoryDot[task.category])} />
+          {categoryLabels[task.category]}
+          {task.project && (
+            <span className="rounded-full bg-muted px-2 py-0.5 text-muted-foreground">
+              {task.project.name}
+            </span>
+          )}
+        </div>
         <div className="line-clamp-1">
           <TaskTitle title={task.name} />
         </div>
@@ -113,11 +146,24 @@ function TaskCard({
           <TaskDescription description={task.description} />
         </div>
         <div className="mt-auto flex items-center gap-4 justify-between">
-          <TaskTimeFrame start={task.startTime} end={task.dateUntil} />
-          <TaskFavorite
-            isFavorite={task.isFavorite || false}
-            onClick={handleToggleFavorite}
-          />
+          <TaskTimeFrame start={task.startTime ?? null} end={task.dateUntil} />
+          <div className="flex items-center gap-2">
+            {task.completedBy && (
+              <Avatar
+                size="sm"
+                title={`Erledigt von ${task.completedBy.firstName} ${task.completedBy.lastName}`}
+              >
+                <AvatarImage src={task.completedBy.avatarUrl ?? undefined} />
+                <AvatarFallback>
+                  {`${task.completedBy.firstName[0] ?? ""}${task.completedBy.lastName[0] ?? ""}`.toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            )}
+            <TaskFavorite
+              isFavorite={task.isFavorite || false}
+              onClick={handleToggleFavorite}
+            />
+          </div>
         </div>
       </CardContent>
     </Card>

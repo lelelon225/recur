@@ -5,7 +5,7 @@ import { ArrowRight, ArrowLeft } from "lucide-react";
 import { useTasksContext } from "@/contexts/TasksContext";
 import { useAddTask } from "@/contexts/AddTaskContext";
 import { TaskCategory, type Task, type TaskCategory as TaskCategoryType } from "@/services/taskService";
-import { categoryLabels, ALL_CATEGORIES_LABEL } from "@/lib/taskCategoryStyles";
+import { categoryLabels, frequencyLabels, ALL_CATEGORIES_LABEL } from "@/lib/taskCategoryStyles";
 import {
   getWeekDays,
   getMonthGrid,
@@ -14,16 +14,27 @@ import {
   categoryDot,
 } from "@/utils/calendarGrid";
 import { toDateOnlyString } from "@/utils/formatDate";
+import { showSuccessToast } from "@/lib/toast";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
+import ProgressIndicator from "@/components/atoms/ProgressIndicator";
 import DetailDialog from "@/components/molecules/DetailDialog";
+import TaskCardMenu from "@/components/organisms/TaskCardMenu";
 import CalendarWeekView from "@/components/organisms/CalendarWeekView";
 import CalendarMonthView from "@/components/organisms/CalendarMonthView";
 
 type ViewMode = "month" | "week";
 
 function CalendarGrid() {
-  const { tasks, loading } = useTasksContext();
+  const {
+    tasks,
+    loading,
+    handleToggleDone,
+    handleToggleArchive,
+    handleResetProgress,
+    handleDelete,
+    handleUpdateTask,
+  } = useTasksContext();
   const { openAddTaskForm } = useAddTask();
 
   const [view, setView] = useState<ViewMode>("month");
@@ -31,7 +42,10 @@ function CalendarGrid() {
   const [activeCategory, setActiveCategory] = useState<TaskCategoryType | "All">(
     "All"
   );
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const selectedTask: Task | null = selectedTaskId
+    ? tasks.find((task) => task.id === selectedTaskId) ?? null
+    : null;
 
   const categories = Object.values(TaskCategory);
   const visibleTasks =
@@ -52,7 +66,7 @@ function CalendarGrid() {
   }
 
   function handleSelectDay(date: Date) {
-    openAddTaskForm({ startDate: toDateOnlyString(date) });
+    openAddTaskForm({ startDate: toDateOnlyString(date), startTimeOfDay: "09:00" });
   }
 
   function handleSelectSlot(date: Date, hour: number) {
@@ -128,6 +142,7 @@ function CalendarGrid() {
         <button
           type="button"
           onClick={() => setActiveCategory("All")}
+          aria-pressed={activeCategory === "All"}
           className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
             activeCategory === "All"
               ? "bg-primary text-primary-foreground"
@@ -141,6 +156,7 @@ function CalendarGrid() {
             key={cat}
             type="button"
             onClick={() => setActiveCategory(cat)}
+            aria-pressed={activeCategory === cat}
             className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-colors ${
               activeCategory === cat
                 ? "bg-primary text-primary-foreground"
@@ -153,32 +169,50 @@ function CalendarGrid() {
         ))}
       </div>
 
+      {tasks.length === 0 && (
+        <p className="text-sm text-muted-foreground">
+          Noch keine Aufgaben vorhanden. Klicke auf einen Tag, um eine hinzuzufügen.
+        </p>
+      )}
+
       {view === "month" ? (
         <CalendarMonthView
           weeks={monthWeeks}
           tasks={visibleTasks}
-          onSelectTask={setSelectedTask}
+          onSelectTask={(task) => setSelectedTaskId(task.id)}
           onSelectDay={handleSelectDay}
         />
       ) : (
         <CalendarWeekView
           days={weekDays}
           tasks={visibleTasks}
-          onSelectTask={setSelectedTask}
+          onSelectTask={(task) => setSelectedTaskId(task.id)}
           onSelectSlot={handleSelectSlot}
         />
       )}
 
       <DetailDialog
         open={selectedTask !== null}
-        onClose={() => setSelectedTask(null)}
+        onClose={() => setSelectedTaskId(null)}
         title={selectedTask?.name}
       >
         {selectedTask && (
           <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-              <span className={`size-2 rounded-full ${categoryDot[selectedTask.category]}`} />
-              {categoryLabels[selectedTask.category]}
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                <span className={`size-2 rounded-full ${categoryDot[selectedTask.category]}`} />
+                {categoryLabels[selectedTask.category]}
+              </div>
+              <TaskCardMenu
+                task={selectedTask}
+                onToggleMenu={() => {}}
+                onToggleEdit={() => {}}
+                onToggleArchive={() => handleToggleArchive(selectedTask.id)}
+                onResetProgress={() => handleResetProgress(selectedTask.id)}
+                onDelete={() => handleDelete(selectedTask.id)}
+                onTaskUpdated={handleUpdateTask}
+                isArchived={selectedTask.isArchived ?? false}
+              />
             </div>
 
             <div className="flex flex-col gap-2 text-sm">
@@ -188,6 +222,10 @@ function CalendarGrid() {
                   <span style={{ wordWrap: "break-word" }}>{selectedTask.description}</span>
                 </div>
               )}
+              <div className="flex flex-col gap-0.5">
+                <span className="text-xs text-muted-foreground">Wiederholung</span>
+                <span>{frequencyLabels[selectedTask.frequency]}</span>
+              </div>
               {selectedTask.startTime && (
                 <div className="flex gap-6">
                   <div className="flex flex-col gap-0.5">
@@ -218,6 +256,23 @@ function CalendarGrid() {
                   </span>
                 </div>
               )}
+            </div>
+
+            <div className="flex items-center justify-between gap-4 border-t border-border pt-3">
+              <div className="flex items-center gap-3">
+                <ProgressIndicator value={selectedTask.progress} size={40} strokeWidth={4} />
+                <span className="text-xs text-muted-foreground">Fortschritt</span>
+              </div>
+              <Button
+                size="sm"
+                disabled={selectedTask.progress >= 100}
+                onClick={() => {
+                  handleToggleDone(selectedTask.id);
+                  showSuccessToast("Als erledigt markiert.");
+                }}
+              >
+                {selectedTask.progress >= 100 ? "Erledigt" : "Als erledigt markieren"}
+              </Button>
             </div>
           </div>
         )}

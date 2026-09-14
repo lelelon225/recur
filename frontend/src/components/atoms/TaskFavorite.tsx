@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 
 type TaskFavoriteProps = {
   isFavorite: boolean;
-  onClick: (e: React.MouseEvent) => void;
+  onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
 };
 
 function TaskFavorite({ isFavorite, onClick }: TaskFavoriteProps) {
@@ -13,6 +13,8 @@ function TaskFavorite({ isFavorite, onClick }: TaskFavoriteProps) {
       variant="ghost"
       size="icon"
       className="hover:bg-accent"
+      aria-label={isFavorite ? "Aus Favoriten entfernen" : "Zu Favoriten hinzufügen"}
+      aria-pressed={isFavorite}
       onClick={(e) => {
         e.stopPropagation();
         onClick(e);

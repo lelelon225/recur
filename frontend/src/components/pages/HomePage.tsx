@@ -52,9 +52,9 @@ function HomePage() {
     return (
       <Empty
         icon={() => <FilePlus2 className="w-12 h-12 text-gray-400" />}
-        title="Keine Habits"
-        description="Es gibt derzeit keine Habits."
-        buttonText="Habit erstellen"
+        title="Keine Aufgaben"
+        description="Es gibt derzeit keine Aufgaben."
+        buttonText="Aufgabe erstellen"
         onButtonClick={openAddTaskForm}
       />
     );

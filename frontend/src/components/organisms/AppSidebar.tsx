@@ -4,12 +4,11 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 
-import type { ComponentProps } from "react";
 import type { NavigationDestination } from "@/hooks/useNavigationBar";
 import { useNavigationBar } from "@/hooks/useNavigationBar";
 import { useNavigate } from "react-router-dom";
 import AppSidebarUser from "@/components/organisms/AppSidebarUser";
-import SidebarNavigation from "@/components/molecules/SideBarNavigation";
+import SidebarNavigation from "@/components/molecules/SidebarNavigation";
 import SidebarBrand from "@/components/molecules/SidebarBrand";
 import { Settings, ClipboardPaste } from "lucide-react";
 import SidebarSettingsGroup from "./SidebarSettingsGroup";

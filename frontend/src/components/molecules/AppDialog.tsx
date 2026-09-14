@@ -18,6 +18,8 @@ type AppDialogProps = {
   loading?: boolean;
   submitDisabled?: boolean;
   contentClassName?: string;
+  closeLabel?: string;
+  submitLabel?: string;
 };
 
 function AppDialog({
@@ -29,6 +31,8 @@ function AppDialog({
   loading,
   submitDisabled,
   contentClassName,
+  closeLabel = "Abbrechen",
+  submitLabel = "Speichern",
 }: AppDialogProps) {
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
@@ -43,14 +47,14 @@ function AppDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
-            Close
+            {closeLabel}
           </Button>
           <LoadingButton
             onClick={onSubmit}
             disabled={submitDisabled}
             loading={loading}
           >
-            Submit
+            {submitLabel}
           </LoadingButton>
         </DialogFooter>
       </DialogContent>
