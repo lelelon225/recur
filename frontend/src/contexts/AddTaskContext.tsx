@@ -9,22 +9,32 @@ import AddTaskForm from "@/components/organisms/AddTaskForm";
 import type { Task } from "@/services/taskService";
 import { useTasksContext } from "@/contexts/TasksContext";
 
+/** Fields a caller (e.g. a calendar click) can pre-populate on the Add Task form. */
+export type AddTaskPrefill = {
+  startDate?: string;
+  startTimeOfDay?: string;
+  dateUntil?: string;
+};
+
 type AddTaskContextValue = {
-  openAddTaskForm: () => void;
+  openAddTaskForm: (prefill?: AddTaskPrefill) => void;
 };
 
 const AddTaskContext = createContext<AddTaskContextValue | null>(null);
 
 export function AddTaskProvider({ children }: { children: ReactNode }) {
   const [showAddTaskForm, setShowAddTaskForm] = useState(false);
+  const [prefill, setPrefill] = useState<AddTaskPrefill | null>(null);
   const { addTask } = useTasksContext();
 
-  const openAddTaskForm = useCallback(() => {
+  const openAddTaskForm = useCallback((newPrefill?: AddTaskPrefill) => {
+    setPrefill(newPrefill ?? null);
     setShowAddTaskForm(true);
   }, []);
 
   function handleClose() {
     setShowAddTaskForm(false);
+    setPrefill(null);
   }
 
   function handleTaskCreated(task: Task) {
@@ -35,7 +45,11 @@ export function AddTaskProvider({ children }: { children: ReactNode }) {
     <AddTaskContext.Provider value={{ openAddTaskForm }}>
       {children}
       {showAddTaskForm && (
-        <AddTaskForm onClose={handleClose} onTaskCreated={handleTaskCreated} />
+        <AddTaskForm
+          onClose={handleClose}
+          onTaskCreated={handleTaskCreated}
+          prefill={prefill ?? undefined}
+        />
       )}
     </AddTaskContext.Provider>
   );

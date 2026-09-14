@@ -41,7 +41,7 @@ function useTaskCardMenu({
   const handleToggleArchive = (e: React.MouseEvent) => {
     e.stopPropagation();
     onToggleArchive();
-    showUndoToast(isArchived ? "Habit wiederhergestellt" : "Habit archiviert", () => {
+    showUndoToast(isArchived ? "Aufgabe wiederhergestellt" : "Aufgabe archiviert", () => {
       onToggleArchive();
     });
   };
@@ -55,7 +55,7 @@ function useTaskCardMenu({
   const handleConfirmDelete = () => {
     onDelete();
     setConfirmDeleteOpen(false);
-    showSuccessToast("Habit erfolgreich gelöscht");
+    showSuccessToast("Aufgabe erfolgreich gelöscht");
   };
 
   const handleCancelDelete = () => {

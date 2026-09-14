@@ -4,13 +4,13 @@ import ArchiveSelectionToolbar from "@/components/molecules/ArchiveSelectionTool
 import { OctagonXIcon } from "lucide-react";
 import { useTasksContext } from "@/contexts/TasksContext";
 import { useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import TaskCardGrid from "@/components/molecules/TaskCardGrid";
 import useArchiveSelection from "@/hooks/useArchiveSelection";
 import TaskCardGridSkeleton from "../molecules/TaskCardGridSkeleton";
 
 function ArchivePage() {
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const {
     archivedTasks,
@@ -52,10 +52,10 @@ function ArchivePage() {
   if (archivedTasks.length === 0) {
     return (
       <Empty
-        title="Keine archivierten Habits"
-        description="Es gibt derzeit keine archivierten Habits."
-        buttonText="Zurück zu den Habits"
-        onButtonClick={() => navigate("/")}
+        title="Keine archivierten Aufgaben"
+        description="Es gibt derzeit keine archivierten Aufgaben."
+        buttonText="Zurück zu den Aufgaben"
+        onButtonClick={() => router.push("/")}
         icon={() => <OctagonXIcon className="h-12 w-12 text-muted-foreground" />}
       />
     );
@@ -65,8 +65,8 @@ function ArchivePage() {
     <div className="w-full pb-20">
       <ConfirmDialog
         severity="high"
-        question="Habits löschen"
-        description={`Sind Sie sicher, dass Sie ${selectedCount} ${selectedCount === 1 ? "Habit" : "Habits"} löschen möchten? Dies kann nicht rückgängig gemacht werden.`}
+        question="Aufgaben löschen"
+        description={`Sind Sie sicher, dass Sie ${selectedCount} ${selectedCount === 1 ? "Aufgabe" : "Aufgaben"} löschen möchten? Dies kann nicht rückgängig gemacht werden.`}
         open={confirmBulkDeleteOpen}
         onOpenChange={(next) => !next && cancelBulkDelete()}
         onConfirm={confirmBulkDelete}

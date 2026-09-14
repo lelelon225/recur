@@ -5,6 +5,8 @@ import java.util.UUID;
 
 import org.hibernate.annotations.CreationTimestamp;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import ch.noseryoung.domain.recur.enums.AuthProvider;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
@@ -20,6 +22,12 @@ import lombok.*;
 @NoArgsConstructor
 @Entity
 @Table(name = "app_user", uniqueConstraints = @UniqueConstraint(columnNames = "email"))
+// Ownership/membership checks (TaskService.hasAccess, group.getMembers().contains(user),
+// etc.) compare User instances loaded from unrelated Hibernate sessions - e.g. the
+// JWT-authenticated principal vs. a Task's owner loaded inside the request's own
+// transaction. Those are never the same Java object, so without an id-based equals()
+// the default reference equality made every such check silently fail.
+@EqualsAndHashCode(of = "id")
 public class User {
 
     @Id
@@ -33,6 +41,10 @@ public class User {
     private String email;
 
     // Bleibt null für Nutzer, die sich nur über OAuth2 (Google) registriert haben.
+    // @JsonIgnore, da User-Objekte über verschachtelte Referenzen (z.B. Task.owner,
+    // TaskGroup.members) direkt serialisiert werden und der Hash sonst an jeden
+    // mitliest, der ein Task/eine Gruppe abruft.
+    @JsonIgnore
     @Size(min = 8, message = "Passwort muss mindestens 8 Zeichen lang sein")
     @Column(name = "password_hash")
     private String passwordHash;

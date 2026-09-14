@@ -18,7 +18,7 @@ function ProgressIndicator({ value, size = 44, strokeWidth = 4 }: ProgressIndica
       aria-valuenow={clamped}
       aria-valuemin={0}
       aria-valuemax={100}
-      aria-label="Task progress"
+      aria-label="Fortschritt"
     >
       <svg width={size} height={size} className="-rotate-90">
         <circle cx={size / 2} cy={size / 2} r={radius} fill="none" strokeWidth={strokeWidth} className="stroke-muted" />

@@ -14,6 +14,7 @@ export type EditableTaskFields = Pick<
   durationMinutes: number | null;
   startDate: string;
   startTimeOfDay: string;
+  projectId: string;
 };
 
 function valuesChanged(values: EditableTaskFields, original: Task): boolean {
@@ -46,7 +47,8 @@ function valuesChanged(values: EditableTaskFields, original: Task): boolean {
       normDuration(original.durationMinutes) &&
     valDate === origDate &&
     valStartDate === origStartDate &&
-    valStartTime === origStartTime
+    valStartTime === origStartTime &&
+    normStr(values.projectId) === normStr(original.project?.id)
   );
 }
 
@@ -84,18 +86,29 @@ function useEditTaskForm({
 
       setLoading(true);
 
-      const combined = new Date(`${values.startDate}T${values.startTimeOfDay}`);
-      const startTimeIso = combined.toISOString();
+      const startTimeIso =
+        values.startDate && values.startTimeOfDay
+          ? new Date(`${values.startDate}T${values.startTimeOfDay}`).toISOString()
+          : null;
 
-      const { startDate, startTimeOfDay, ...restValues } = values;
+      const { startDate, startTimeOfDay, projectId, ...restValues } = values;
 
       const payload = {
         ...restValues,
         startTime: startTimeIso,
+        projectId: projectId || null,
       };
 
+      const projectUnchanged = projectId === (task.project?.id ?? "");
+
       try {
-        const updatedTask = await patchTask(task.id, { task: payload });
+        const updatedTask = await patchTask(task.id, {
+          task: payload,
+          // Nur explizit zurücksetzen, wenn projectId wirklich auf "persönlich"
+          // geändert wurde - sonst würde ein unverändertes "" fälschlich ein
+          // bereits zugeordnetes Projekt entfernen.
+          unassignProject: !projectUnchanged && !projectId ? true : undefined,
+        });
         showSuccessToast("Aufgabe erfolgreich aktualisiert");
         onTaskUpdated?.(updatedTask);
 
