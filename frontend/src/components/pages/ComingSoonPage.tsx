@@ -1,5 +1,6 @@
 import { TerminalIcon } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import LegalFooterLinks from "@/components/molecules/LegalFooterLinks";
 
 /**
  * Öffentliche Platzhalterseite für www./main, solange die eigentliche App
@@ -32,6 +33,7 @@ function ComingSoonPage() {
                     </div>
                 </CardHeader>
             </Card>
+            <LegalFooterLinks />
         </div>
     );
 }

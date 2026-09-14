@@ -1,5 +1,6 @@
 import { useRouter } from "next/navigation";
 import LoginForm from "@/components/organisms/LoginForm";
+import LegalFooterLinks from "@/components/molecules/LegalFooterLinks";
 import { Card, CardContent } from "../ui/card";
 import { useLoginForm } from "@/hooks/useLoginForm";
 import { Formik } from "formik";
@@ -20,7 +21,7 @@ function LoginPage() {
     useLoginForm();
 
   return (
-    <div className="flex min-h-svh items-center justify-center bg-background w-full h-full px-4 py-8">
+    <div className="flex min-h-svh flex-col items-center justify-center bg-background w-full h-full px-4 py-8">
       <Card className="w-full max-w-md border-none shadow-lg">
         <CardContent className="p-6">
           <Formik<LoginRequest>
@@ -52,6 +53,7 @@ function LoginPage() {
           </Formik>
         </CardContent>
       </Card>
+      <LegalFooterLinks />
     </div>
   );
 }
