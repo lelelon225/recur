@@ -51,12 +51,13 @@
 # which lives outside this repo) if they clash with something else already
 # running on the host.
 #
-# frontend-www is the public www./main placeholder: the same prod image as
-# frontend-prod, just with COMING_SOON_MODE=true - proxy.ts then redirects
-# every request (API/OAuth2 paths included) to /coming-soon, so it needs no
-# backend or db of its own. This isn't part of deploy.yml's automated
-# pull/up (it only touches the -dev/-prod service names) - pull and start it
-# by hand on the host, same as pointing the Cloudflare Tunnel at it:
+# frontend-www is the public www./main placeholder: a frontend image with
+# COMING_SOON_MODE=true - proxy.ts then redirects every request (API/OAuth2
+# paths included) to /coming-soon, so it needs no backend or db of its own
+# (see the image tag comment below for which tag and why). This isn't part
+# of deploy.yml's automated pull/up (it only touches the -dev/-prod service
+# names) - pull and start it by hand on the host, same as pointing the
+# Cloudflare Tunnel at it:
 #   docker compose -f /opt/recur/compose.yml pull frontend-www
 #   docker compose -f /opt/recur/compose.yml up -d frontend-www
 
@@ -142,7 +143,11 @@ services:
       - recur-db-prod-data:/var/lib/postgresql/data
 
   frontend-www:
-    image: ghcr.io/lelelon225/recur-frontend:latest
+    # :dev, not :latest - no version tag has been pushed yet, so :latest
+    # doesn't exist in the registry. The underlying app version is moot
+    # anyway while COMING_SOON_MODE gates every route before it matters;
+    # switch to :latest once an actual prod release exists.
+    image: ghcr.io/lelelon225/recur-frontend:dev
     container_name: recur-frontend-www
     restart: unless-stopped
     environment:
