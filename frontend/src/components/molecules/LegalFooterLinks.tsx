@@ -12,13 +12,13 @@ function LegalFooterLinks() {
       >
         Impressum
       </button>
-      <span aria-hidden>·</span>
+      <span aria-hidden>•</span>
       <button
         type="button"
         className="hover:text-foreground hover:underline"
         onClick={() => router.push("/datenschutz")}
       >
-        Datenschutz
+        Datenschutzerklärung
       </button>
     </div>
   );
