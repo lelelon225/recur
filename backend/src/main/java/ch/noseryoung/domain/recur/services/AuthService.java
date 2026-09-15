@@ -13,6 +13,7 @@ import ch.noseryoung.domain.recur.enums.AuthProvider;
 import ch.noseryoung.domain.recur.exceptions.EmailAlreadyExistsException;
 import ch.noseryoung.domain.recur.exceptions.InvalidCredentialsException;
 import ch.noseryoung.domain.recur.models.User;
+import ch.noseryoung.domain.recur.repositories.NotificationSettingsRepository;
 import ch.noseryoung.domain.recur.repositories.UserPrivacySettingsRepository;
 import ch.noseryoung.domain.recur.repositories.UserRepository;
 import ch.noseryoung.domain.recur.security.JwtService;
@@ -22,13 +23,16 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final UserPrivacySettingsRepository privacySettingsRepository;
+    private final NotificationSettingsRepository notificationSettingsRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
     public AuthService(UserRepository userRepository, UserPrivacySettingsRepository privacySettingsRepository,
+            NotificationSettingsRepository notificationSettingsRepository,
             PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.userRepository = userRepository;
         this.privacySettingsRepository = privacySettingsRepository;
+        this.notificationSettingsRepository = notificationSettingsRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
     }
@@ -101,9 +105,12 @@ public class AuthService {
                 .orElseThrow(() -> new IllegalStateException("Authentifizierter User nicht gefunden: " + email));
 
         // Muss vor dem User gelöscht werden, sonst schlägt der Delete an der
-        // FK-Constraint von user_privacy_settings.user_id fehl.
+        // FK-Constraint von user_privacy_settings.user_id bzw.
+        // notification_settings.user_id fehl.
         privacySettingsRepository.findByUserId(user.getId())
                 .ifPresent(privacySettingsRepository::delete);
+        notificationSettingsRepository.findByUserId(user.getId())
+                .ifPresent(notificationSettingsRepository::delete);
 
         userRepository.delete(user);
     }
