@@ -92,6 +92,17 @@ export function patchUser(user: Partial<UserResponse>): Promise<UserResponse> {
     });
 }
 
+export function deleteCurrentUser(): Promise<void> {
+  return api
+    .delete("/auth/me")
+    .then(() => undefined)
+    .catch((error) => {
+      throw new Error(
+        error?.response?.data?.message ?? "Fehler beim Löschen des Kontos"
+      );
+    });
+}
+
 /**
  * A 401 from any endpoint other than login/register means our token is
  * missing, expired, or invalid. Clear it and send the user to /login

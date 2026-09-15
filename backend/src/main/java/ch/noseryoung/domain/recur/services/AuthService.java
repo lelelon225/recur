@@ -13,6 +13,7 @@ import ch.noseryoung.domain.recur.enums.AuthProvider;
 import ch.noseryoung.domain.recur.exceptions.EmailAlreadyExistsException;
 import ch.noseryoung.domain.recur.exceptions.InvalidCredentialsException;
 import ch.noseryoung.domain.recur.models.User;
+import ch.noseryoung.domain.recur.repositories.UserPrivacySettingsRepository;
 import ch.noseryoung.domain.recur.repositories.UserRepository;
 import ch.noseryoung.domain.recur.security.JwtService;
 
@@ -20,11 +21,14 @@ import ch.noseryoung.domain.recur.security.JwtService;
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final UserPrivacySettingsRepository privacySettingsRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
+    public AuthService(UserRepository userRepository, UserPrivacySettingsRepository privacySettingsRepository,
+            PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.userRepository = userRepository;
+        this.privacySettingsRepository = privacySettingsRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
     }
@@ -95,6 +99,11 @@ public class AuthService {
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalStateException("Authentifizierter User nicht gefunden: " + email));
+
+        // Muss vor dem User gelöscht werden, sonst schlägt der Delete an der
+        // FK-Constraint von user_privacy_settings.user_id fehl.
+        privacySettingsRepository.findByUserId(user.getId())
+                .ifPresent(privacySettingsRepository::delete);
 
         userRepository.delete(user);
     }
