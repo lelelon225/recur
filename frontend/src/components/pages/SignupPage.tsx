@@ -15,6 +15,10 @@ const signupSchema = yup.object().shape({
     .string()
     .oneOf([yup.ref("password")], "Passwörter stimmen nicht überein")
     .required("Bitte bestätige dein Passwort"),
+  acceptTerms: yup
+    .boolean()
+    .oneOf([true], "Bitte akzeptiere die Datenschutzerklärung und die Nutzungsbedingungen")
+    .required("Bitte akzeptiere die Datenschutzerklärung und die Nutzungsbedingungen"),
 });
 
 export default function SignupPage() {
@@ -26,11 +30,11 @@ export default function SignupPage() {
         <Card className="w-full max-w-md border-none shadow-lg">
         <CardContent className="p-6">
             <Formik<SignupFormValues>
-                initialValues={{ firstName: "", lastName: "", email: "", password: "", confirmPassword: "" }}
+                initialValues={{ firstName: "", lastName: "", email: "", password: "", confirmPassword: "", acceptTerms: false }}
                 validationSchema={signupSchema}
                 onSubmit={handleSubmit}
             >
-                {({ values, handleChange, handleSubmit: formikHandleSubmit, handleBlur, errors, touched }) => (
+                {({ values, handleChange, handleSubmit: formikHandleSubmit, handleBlur, errors, touched, setFieldValue }) => (
                     <SignupForm
                         navigate={() => router.push("/login")}
                         onSubmit={formikHandleSubmit}
@@ -39,6 +43,7 @@ export default function SignupPage() {
                         touched={touched}
                         handleChange={handleChange}
                         handleBlur={handleBlur}
+                        setFieldValue={setFieldValue}
                         loading={loading}
                         submitDisabled={submitDisabled}
                         backendError={backendError}

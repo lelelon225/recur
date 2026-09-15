@@ -4,7 +4,7 @@ const BACKEND_PROXY_PREFIXES = ["/api", "/oauth2", "/login/oauth2"];
 const COMING_SOON_PATH = "/coming-soon";
 // The coming-soon page itself links to these - without this they'd redirect
 // straight back to /coming-soon, making the links dead.
-const COMING_SOON_ALLOWED_PATHS = new Set([COMING_SOON_PATH, "/impressum", "/datenschutz"]);
+const COMING_SOON_ALLOWED_PATHS = new Set([COMING_SOON_PATH, "/impressum", "/datenschutz", "/agb"]);
 
 // next.config.ts's rewrites() is resolved once at `next build` time and its
 // destination gets frozen into .next/routes-manifest.json - reading

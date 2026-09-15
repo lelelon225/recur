@@ -113,6 +113,13 @@ function DatenschutzPage() {
           innerhalb von 30 Tagen gelöscht, soweit keine gesetzliche
           Aufbewahrungspflicht entgegensteht.
         </p>
+        <p>
+          Der Datenverkehr zu unserem Server läuft über Cloudflare (Cloudflare
+          Tunnel). Cloudflare fungiert dabei als Auftragsverarbeiter und kann
+          technische Verbindungsdaten (z.B. IP-Adresse) verarbeiten, um den
+          Datenverkehr an unseren Server weiterzuleiten und vor Missbrauch zu
+          schützen.
+        </p>
       </section>
 
       <section className="flex flex-col gap-2">
@@ -179,13 +186,22 @@ function DatenschutzPage() {
         </p>
       </section>
 
-      <button
-        type="button"
-        className="self-start text-sm text-primary hover:underline"
-        onClick={() => router.push("/impressum")}
-      >
-        Zum Impressum
-      </button>
+      <div className="flex flex-wrap gap-4">
+        <button
+          type="button"
+          className="self-start text-sm text-primary hover:underline"
+          onClick={() => router.push("/impressum")}
+        >
+          Zum Impressum
+        </button>
+        <button
+          type="button"
+          className="self-start text-sm text-primary hover:underline"
+          onClick={() => router.push("/agb")}
+        >
+          Zu den Nutzungsbedingungen
+        </button>
+      </div>
     </LegalPageLayout>
   );
 }
