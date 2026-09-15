@@ -72,6 +72,17 @@ function DatenschutzPage() {
             einführen. Wird diese Funktion eingeführt, aktualisieren wir
             diese Datenschutzerklärung entsprechend.
           </li>
+          <li>
+            <span className="font-medium text-foreground">
+              Benachrichtigungseinstellungen (optional, aktuell nicht aktiv):
+            </span>{" "}
+            In deinen Benachrichtigungseinstellungen kannst du E-Mail- und
+            Push-Benachrichtigungen aktivieren oder deaktivieren. Aktuell
+            versenden wir keine Benachrichtigungen; die Einstellung
+            reserviert deine Präferenz für den Fall, dass wir eine solche
+            Funktion künftig einführen. Wird diese Funktion eingeführt,
+            aktualisieren wir diese Datenschutzerklärung entsprechend.
+          </li>
         </ul>
       </section>
 
