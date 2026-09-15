@@ -9,6 +9,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
+import { GITHUB_REPO_URL } from "@/constants/links";
 
 const LEGAL_PAGES = [
   { label: "Impressum", path: "/impressum" },
@@ -41,6 +42,15 @@ function SidebarLegalGroup() {
                   </SidebarMenuSubButton>
                 </SidebarMenuSubItem>
               ))}
+              <SidebarMenuSubItem>
+                <SidebarMenuSubButton
+                  href={GITHUB_REPO_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <span>GitHub</span>
+                </SidebarMenuSubButton>
+              </SidebarMenuSubItem>
             </SidebarMenuSub>
           </CollapsibleContent>
         </SidebarMenuItem>
