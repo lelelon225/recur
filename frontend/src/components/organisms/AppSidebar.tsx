@@ -11,6 +11,7 @@ import AppSidebarUser from "@/components/organisms/AppSidebarUser";
 import SidebarNavigation from "@/components/molecules/SidebarNavigation";
 import SidebarBrand from "@/components/molecules/SidebarBrand";
 import SidebarLegalGroup from "@/components/organisms/SidebarLegalGroup";
+import SidebarGithubLink from "@/components/organisms/SidebarGithubLink";
 import { Bell, Palette, ShieldCheck, ClipboardPaste } from "lucide-react";
 import SidebarSettingsGroup from "./SidebarSettingsGroup";
 import useUserDetails from "@/hooks/useUserDetails";
@@ -74,6 +75,7 @@ function AppSidebar({ destinations, ...props }: AppSidebarProps) {
       </SidebarContent>
       <SidebarFooter>
         <SidebarLegalGroup />
+        <SidebarGithubLink />
         <AppSidebarUser user={user} />
       </SidebarFooter>
     </Sidebar>
