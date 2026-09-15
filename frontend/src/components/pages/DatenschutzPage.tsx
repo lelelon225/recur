@@ -113,6 +113,13 @@ function DatenschutzPage() {
           innerhalb von 30 Tagen gelöscht, soweit keine gesetzliche
           Aufbewahrungspflicht entgegensteht.
         </p>
+        <p>
+          Der Datenverkehr zu unserem Server läuft über Cloudflare (Cloudflare
+          Tunnel). Cloudflare fungiert dabei als Auftragsverarbeiter und kann
+          technische Verbindungsdaten (z.B. IP-Adresse) verarbeiten, um den
+          Datenverkehr an unseren Server weiterzuleiten und vor Missbrauch zu
+          schützen.
+        </p>
       </section>
 
       <section className="flex flex-col gap-2">
@@ -122,9 +129,37 @@ function DatenschutzPage() {
         <p>
           Recur verwendet den localStorage deines Browsers, um dein
           Anmelde-Token zu speichern. Dies ist technisch notwendig, damit
-          du zwischen Seitenaufrufen eingeloggt bleibst. Es werden keine
-          Tracking- oder Werbe-Cookies eingesetzt.
+          du zwischen Seitenaufrufen eingeloggt bleibst.
         </p>
+      </section>
+
+      <section className="flex flex-col gap-2">
+        <h2 className="text-base font-semibold text-foreground">
+          Cookies
+        </h2>
+        <p>
+          Es werden keine Tracking- oder Werbe-Cookies eingesetzt. Wir
+          verwenden lediglich folgende technisch notwendige Cookies:
+        </p>
+        <ul className="list-disc space-y-1 pl-5">
+          <li>
+            <span className="font-medium text-foreground">
+              sidebar_state:
+            </span>{" "}
+            speichert, ob die Seitenleiste ein- oder ausgeklappt ist
+            (7 Tage gültig).
+          </li>
+          <li>
+            <span className="font-medium text-foreground">
+              JSESSIONID:
+            </span>{" "}
+            wird beim Login über Google gesetzt, um den Anmeldevorgang
+            (OAuth2) durchzuführen; er wird von unserem Server nach
+            Abschluss des Logins nicht mehr für die eigentliche Nutzung
+            der App benötigt (diese läuft über das Anmelde-Token) und
+            verfällt mit dem Ende der Browser-Sitzung.
+          </li>
+        </ul>
       </section>
 
       <section className="flex flex-col gap-2">
@@ -151,13 +186,22 @@ function DatenschutzPage() {
         </p>
       </section>
 
-      <button
-        type="button"
-        className="self-start text-sm text-primary hover:underline"
-        onClick={() => router.push("/impressum")}
-      >
-        Zum Impressum
-      </button>
+      <div className="flex flex-wrap gap-4">
+        <button
+          type="button"
+          className="self-start text-sm text-primary hover:underline"
+          onClick={() => router.push("/impressum")}
+        >
+          Zum Impressum
+        </button>
+        <button
+          type="button"
+          className="self-start text-sm text-primary hover:underline"
+          onClick={() => router.push("/agb")}
+        >
+          Zu den Nutzungsbedingungen
+        </button>
+      </div>
     </LegalPageLayout>
   );
 }
