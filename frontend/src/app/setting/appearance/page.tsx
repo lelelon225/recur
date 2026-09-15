@@ -3,17 +3,17 @@
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import DefaultLayout from "@/components/templates/DefaultLayout";
 import ReactErrorBoundary from "@/components/error/ReactErrorBoundary";
-import CalendarGrid from "@/components/pages/CalendarPage";
+import AppearancePage from "@/components/pages/AppearancePage";
 
 export default function Page() {
   return (
     <ProtectedRoute>
-      <DefaultLayout pageTitle="Dein Kalender">
+      <DefaultLayout pageTitle="Erscheinungsbild">
         <ReactErrorBoundary
-          errorMessage="Dein Kalender konnte nicht angezeigt werden."
+          errorMessage="Die Erscheinungsbild-Einstellungen konnten nicht angezeigt werden."
           fullScreen={false}
         >
-          <CalendarGrid />
+          <AppearancePage />
         </ReactErrorBoundary>
       </DefaultLayout>
     </ProtectedRoute>

@@ -3,17 +3,17 @@
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import DefaultLayout from "@/components/templates/DefaultLayout";
 import ReactErrorBoundary from "@/components/error/ReactErrorBoundary";
-import CalendarGrid from "@/components/pages/CalendarPage";
+import NotificationsPage from "@/components/pages/NotificationsPage";
 
 export default function Page() {
   return (
     <ProtectedRoute>
-      <DefaultLayout pageTitle="Dein Kalender">
+      <DefaultLayout pageTitle="Benachrichtigungen">
         <ReactErrorBoundary
-          errorMessage="Dein Kalender konnte nicht angezeigt werden."
+          errorMessage="Die Benachrichtigungseinstellungen konnten nicht angezeigt werden."
           fullScreen={false}
         >
-          <CalendarGrid />
+          <NotificationsPage />
         </ReactErrorBoundary>
       </DefaultLayout>
     </ProtectedRoute>

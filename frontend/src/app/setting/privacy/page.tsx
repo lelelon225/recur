@@ -3,17 +3,17 @@
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import DefaultLayout from "@/components/templates/DefaultLayout";
 import ReactErrorBoundary from "@/components/error/ReactErrorBoundary";
-import CalendarGrid from "@/components/pages/CalendarPage";
+import PrivacyPage from "@/components/pages/PrivacyPage";
 
 export default function Page() {
   return (
     <ProtectedRoute>
-      <DefaultLayout pageTitle="Dein Kalender">
+      <DefaultLayout pageTitle="Privatsphäre">
         <ReactErrorBoundary
-          errorMessage="Dein Kalender konnte nicht angezeigt werden."
+          errorMessage="Die Privatsphäre-Einstellungen konnten nicht angezeigt werden."
           fullScreen={false}
         >
-          <CalendarGrid />
+          <PrivacyPage />
         </ReactErrorBoundary>
       </DefaultLayout>
     </ProtectedRoute>

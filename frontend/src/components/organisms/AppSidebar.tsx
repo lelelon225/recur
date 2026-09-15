@@ -10,7 +10,8 @@ import { useRouter } from "next/navigation";
 import AppSidebarUser from "@/components/organisms/AppSidebarUser";
 import SidebarNavigation from "@/components/molecules/SidebarNavigation";
 import SidebarBrand from "@/components/molecules/SidebarBrand";
-import { Settings, ClipboardPaste, Scale } from "lucide-react";
+import SidebarLegalGroup from "@/components/organisms/SidebarLegalGroup";
+import { Bell, Palette, ShieldCheck, ClipboardPaste } from "lucide-react";
 import SidebarSettingsGroup from "./SidebarSettingsGroup";
 import useUserDetails from "@/hooks/useUserDetails";
 import { useImportQuartalsplan } from "@/contexts/ImportQuartalsplanContext";
@@ -20,45 +21,59 @@ type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
 };
 
 function AppSidebar({ destinations, ...props }: AppSidebarProps) {
-  const { activeValue, handleNavigation } = useNavigationBar(destinations);
   const router = useRouter();
   const { user } = useUserDetails();
   const { openImportQuartalsplan } = useImportQuartalsplan();
 
+  const navDestinations: NavigationDestination[] = [
+    ...destinations,
+    {
+      path: "__import-quartalsplan__",
+      navigate: openImportQuartalsplan,
+      label: "Quartalsplan importieren",
+      icon: ClipboardPaste,
+    },
+  ];
+
+  const { activeValue, handleNavigation } = useNavigationBar(navDestinations);
+
   const settingsItems = [
     {
-      label: "Account",
-      Icon: Settings,
+      label: "Benachrichtigungen",
+      Icon: Bell,
       onClick: () => {
-        router.push("/setting/account");
+        router.push("/setting/notifications");
       },
     },
     {
-      label: "Quartalsplan importieren",
-      Icon: ClipboardPaste,
-      onClick: openImportQuartalsplan,
+      label: "Erscheinungsbild",
+      Icon: Palette,
+      onClick: () => {
+        router.push("/setting/appearance");
+      },
     },
     {
-      label: "Impressum & Datenschutz",
-      Icon: Scale,
+      label: "Privatsphäre",
+      Icon: ShieldCheck,
       onClick: () => {
-        router.push("/impressum");
+        router.push("/setting/privacy");
       },
     },
   ];
 
   return (
-    <Sidebar variant="inset" {...props}>    
+    <Sidebar variant="inset" {...props}>
       <SidebarBrand onClick={() => router.push("/")} />
       <SidebarContent>
         <SidebarNavigation
-          destinations={destinations}
+          destinations={navDestinations}
           handleNavigation={handleNavigation}
           activeValue={activeValue}
         />
         <SidebarSettingsGroup SettingsItem={settingsItems} />
       </SidebarContent>
       <SidebarFooter>
+        <SidebarLegalGroup />
         <AppSidebarUser user={user} />
       </SidebarFooter>
     </Sidebar>
