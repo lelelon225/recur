@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { LinkIcon, PlusIcon, TrashIcon, ArchiveIcon, ArchiveRestoreIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import CreateProjectDialog from "@/components/organisms/CreateProjectDialog";
 import { useGroupsContext } from "@/contexts/GroupsContext";
 import { useTasksContext } from "@/contexts/TasksContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { showErrorToast, showInfoToast, showSuccessToast } from "@/lib/toast";
 
 function initials(firstName: string, lastName: string) {
   return `${firstName[0] ?? ""}${lastName[0] ?? ""}`.toUpperCase();
@@ -20,7 +20,7 @@ function GroupDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const { user } = useAuth();
-  const { groups, projectsByGroupId, leaveGroup, removeMember, deleteGroup, patchProject, deleteProject } =
+  const { groups, projectsByGroupId, loading, leaveGroup, removeMember, deleteGroup, patchProject, deleteProject } =
     useGroupsContext();
   const { tasks } = useTasksContext();
 
@@ -48,6 +48,28 @@ function GroupDetailPage() {
     [tasks, projects]
   );
 
+  // War die Gruppe schon mal da und ist jetzt (nach einem Auto-Sync-Poll) weg,
+  // wurde sie von einem anderen Mitglied gelöscht oder man wurde selbst
+  // entfernt - dann zurück zur Übersicht statt eine leere Seite zu zeigen.
+  // Löscht/verlässt man die Gruppe selbst, verschwindet "group" genauso, daher
+  // unterdrückt selfInitiatedRemovalRef den Hinweis für den eigenen Aktions-Flow
+  // (der bereits seinen eigenen Erfolgs-Toast + router.push erledigt).
+  const hadGroupRef = useRef(false);
+  const selfInitiatedRemovalRef = useRef(false);
+  useEffect(() => {
+    if (group) {
+      hadGroupRef.current = true;
+      return;
+    }
+    if (!loading && hadGroupRef.current) {
+      if (!selfInitiatedRemovalRef.current) {
+        showInfoToast("Diese Gruppe ist nicht mehr verfügbar - sie wurde gelöscht oder du wurdest entfernt.");
+        router.push("/groups");
+      }
+      hadGroupRef.current = false;
+    }
+  }, [group, loading, router]);
+
   if (!group || !id) {
     return null;
   }
@@ -66,6 +88,7 @@ function GroupDetailPage() {
   const handleRemoveOrLeave = async (memberId: string) => {
     try {
       if (memberId === user?.id) {
+        selfInitiatedRemovalRef.current = true;
         await leaveGroup(id);
         router.push("/groups");
         return;
@@ -73,16 +96,19 @@ function GroupDetailPage() {
       await removeMember(id, memberId);
       showSuccessToast("Mitglied entfernt.");
     } catch (err) {
+      selfInitiatedRemovalRef.current = false;
       showErrorToast(err instanceof Error ? err.message : "Fehler beim Entfernen des Mitglieds.");
     }
   };
 
   const handleDeleteGroup = async () => {
     try {
+      selfInitiatedRemovalRef.current = true;
       await deleteGroup(id);
       showSuccessToast("Gruppe gelöscht.");
       router.push("/groups");
     } catch (err) {
+      selfInitiatedRemovalRef.current = false;
       showErrorToast(err instanceof Error ? err.message : "Fehler beim Löschen der Gruppe.");
     } finally {
       setConfirmDeleteGroupOpen(false);

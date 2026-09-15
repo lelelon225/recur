@@ -44,6 +44,8 @@ export interface Task {
   dateUntil: string;
   progress: number;
   dateCreated: string;
+  /** Vom Server bei jedem Save neu gesetzt - Basis für den Sync-Merge (Last-Write-Wins). */
+  updatedAt?: string | null;
   daysInSpan?: number | null;
   amountDid?: number | null;
   isFavorite?: boolean | null;
@@ -60,6 +62,7 @@ export interface Task {
 export type ServerOwnedFields =
   | "id"
   | "dateCreated"
+  | "updatedAt"
   | "project"
   | "completedBy"
   | "isArchived";
