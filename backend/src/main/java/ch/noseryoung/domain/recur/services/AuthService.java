@@ -17,6 +17,7 @@ import ch.noseryoung.domain.recur.repositories.NotificationSettingsRepository;
 import ch.noseryoung.domain.recur.repositories.UserPrivacySettingsRepository;
 import ch.noseryoung.domain.recur.repositories.UserRepository;
 import ch.noseryoung.domain.recur.security.JwtService;
+import io.jsonwebtoken.JwtException;
 
 @Service
 public class AuthService {
@@ -68,6 +69,28 @@ public class AuthService {
         }
 
         String token = jwtService.generateToken(user);
+        return new AuthResponse(token, UserResponse.from(user));
+    }
+
+    // Tauscht das kurzlebige HttpOnly-Handoff-Cookie (siehe
+    // OAuth2AuthenticationSuccessHandler) gegen die gleiche AuthResponse-Form
+    // wie beim normalen Login - der Token selbst wird dabei nicht neu
+    // ausgestellt, nur validiert und an den Client zurückgegeben.
+    public AuthResponse exchangeOAuth2Token(String token) {
+        String email;
+        try {
+            email = jwtService.extractEmail(token);
+        } catch (JwtException | IllegalArgumentException e) {
+            throw new InvalidCredentialsException();
+        }
+
+        if (email == null || !jwtService.isTokenValid(token, email)) {
+            throw new InvalidCredentialsException();
+        }
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(InvalidCredentialsException::new);
+
         return new AuthResponse(token, UserResponse.from(user));
     }
 
