@@ -1,4 +1,4 @@
-package ch.noseryoung.recur;
+package ch.noseryoung.domain;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
