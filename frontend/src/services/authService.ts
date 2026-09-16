@@ -26,6 +26,22 @@ export async function login(request: LoginRequest): Promise<AuthResponse> {
     });
 }
 
+/**
+ * Tauscht das kurzlebige HttpOnly-Handoff-Cookie (gesetzt vom OAuth2-Redirect)
+ * gegen den echten Token im Response-Body ein, statt ihn aus der Redirect-URL
+ * zu lesen. `withCredentials`, damit das Cookie cross-origin mitgeschickt wird.
+ */
+export async function exchangeOAuth2Token(): Promise<AuthResponse> {
+  return await api
+    .get("/auth/oauth2/token", { withCredentials: true })
+    .then((response) => response.data as AuthResponse)
+    .catch((error) => {
+      throw new Error(
+        error?.response?.data?.message ?? "Google-Login fehlgeschlagen"
+      );
+    });
+}
+
 export async function getCurrentUser(): Promise<UserResponse> {
   return await api
     .get("/auth/me")
