@@ -6,16 +6,62 @@ import {
 
 import type { NavigationDestination } from "@/hooks/useNavigationBar";
 import { useNavigationBar } from "@/hooks/useNavigationBar";
+import type { SidebarNavGroup } from "@/hooks/useSidebarNavGroups";
 import { useRouter } from "next/navigation";
 import AppSidebarUser from "@/components/organisms/AppSidebarUser";
 import SidebarNavigation from "@/components/molecules/SidebarNavigation";
 import SidebarBrand from "@/components/molecules/SidebarBrand";
 import SidebarLegalGroup from "@/components/organisms/SidebarLegalGroup";
 import SidebarGithubLink from "@/components/organisms/SidebarGithubLink";
-import { Bell, Palette, ShieldCheck, ClipboardPaste } from "lucide-react";
+import {
+  Bell,
+  Palette,
+  ShieldCheck,
+  ClipboardPaste,
+  ListChecks,
+  Calendar,
+  Users,
+} from "lucide-react";
 import SidebarSettingsGroup from "./SidebarSettingsGroup";
 import { useAuth } from "@/contexts/AuthContext";
 import { useImportQuartalsplan } from "@/contexts/ImportQuartalsplanContext";
+
+// Ordnet die flachen Navigationsziele (aus DefaultLayout + die hier ergänzte
+// Import-Aktion) thematischen Ordnern zu. Reihenfolge/Zuordnung final
+// abgestimmt in Issue #132.
+const NAV_GROUP_DEFINITIONS = [
+  {
+    key: "tasks",
+    label: "Habits",
+    icon: ListChecks,
+    paths: ["/", "/favorites", "/archive"],
+  },
+  {
+    key: "planung",
+    label: "Planung",
+    icon: Calendar,
+    paths: ["/calendar"],
+  },
+  {
+    key: "zusammenarbeit",
+    label: "Zusammenarbeit",
+    icon: Users,
+    paths: ["/groups", "__import-quartalsplan__"],
+  },
+] as const;
+
+function buildNavGroups(
+  destinations: NavigationDestination[],
+): SidebarNavGroup[] {
+  return NAV_GROUP_DEFINITIONS.map(({ key, label, icon, paths }) => ({
+    key,
+    label,
+    icon,
+    destinations: paths
+      .map((path) => destinations.find((d) => d.path === path))
+      .filter((d): d is NavigationDestination => d !== undefined),
+  }));
+}
 
 type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
   destinations: NavigationDestination[];
@@ -37,6 +83,7 @@ function AppSidebar({ destinations, ...props }: AppSidebarProps) {
   ];
 
   const { activeValue, handleNavigation } = useNavigationBar(navDestinations);
+  const navGroups = buildNavGroups(navDestinations);
 
   const settingsItems = [
     {
@@ -67,7 +114,7 @@ function AppSidebar({ destinations, ...props }: AppSidebarProps) {
       <SidebarBrand onClick={() => router.push("/")} />
       <SidebarContent>
         <SidebarNavigation
-          destinations={navDestinations}
+          groups={navGroups}
           handleNavigation={handleNavigation}
           activeValue={activeValue}
         />
