@@ -26,7 +26,7 @@ function NotificationForm({ values, disabled, onFieldChange }: NotificationFormP
             E-Mails zu deinen Aufgaben zustellen.
           </FieldDescription>
         </FieldContent>
-        <Switch disabled checked={values.emailEnabled} />
+        <Switch disabled checked={false} />
       </Field>
       <FieldSeparator />
       <Field orientation="horizontal">
