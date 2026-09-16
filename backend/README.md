@@ -24,10 +24,10 @@ on host port **5436** (not the default 5432) — see `docker-compose.yml` and
 - `JWT_SECRET` — signing secret for stateless JWT auth, no default.
 - `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` — Google OAuth2/OIDC login, no
   default.
-- `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM` —
-  SMTP credentials for verification/welcome emails (e.g. a Brevo SMTP relay).
-  Have defaults except username/password, so the app starts without them,
-  but sending real emails requires them to be set.
+- `BREVO_API_KEY`, `MAIL_FROM` — credentials for verification/welcome emails,
+  sent via Brevo's transactional email HTTP API. Have defaults except the
+  API key, so the app starts without them, but sending real emails requires
+  the API key to be set.
 
 Optional overrides (sensible defaults exist): `DB_URL`, `DB_USERNAME`,
 `DB_PASSWORD`, `CORS_ALLOWED_ORIGIN`, `JWT_EXPIRATION_MS`,
