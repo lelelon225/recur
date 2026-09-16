@@ -20,11 +20,9 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import ch.noseryoung.domain.recur.dto.AuthResponse;
 import ch.noseryoung.domain.recur.dto.LoginRequest;
-import ch.noseryoung.domain.recur.dto.MessageResponse;
 import ch.noseryoung.domain.recur.dto.RegisterRequest;
 import ch.noseryoung.domain.recur.enums.AuthProvider;
 import ch.noseryoung.domain.recur.exceptions.EmailAlreadyExistsException;
-import ch.noseryoung.domain.recur.exceptions.EmailNotVerifiedException;
 import ch.noseryoung.domain.recur.exceptions.InvalidCredentialsException;
 import ch.noseryoung.domain.recur.exceptions.InvalidPasswordResetTokenException;
 import ch.noseryoung.domain.recur.models.PasswordResetToken;
@@ -95,28 +93,36 @@ class AuthServiceTest {
     }
 
     @Test
-    void register_hashesPasswordAndSendsVerificationEmail() {
+    void register_hashesPasswordAndLogsInDirectly() {
+        // E-Mail-Verifizierung ist temporär umgangen (#128) - siehe
+        // AuthService#register. Registrierung markiert das Konto direkt als
+        // verifiziert und gibt wie vor #110 sofort ein JWT zurück, statt eine
+        // (derzeit unzustellbare) Bestätigungs-Mail zu verschicken.
         when(userRepository.existsByEmail("new@example.com")).thenReturn(false);
         when(passwordEncoder.encode("password123")).thenReturn("hashed-password");
         RegisterRequest request = new RegisterRequest("new@example.com", "password123", "Ada", "Lovelace");
-
-        MessageResponse response = authService.register(request);
-
-        assertThat(response.message()).isNotBlank();
-
         var userCaptor = org.mockito.ArgumentCaptor.forClass(User.class);
+        when(jwtService.generateToken(any())).thenReturn("jwt-token");
+
+        AuthResponse response = authService.register(request);
+
+        assertThat(response.token()).isEqualTo("jwt-token");
+
         verify(userRepository).save(userCaptor.capture());
         User savedUser = userCaptor.getValue();
         assertThat(savedUser.getPasswordHash()).isEqualTo("hashed-password");
         assertThat(savedUser.getProvider()).isEqualTo(AuthProvider.LOCAL);
-        assertThat(savedUser.getEmailVerified()).isFalse();
+        assertThat(savedUser.getEmailVerified()).isTrue();
 
-        verify(verificationTokenRepository).save(any());
-        verify(emailService).sendVerificationEmail(eq(savedUser), anyString());
+        verify(verificationTokenRepository, never()).save(any());
+        verify(emailService, never()).sendVerificationEmail(any(), anyString());
     }
 
     @Test
-    void login_rejectsUnverifiedEmail() {
+    void login_allowsUnverifiedEmail() {
+        // Verifizierungs-Check ist temporär deaktiviert (#128) - erfasst auch
+        // Alt-Konten, die vor dieser Änderung registriert wurden und nie
+        // verifiziert werden konnten.
         User user = User.builder()
                 .email("unverified@example.com")
                 .passwordHash("hashed")
@@ -124,12 +130,12 @@ class AuthServiceTest {
                 .build();
         when(userRepository.findByEmail("unverified@example.com")).thenReturn(java.util.Optional.of(user));
         when(passwordEncoder.matches("correct", "hashed")).thenReturn(true);
+        when(jwtService.generateToken(user)).thenReturn("jwt-token");
         LoginRequest request = new LoginRequest("unverified@example.com", "correct");
 
-        assertThatThrownBy(() -> authService.login(request))
-                .isInstanceOf(EmailNotVerifiedException.class);
+        AuthResponse response = authService.login(request);
 
-        verify(jwtService, never()).generateToken(any());
+        assertThat(response.token()).isEqualTo("jwt-token");
     }
 
     @Test

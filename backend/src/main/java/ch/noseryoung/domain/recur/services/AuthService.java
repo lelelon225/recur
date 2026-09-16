@@ -12,13 +12,11 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import ch.noseryoung.domain.recur.dto.AuthResponse;
 import ch.noseryoung.domain.recur.dto.LoginRequest;
-import ch.noseryoung.domain.recur.dto.MessageResponse;
 import ch.noseryoung.domain.recur.dto.RegisterRequest;
 import ch.noseryoung.domain.recur.dto.UserResponse;
 import ch.noseryoung.domain.recur.enums.AuthProvider;
 import ch.noseryoung.domain.recur.enums.VerificationStatus;
 import ch.noseryoung.domain.recur.exceptions.EmailAlreadyExistsException;
-import ch.noseryoung.domain.recur.exceptions.EmailNotVerifiedException;
 import ch.noseryoung.domain.recur.exceptions.InvalidCredentialsException;
 import ch.noseryoung.domain.recur.exceptions.InvalidPasswordResetTokenException;
 import ch.noseryoung.domain.recur.models.PasswordResetToken;
@@ -74,7 +72,12 @@ public class AuthService {
         this.emailService = emailService;
     }
 
-    public MessageResponse register(RegisterRequest request) {
+    // E-Mail-Verifizierung ist temporär umgangen (#128): die Absenderdomain ist
+    // auf der Spamhaus DBL gelistet (#126), Verifizierungs-Mails kommen nie an.
+    // Registrierung loggt deshalb wie vor #110 direkt ein statt eine Mail zu
+    // verschicken, die niemand je bestätigen könnte. issueVerificationToken
+    // bleibt unangetastet für die Reaktivierung nach der Domain-Migration.
+    public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.email())) {
             throw new EmailAlreadyExistsException(request.email());
         }
@@ -85,13 +88,13 @@ public class AuthService {
                 .firstName(request.firstName())
                 .lastName(request.lastName())
                 .provider(AuthProvider.LOCAL)
-                .emailVerified(false)
+                .emailVerified(true)
                 .build();
 
         userRepository.save(user);
-        issueVerificationToken(user);
 
-        return new MessageResponse("Bitte bestätige deine E-Mail-Adresse, um dich anmelden zu können.");
+        String token = jwtService.generateToken(user);
+        return new AuthResponse(token, UserResponse.from(user));
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -105,9 +108,9 @@ public class AuthService {
             throw new InvalidCredentialsException();
         }
 
-        if (!Boolean.TRUE.equals(user.getEmailVerified())) {
-            throw new EmailNotVerifiedException();
-        }
+        // Verifizierungs-Check temporär deaktiviert (#128, siehe register()
+        // oben) - erfasst auch Alt-Konten, die vor dieser Änderung registriert
+        // wurden und nie eine Verifizierungs-Mail erhalten konnten.
 
         String token = jwtService.generateToken(user);
         return new AuthResponse(token, UserResponse.from(user));

@@ -17,8 +17,7 @@ const loginSchema = yup.object().shape({
 
 function LoginPage() {
   const router = useRouter();
-  const { handleSubmit, submitDisabled, loading, backendError, unverifiedEmail } =
-    useLoginForm();
+  const { handleSubmit, submitDisabled, loading, backendError } = useLoginForm();
 
   return (
     <div className="flex min-h-svh flex-col items-center justify-center bg-background w-full h-full px-4 py-8">
@@ -39,7 +38,6 @@ function LoginPage() {
             }) => (
               <LoginForm
                 navigate={() => router.push("/register")}
-                navigateToForgotPassword={() => router.push("/forgot-password")}
                 onSubmit={formikHandleSubmit}
                 values={values}
                 errors={errors}
@@ -49,7 +47,6 @@ function LoginPage() {
                 loading={loading}
                 submitDisabled={submitDisabled}
                 backendError={backendError}
-                unverifiedEmail={unverifiedEmail}
               />
             )}
           </Formik>

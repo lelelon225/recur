@@ -11,14 +11,12 @@ import { AlertCircle } from "lucide-react";
 import FormTextField from "../molecules/FormTextField";
 import LoadingButton from "../atoms/LoadingButton";
 import GoogleLoginButton from "../atoms/GoogleLoginButton";
-import ResendVerificationForm from "../molecules/ResendVerificationForm";
 import type { LoginRequest } from "@/types/auth";
 import type { FormEvent, ChangeEvent, FocusEvent } from "react";
 import FormPasswordField from "../molecules/FormPasswordField";
 
 type LoginFormProps = {
   navigate: () => void;
-  navigateToForgotPassword: () => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   values: LoginRequest;
   errors: FormikErrors<LoginRequest>;
@@ -33,12 +31,10 @@ type LoginFormProps = {
   loading?: boolean;
   submitDisabled?: boolean;
   backendError?: string;
-  unverifiedEmail?: string;
 };
 
 function LoginForm({
   navigate,
-  navigateToForgotPassword,
   onSubmit,
   values,
   handleChange,
@@ -48,7 +44,6 @@ function LoginForm({
   loading,
   submitDisabled,
   backendError,
-  unverifiedEmail,
 }: LoginFormProps) {
   return (
     <Form className="flex flex-col gap-6" onSubmit={onSubmit}>
@@ -63,10 +58,7 @@ function LoginForm({
         {backendError && (
           <Alert variant="destructive">
             <AlertCircle />
-            <AlertDescription className="flex flex-col gap-2">
-              {backendError}
-              {unverifiedEmail && <ResendVerificationForm email={unverifiedEmail} />}
-            </AlertDescription>
+            <AlertDescription>{backendError}</AlertDescription>
           </Alert>
         )}
 
@@ -98,14 +90,10 @@ function LoginForm({
           }
         />
 
-        <Button
-          type="button"
-          variant="link"
-          className="self-end p-0 text-sm"
-          onClick={navigateToForgotPassword}
-        >
-          Passwort vergessen?
-        </Button>
+        <FieldDescription className="self-end text-right text-xs">
+          Passwort vergessen? Diese Funktion ist aktuell vorübergehend nicht
+          verfügbar.
+        </FieldDescription>
 
         <Field>
           <LoadingButton
