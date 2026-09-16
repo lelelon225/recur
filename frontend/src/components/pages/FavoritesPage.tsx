@@ -48,6 +48,7 @@ function FavoritesPage() {
         sortedTasks={favoriteTasks}
         handlers={handlers}
         direction="row"
+        paginate
       />
     </div>
   );

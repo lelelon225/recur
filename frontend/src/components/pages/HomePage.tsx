@@ -70,6 +70,7 @@ function HomePage() {
         sortedTasks={sortedTasks}
         handlers={handlers}
         direction="row"
+        paginate
       />
     </div>
   );
