@@ -39,6 +39,7 @@ function LoginPage() {
             }) => (
               <LoginForm
                 navigate={() => router.push("/register")}
+                navigateToForgotPassword={() => router.push("/forgot-password")}
                 onSubmit={formikHandleSubmit}
                 values={values}
                 errors={errors}

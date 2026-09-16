@@ -20,9 +20,12 @@ import ch.noseryoung.domain.recur.enums.VerificationStatus;
 import ch.noseryoung.domain.recur.exceptions.EmailAlreadyExistsException;
 import ch.noseryoung.domain.recur.exceptions.EmailNotVerifiedException;
 import ch.noseryoung.domain.recur.exceptions.InvalidCredentialsException;
+import ch.noseryoung.domain.recur.exceptions.InvalidPasswordResetTokenException;
+import ch.noseryoung.domain.recur.models.PasswordResetToken;
 import ch.noseryoung.domain.recur.models.User;
 import ch.noseryoung.domain.recur.models.VerificationToken;
 import ch.noseryoung.domain.recur.repositories.NotificationSettingsRepository;
+import ch.noseryoung.domain.recur.repositories.PasswordResetTokenRepository;
 import ch.noseryoung.domain.recur.repositories.UserPrivacySettingsRepository;
 import ch.noseryoung.domain.recur.repositories.UserRepository;
 import ch.noseryoung.domain.recur.repositories.VerificationTokenRepository;
@@ -36,6 +39,7 @@ public class AuthService {
     private final UserPrivacySettingsRepository privacySettingsRepository;
     private final NotificationSettingsRepository notificationSettingsRepository;
     private final VerificationTokenRepository verificationTokenRepository;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final EmailService emailService;
@@ -49,14 +53,22 @@ public class AuthService {
     @Value("${app.mail.resend-cooldown-seconds}")
     private long resendCooldownSeconds;
 
+    @Value("${app.mail.password-reset-expiry-hours}")
+    private long passwordResetExpiryHours;
+
+    @Value("${app.mail.password-reset-cooldown-seconds}")
+    private long passwordResetCooldownSeconds;
+
     public AuthService(UserRepository userRepository, UserPrivacySettingsRepository privacySettingsRepository,
             NotificationSettingsRepository notificationSettingsRepository,
             VerificationTokenRepository verificationTokenRepository,
+            PasswordResetTokenRepository passwordResetTokenRepository,
             PasswordEncoder passwordEncoder, JwtService jwtService, EmailService emailService) {
         this.userRepository = userRepository;
         this.privacySettingsRepository = privacySettingsRepository;
         this.notificationSettingsRepository = notificationSettingsRepository;
         this.verificationTokenRepository = verificationTokenRepository;
+        this.passwordResetTokenRepository = passwordResetTokenRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.emailService = emailService;
@@ -159,6 +171,64 @@ public class AuthService {
         emailService.sendVerificationEmail(user, verificationLink);
     }
 
+    // Antwortet immer gleich (Controller-Ebene), egal ob das Konto existiert,
+    // ein Google-Konto ist (kein passwordHash) oder noch nicht verifiziert ist
+    // (keine bestätigte Möglichkeit, den echten Inhaber zu erreichen) -
+    // verhindert, dass dieser Endpunkt registrierte E-Mail-Adressen oder deren
+    // Login-Methode enumerierbar macht.
+    public void forgotPassword(String email) {
+        User user = userRepository.findByEmail(email).orElse(null);
+        if (user == null || user.getProvider() != AuthProvider.LOCAL
+                || !Boolean.TRUE.equals(user.getEmailVerified())) {
+            return;
+        }
+
+        boolean withinCooldown = passwordResetTokenRepository
+                .findFirstByUserIdOrderByDateCreatedDesc(user.getId())
+                .map(t -> t.getDateCreated().plusSeconds(passwordResetCooldownSeconds).isAfter(Instant.now()))
+                .orElse(false);
+        if (withinCooldown) {
+            return;
+        }
+
+        passwordResetTokenRepository.deleteByUserId(user.getId());
+        issuePasswordResetToken(user);
+    }
+
+    public void resetPassword(String token, String newPassword) {
+        PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(token).orElse(null);
+        if (resetToken == null) {
+            throw new InvalidPasswordResetTokenException();
+        }
+
+        if (resetToken.getExpiresAt().isBefore(Instant.now())) {
+            passwordResetTokenRepository.delete(resetToken);
+            throw new InvalidPasswordResetTokenException();
+        }
+
+        User user = resetToken.getUser();
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        passwordResetTokenRepository.delete(resetToken);
+    }
+
+    private void issuePasswordResetToken(User user) {
+        PasswordResetToken resetToken = PasswordResetToken.builder()
+                .token(UUID.randomUUID().toString())
+                .user(user)
+                .expiresAt(Instant.now().plusSeconds(passwordResetExpiryHours * 3600))
+                .build();
+        passwordResetTokenRepository.save(resetToken);
+
+        String resetLink = UriComponentsBuilder.fromUriString(frontendUrl)
+                .path("/reset-password")
+                .queryParam("token", resetToken.getToken())
+                .build()
+                .toUriString();
+
+        emailService.sendPasswordResetEmail(user, resetLink);
+    }
+
     // Tauscht das kurzlebige HttpOnly-Handoff-Cookie (siehe
     // OAuth2AuthenticationSuccessHandler) gegen die gleiche AuthResponse-Form
     // wie beim normalen Login - der Token selbst wird dabei nicht neu
@@ -215,13 +285,14 @@ public class AuthService {
                 .orElseThrow(() -> new IllegalStateException("Authentifizierter User nicht gefunden: " + email));
 
         // Muss vor dem User gelöscht werden, sonst schlägt der Delete an der
-        // FK-Constraint von user_privacy_settings.user_id, notification_settings.user_id
-        // bzw. verification_token.user_id fehl.
+        // FK-Constraint von user_privacy_settings.user_id, notification_settings.user_id,
+        // verification_token.user_id bzw. password_reset_token.user_id fehl.
         privacySettingsRepository.findByUserId(user.getId())
                 .ifPresent(privacySettingsRepository::delete);
         notificationSettingsRepository.findByUserId(user.getId())
                 .ifPresent(notificationSettingsRepository::delete);
         verificationTokenRepository.deleteByUserId(user.getId());
+        passwordResetTokenRepository.deleteByUserId(user.getId());
 
         userRepository.delete(user);
     }

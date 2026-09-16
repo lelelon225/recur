@@ -91,7 +91,7 @@ function DatenschutzPage() {
 
       <section className="flex flex-col gap-2">
         <h2 className="text-base font-semibold text-foreground">
-          E-Mail-Verifizierung
+          E-Mail-Verifizierung und Kontowiederherstellung
         </h2>
         <p>
           Wenn du dich per E-Mail/Passwort registrierst, senden wir dir eine
@@ -102,9 +102,15 @@ function DatenschutzPage() {
           Bestätigung der E-Mail-Adresse möglich.
         </p>
         <p>
+          Falls du dein Passwort vergisst, kannst du über "Passwort vergessen?"
+          einen Link zum Zurücksetzen anfordern. Der zugehörige Token wird
+          ebenfalls serverseitig gespeichert, ist 1 Stunde gültig und wird nach
+          Verwendung bzw. Ablauf gelöscht.
+        </p>
+        <p>
           Der Versand erfolgt über unseren E-Mail-Dienstleister Brevo als
           Auftragsverarbeiter; dabei wird ausschliesslich deine E-Mail-Adresse
-          (nebst Vorname und Bestätigungslink) an Brevo übermittelt.
+          (nebst Vorname und Bestätigungs- bzw. Reset-Link) an Brevo übermittelt.
         </p>
       </section>
 
