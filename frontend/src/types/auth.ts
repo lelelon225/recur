@@ -38,3 +38,12 @@ export type LoginRequest = {
 export type ResendVerificationRequest = {
     email: string;
 };
+
+export type ForgotPasswordRequest = {
+    email: string;
+};
+
+export type ResetPasswordRequest = {
+    token: string;
+    newPassword: string;
+};

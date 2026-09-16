@@ -20,10 +20,12 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import ch.noseryoung.domain.recur.dto.AuthResponse;
+import ch.noseryoung.domain.recur.dto.ForgotPasswordRequest;
 import ch.noseryoung.domain.recur.dto.LoginRequest;
 import ch.noseryoung.domain.recur.dto.MessageResponse;
 import ch.noseryoung.domain.recur.dto.RegisterRequest;
 import ch.noseryoung.domain.recur.dto.ResendVerificationRequest;
+import ch.noseryoung.domain.recur.dto.ResetPasswordRequest;
 import ch.noseryoung.domain.recur.dto.UserResponse;
 import ch.noseryoung.domain.recur.enums.VerificationStatus;
 import ch.noseryoung.domain.recur.exceptions.InvalidCredentialsException;
@@ -39,6 +41,12 @@ public class AuthController {
 
     private static final MessageResponse RESEND_MESSAGE = new MessageResponse(
             "Falls ein Konto mit dieser E-Mail-Adresse existiert und noch nicht bestätigt ist, haben wir dir eine neue Bestätigungs-E-Mail geschickt.");
+
+    private static final MessageResponse FORGOT_PASSWORD_MESSAGE = new MessageResponse(
+            "Falls ein Konto mit dieser E-Mail-Adresse existiert, haben wir dir einen Link zum Zurücksetzen deines Passworts geschickt.");
+
+    private static final MessageResponse RESET_PASSWORD_MESSAGE = new MessageResponse(
+            "Dein Passwort wurde erfolgreich zurückgesetzt.");
 
     private final AuthService authService;
 
@@ -77,6 +85,20 @@ public class AuthController {
             @Valid @RequestBody ResendVerificationRequest request) {
         authService.resendVerification(request.email());
         return ResponseEntity.ok(RESEND_MESSAGE);
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<MessageResponse> forgotPassword(
+            @Valid @RequestBody ForgotPasswordRequest request) {
+        authService.forgotPassword(request.email());
+        return ResponseEntity.ok(FORGOT_PASSWORD_MESSAGE);
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<MessageResponse> resetPassword(
+            @Valid @RequestBody ResetPasswordRequest request) {
+        authService.resetPassword(request.token(), request.newPassword());
+        return ResponseEntity.ok(RESET_PASSWORD_MESSAGE);
     }
 
     // Tauscht das kurzlebige HttpOnly-Handoff-Cookie (gesetzt von

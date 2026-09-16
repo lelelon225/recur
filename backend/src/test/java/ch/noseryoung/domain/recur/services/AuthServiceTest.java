@@ -9,6 +9,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Instant;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -24,8 +26,11 @@ import ch.noseryoung.domain.recur.enums.AuthProvider;
 import ch.noseryoung.domain.recur.exceptions.EmailAlreadyExistsException;
 import ch.noseryoung.domain.recur.exceptions.EmailNotVerifiedException;
 import ch.noseryoung.domain.recur.exceptions.InvalidCredentialsException;
+import ch.noseryoung.domain.recur.exceptions.InvalidPasswordResetTokenException;
+import ch.noseryoung.domain.recur.models.PasswordResetToken;
 import ch.noseryoung.domain.recur.models.User;
 import ch.noseryoung.domain.recur.repositories.NotificationSettingsRepository;
+import ch.noseryoung.domain.recur.repositories.PasswordResetTokenRepository;
 import ch.noseryoung.domain.recur.repositories.UserPrivacySettingsRepository;
 import ch.noseryoung.domain.recur.repositories.UserRepository;
 import ch.noseryoung.domain.recur.repositories.VerificationTokenRepository;
@@ -34,7 +39,8 @@ import ch.noseryoung.domain.recur.security.JwtService;
 /**
  * Deckt Registrierung und Login ab - die sicherheitskritischen Einstiegspunkte
  * der Authentifizierung (Passwort-Hashing, Duplikat-Check,
- * OAuth-only-Konten ohne lokales Passwort, Token-Ausstellung, E-Mail-Verifizierung).
+ * OAuth-only-Konten ohne lokales Passwort, Token-Ausstellung, E-Mail-Verifizierung,
+ * Passwort-Reset).
  */
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
@@ -52,6 +58,9 @@ class AuthServiceTest {
     private VerificationTokenRepository verificationTokenRepository;
 
     @Mock
+    private PasswordResetTokenRepository passwordResetTokenRepository;
+
+    @Mock
     private PasswordEncoder passwordEncoder;
 
     @Mock
@@ -65,10 +74,13 @@ class AuthServiceTest {
     @org.junit.jupiter.api.BeforeEach
     void setUp() {
         authService = new AuthService(userRepository, privacySettingsRepository, notificationSettingsRepository,
-                verificationTokenRepository, passwordEncoder, jwtService, emailService);
+                verificationTokenRepository, passwordResetTokenRepository, passwordEncoder, jwtService,
+                emailService);
         ReflectionTestUtils.setField(authService, "frontendUrl", "http://localhost:3000");
         ReflectionTestUtils.setField(authService, "verificationExpiryHours", 24L);
         ReflectionTestUtils.setField(authService, "resendCooldownSeconds", 60L);
+        ReflectionTestUtils.setField(authService, "passwordResetExpiryHours", 1L);
+        ReflectionTestUtils.setField(authService, "passwordResetCooldownSeconds", 60L);
     }
 
     @Test
@@ -168,5 +180,109 @@ class AuthServiceTest {
 
         assertThat(response.token()).isEqualTo("jwt-token");
         assertThat(response.user().email()).isEqualTo("user@example.com");
+    }
+
+    @Test
+    void forgotPassword_noOpsForGoogleAccount() {
+        User googleUser = User.builder()
+                .email("google@example.com")
+                .provider(AuthProvider.GOOGLE)
+                .emailVerified(true)
+                .build();
+        when(userRepository.findByEmail("google@example.com")).thenReturn(java.util.Optional.of(googleUser));
+
+        authService.forgotPassword("google@example.com");
+
+        verify(passwordResetTokenRepository, never()).save(any());
+        verify(emailService, never()).sendPasswordResetEmail(any(), anyString());
+    }
+
+    @Test
+    void forgotPassword_noOpsForUnverifiedAccount() {
+        User unverifiedUser = User.builder()
+                .email("unverified@example.com")
+                .provider(AuthProvider.LOCAL)
+                .emailVerified(false)
+                .build();
+        when(userRepository.findByEmail("unverified@example.com")).thenReturn(java.util.Optional.of(unverifiedUser));
+
+        authService.forgotPassword("unverified@example.com");
+
+        verify(passwordResetTokenRepository, never()).save(any());
+        verify(emailService, never()).sendPasswordResetEmail(any(), anyString());
+    }
+
+    @Test
+    void forgotPassword_noOpsForUnknownEmail() {
+        when(userRepository.findByEmail("ghost@example.com")).thenReturn(java.util.Optional.empty());
+
+        authService.forgotPassword("ghost@example.com");
+
+        verify(passwordResetTokenRepository, never()).save(any());
+        verify(emailService, never()).sendPasswordResetEmail(any(), anyString());
+    }
+
+    @Test
+    void forgotPassword_issuesTokenAndSendsEmailForEligibleAccount() {
+        User user = User.builder()
+                .email("user@example.com")
+                .provider(AuthProvider.LOCAL)
+                .emailVerified(true)
+                .build();
+        when(userRepository.findByEmail("user@example.com")).thenReturn(java.util.Optional.of(user));
+        when(passwordResetTokenRepository.findFirstByUserIdOrderByDateCreatedDesc(user.getId()))
+                .thenReturn(java.util.Optional.empty());
+
+        authService.forgotPassword("user@example.com");
+
+        verify(passwordResetTokenRepository).deleteByUserId(user.getId());
+        verify(passwordResetTokenRepository).save(any());
+        verify(emailService).sendPasswordResetEmail(eq(user), anyString());
+    }
+
+    @Test
+    void resetPassword_updatesPasswordHash() {
+        User user = User.builder().email("user@example.com").passwordHash("old-hash").build();
+        PasswordResetToken token = PasswordResetToken.builder()
+                .token("valid-token")
+                .user(user)
+                .expiresAt(Instant.now().plusSeconds(3600))
+                .build();
+        when(passwordResetTokenRepository.findByToken("valid-token")).thenReturn(java.util.Optional.of(token));
+        when(passwordEncoder.encode("new-password123")).thenReturn("new-hash");
+
+        authService.resetPassword("valid-token", "new-password123");
+
+        assertThat(user.getPasswordHash()).isEqualTo("new-hash");
+        verify(userRepository).save(user);
+        verify(passwordResetTokenRepository).delete(token);
+    }
+
+    @Test
+    void resetPassword_rejectsExpiredToken() {
+        User user = User.builder().email("user@example.com").passwordHash("old-hash").build();
+        PasswordResetToken expiredToken = PasswordResetToken.builder()
+                .token("expired-token")
+                .user(user)
+                .expiresAt(Instant.now().minusSeconds(60))
+                .build();
+        when(passwordResetTokenRepository.findByToken("expired-token"))
+                .thenReturn(java.util.Optional.of(expiredToken));
+
+        assertThatThrownBy(() -> authService.resetPassword("expired-token", "new-password123"))
+                .isInstanceOf(InvalidPasswordResetTokenException.class);
+
+        verify(passwordResetTokenRepository).delete(expiredToken);
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void resetPassword_rejectsUnknownToken() {
+        when(passwordResetTokenRepository.findByToken("unknown-token")).thenReturn(java.util.Optional.empty());
+
+        assertThatThrownBy(() -> authService.resetPassword("unknown-token", "new-password123"))
+                .isInstanceOf(InvalidPasswordResetTokenException.class);
+
+        verify(userRepository, never()).save(any());
     }
 }

@@ -18,6 +18,7 @@ import FormPasswordField from "../molecules/FormPasswordField";
 
 type LoginFormProps = {
   navigate: () => void;
+  navigateToForgotPassword: () => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   values: LoginRequest;
   errors: FormikErrors<LoginRequest>;
@@ -37,6 +38,7 @@ type LoginFormProps = {
 
 function LoginForm({
   navigate,
+  navigateToForgotPassword,
   onSubmit,
   values,
   handleChange,
@@ -95,6 +97,15 @@ function LoginForm({
               : undefined
           }
         />
+
+        <Button
+          type="button"
+          variant="link"
+          className="self-end p-0 text-sm"
+          onClick={navigateToForgotPassword}
+        >
+          Passwort vergessen?
+        </Button>
 
         <Field>
           <LoadingButton

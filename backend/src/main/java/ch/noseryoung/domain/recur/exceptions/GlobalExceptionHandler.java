@@ -256,6 +256,22 @@ public class GlobalExceptionHandler {
                                                 getPath(request)));
         }
 
+        @ExceptionHandler(InvalidPasswordResetTokenException.class)
+        public ResponseEntity<ErrorResponse> handleInvalidPasswordResetToken(
+                        InvalidPasswordResetTokenException ex,
+                        WebRequest request) {
+
+                logger.info("Password reset rejected: {}", ex.getMessage());
+
+                return ResponseEntity
+                                .status(HttpStatus.BAD_REQUEST)
+                                .body(ErrorResponse.of(
+                                                400,
+                                                "Invalid password reset token",
+                                                ex.getMessage(),
+                                                getPath(request)));
+        }
+
         @ExceptionHandler(DataIntegrityViolationException.class)
         public ResponseEntity<ErrorResponse> handleDatabaseError(
                         DataIntegrityViolationException ex,

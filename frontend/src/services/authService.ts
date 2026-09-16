@@ -6,6 +6,8 @@ import {
   type RegisterRequest,
   type LoginRequest,
   type ResendVerificationRequest,
+  type ForgotPasswordRequest,
+  type ResetPasswordRequest,
 } from "../types/auth";
 
 export async function register(
@@ -53,6 +55,32 @@ export async function resendVerification(
     .catch((error) => {
       throw new Error(
         error?.response?.data?.message ?? "Bestätigungs-E-Mail konnte nicht erneut gesendet werden"
+      );
+    });
+}
+
+export async function forgotPassword(
+  request: ForgotPasswordRequest
+): Promise<MessageResponse> {
+  return await api
+    .post("/auth/forgot-password", request)
+    .then((response) => response.data as MessageResponse)
+    .catch((error) => {
+      throw new Error(
+        error?.response?.data?.message ?? "Anfrage konnte nicht gesendet werden"
+      );
+    });
+}
+
+export async function resetPassword(
+  request: ResetPasswordRequest
+): Promise<MessageResponse> {
+  return await api
+    .post("/auth/reset-password", request)
+    .then((response) => response.data as MessageResponse)
+    .catch((error) => {
+      throw new Error(
+        error?.response?.data?.message ?? "Passwort konnte nicht zurückgesetzt werden"
       );
     });
 }

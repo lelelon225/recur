@@ -47,6 +47,25 @@ public class EmailService {
         trySend(message);
     }
 
+    public void sendPasswordResetEmail(User user, String resetLink) {
+        logger.debug("Password reset link for {}: {}", user.getEmail(), resetLink);
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(from);
+        message.setTo(user.getEmail());
+        message.setSubject("Setze dein Passwort bei Recur zurück");
+        message.setText(
+                "Hallo " + user.getFirstName() + ",\n\n"
+                        + "du hast angefordert, dein Passwort zurückzusetzen. Klicke auf den folgenden Link, "
+                        + "um ein neues Passwort zu vergeben:\n\n"
+                        + resetLink + "\n\n"
+                        + "Dieser Link ist 1 Stunde gültig.\n\n"
+                        + "Falls du kein neues Passwort angefordert hast, kannst du diese E-Mail ignorieren "
+                        + "- dein Passwort bleibt unverändert.");
+
+        trySend(message);
+    }
+
     public void sendWelcomeEmail(User user) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(from);
