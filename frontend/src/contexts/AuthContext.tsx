@@ -74,13 +74,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     }, []);
 
-    // Registrierung startet keine Session mehr - das Konto muss erst per
-    // E-Mail-Link bestätigt werden, bevor ein Login möglich ist (siehe
-    // AuthService#register im Backend).
+    // E-Mail-Verifizierung ist temporär umgangen (#128) - Registrierung
+    // startet direkt eine Session wie vor #110 (siehe AuthService#register
+    // im Backend).
     const register = useCallback(async (request: RegisterRequest) => {
         setError(null);
         try {
-            await registerService(request);
+            const response = await registerService(request);
+            setToken(response.token);
+            setUser(response.user);
         } catch (err) {
             const message = err instanceof Error ? err.message : "Registration failed";
             setError(message);

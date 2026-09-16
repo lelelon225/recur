@@ -94,18 +94,24 @@ function DatenschutzPage() {
           E-Mail-Verifizierung und Kontowiederherstellung
         </h2>
         <p>
-          Wenn du dich per E-Mail/Passwort registrierst, senden wir dir eine
-          Bestätigungs-E-Mail mit einem Verifizierungslink, um sicherzustellen,
-          dass die angegebene E-Mail-Adresse dir gehört. Der zugehörige Token
-          wird serverseitig gespeichert, ist 24 Stunden gültig und wird nach
-          Bestätigung bzw. Ablauf gelöscht. Eine Anmeldung ist erst nach
-          Bestätigung der E-Mail-Adresse möglich.
+          <span className="font-medium text-foreground">
+            Vorübergehend deaktiviert:
+          </span>{" "}
+          unser E-Mail-Versand wird derzeit von den Mail-Servern der meisten
+          Empfänger:innen blockiert, daher können wir aktuell keine
+          Bestätigungs- oder Passwort-Reset-Mails zustellen. Solange dies der
+          Fall ist, wird deine E-Mail-Adresse bei der Registrierung per
+          E-Mail/Passwort ohne Bestätigungslink als verifiziert markiert und
+          eine Anmeldung ist direkt nach der Registrierung möglich; die
+          Funktion "Passwort vergessen?" ist im Login-Formular ausgeblendet.
         </p>
         <p>
-          Falls du dein Passwort vergisst, kannst du über "Passwort vergessen?"
-          einen Link zum Zurücksetzen anfordern. Der zugehörige Token wird
-          ebenfalls serverseitig gespeichert, ist 1 Stunde gültig und wird nach
-          Verwendung bzw. Ablauf gelöscht.
+          Sobald der Mail-Versand wieder funktioniert, senden wir dir bei
+          Registrierung per E-Mail/Passwort wieder eine Bestätigungs-E-Mail
+          mit einem Verifizierungslink und aktivieren "Passwort vergessen?"
+          erneut. Der zugehörige Token wird serverseitig gespeichert, ist bei
+          der E-Mail-Bestätigung 24 Stunden und beim Passwort-Reset 1 Stunde
+          gültig und wird nach Bestätigung/Verwendung bzw. Ablauf gelöscht.
         </p>
         <p>
           Der Versand erfolgt über unseren E-Mail-Dienstleister Brevo als

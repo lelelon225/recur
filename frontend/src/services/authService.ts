@@ -12,25 +12,13 @@ import {
 
 export async function register(
   request: RegisterRequest
-): Promise<MessageResponse> {
+): Promise<AuthResponse> {
   return await api
     .post("/auth/register", request)
-    .then((response) => response.data as MessageResponse)
+    .then((response) => response.data as AuthResponse)
     .catch((error) => {
       throw new Error(error?.response?.data?.message ?? "Registrierung fehlgeschlagen");
     });
-}
-
-/**
- * Wird geworfen, wenn das Backend einen Login mit 403 "Email not verified"
- * ablehnt - eigener Fehlertyp, damit useLoginForm diesen Fall vom generischen
- * "falsche Zugangsdaten" unterscheiden und die Resend-Option anzeigen kann.
- */
-export class EmailNotVerifiedError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "EmailNotVerifiedError";
-  }
 }
 
 export async function login(request: LoginRequest): Promise<AuthResponse> {
@@ -38,11 +26,7 @@ export async function login(request: LoginRequest): Promise<AuthResponse> {
     .post("/auth/login", request)
     .then((response) => response.data as AuthResponse)
     .catch((error) => {
-      const message = error?.response?.data?.message ?? "Anmeldung fehlgeschlagen";
-      if (error?.response?.status === 403 && error?.response?.data?.error === "Email not verified") {
-        throw new EmailNotVerifiedError(message);
-      }
-      throw new Error(message);
+      throw new Error(error?.response?.data?.message ?? "Anmeldung fehlgeschlagen");
     });
 }
 

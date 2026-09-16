@@ -21,16 +21,12 @@ function NotificationForm({ values, disabled, onFieldChange }: NotificationFormP
         <FieldContent>
           <FieldTitle>E-Mail-Benachrichtigungen</FieldTitle>
           <FieldDescription>
-            Reserviert deine Präferenz für Benachrichtigungen per E-Mail.
-            Diese Funktion ist aktuell noch nicht aktiv, wir versenden
-            derzeit keine E-Mails zu deinen Aufgaben.
+            Vorübergehend deaktiviert: unser E-Mail-Versand wird derzeit von
+            Mail-Providern blockiert, wir können dir daher aktuell keine
+            E-Mails zu deinen Aufgaben zustellen.
           </FieldDescription>
         </FieldContent>
-        <Switch
-          disabled={disabled}
-          checked={values.emailEnabled}
-          onCheckedChange={(checked) => onFieldChange({ emailEnabled: checked })}
-        />
+        <Switch disabled checked={values.emailEnabled} />
       </Field>
       <FieldSeparator />
       <Field orientation="horizontal">
