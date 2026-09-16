@@ -34,6 +34,10 @@ Auth is hybrid: stateless JWT (`jjwt`) for normal API calls via `JwtAuthenticati
 
 Postgres runs on host port **5436** (not 5432) — see `docker-compose.yml` and `application.properties`. Required env vars: backend `.env` needs `JWT_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`; frontend `.env` needs `NEXT_PUBLIC_API_URL`.
 
+## Known issues
+
+- **Transactional email is effectively non-functional in production**: `noreply@recur.dpdns.org` (and the `dev.recur.dpdns.org`/`www.recur.dpdns.org` links embedded in verification/password-reset emails) sit on `dpdns.org`, a free dynamic-DNS zone listed on Spamhaus DBL (phish/botnet). Most recipient mail servers (confirmed with Proton Mail) hard-reject these emails with `554 5.7.1 rejected by rspamd filter`, regardless of SPF/DKIM/DMARC correctness — verified not to be a Brevo, Cloudflare, or app-code issue. See #126. Anyone building on top of `EmailService` (e.g. #102's notification delivery) should know delivery is currently blocked until the domain is migrated off `dpdns.org` — don't assume a broken send-path bug without checking this first.
+
 ## Conventions
 
 - Git: feature branches `feat/<Area>-<thing>` (or `feat/<Area>/<thing>`), merged into `dev`, which merges into `main`. Commits use a loose bracketed tag prefix, e.g. `[Added] ...`, `[Updated] ...`.
