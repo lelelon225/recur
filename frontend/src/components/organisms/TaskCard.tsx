@@ -1,6 +1,13 @@
+import { useMemo } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Avatar,
+  AvatarBadge,
+  AvatarFallback,
+  AvatarGroupCount,
+  AvatarImage,
+} from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { type Task } from "@/services/taskService";
 import TaskFavorite from "@/components/atoms/TaskFavorite";
@@ -13,6 +20,8 @@ import useTaskCard from "@/hooks/useTaskCard";
 import { categoryLabels } from "@/lib/taskCategoryStyles";
 import { categoryDot } from "@/utils/calendarGrid";
 import { useTasksContext } from "@/contexts/TasksContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useGroupsContext } from "@/contexts/GroupsContext";
 
 type TaskCardProps = {
   task: Task;
@@ -46,6 +55,30 @@ function TaskCard({
   onToggleSelect,
 }: TaskCardProps) {
   const { isArchivedForCurrentUser } = useTasksContext();
+  const { user } = useAuth();
+  const { groups, projectsByGroupId } = useGroupsContext();
+
+  // Die Gruppe eines Task-Projekts ist auf Task selbst nicht bekannt (nur
+  // project.id/name) - über projectsByGroupId zurück auflösen.
+  const projectGroup = useMemo(() => {
+    if (!task.project) return null;
+    const groupId = Object.entries(projectsByGroupId).find(([, projects]) =>
+      projects.some((p) => p.id === task.project!.id)
+    )?.[0];
+    return groups.find((g) => g.id === groupId) ?? null;
+  }, [task.project, projectsByGroupId, groups]);
+
+  // Man selbst immer an erster Stelle im Avatar-Stack.
+  const groupMembers = useMemo(() => {
+    if (!projectGroup) return [];
+    const self = projectGroup.members.find((m) => m.id === user?.id);
+    const others = projectGroup.members.filter((m) => m.id !== user?.id);
+    return self ? [self, ...others] : others;
+  }, [projectGroup, user?.id]);
+
+  const visibleGroupMembers = groupMembers.slice(0, 3);
+  const overflowMemberCount = groupMembers.length - visibleGroupMembers.length;
+
   const {
     clampedProgress,
     handleDone,
@@ -136,9 +169,40 @@ function TaskCard({
           <span className={cn("size-1.5 rounded-full", categoryDot[task.category])} />
           {categoryLabels[task.category]}
           {task.project && (
-            <span className="rounded-full bg-muted px-2 py-0.5 text-muted-foreground">
-              {task.project.name}
-            </span>
+            groupMembers.length > 0 ? (
+              <div className="flex -space-x-1.5" title={task.project.name}>
+                {visibleGroupMembers.map((member) => (
+                  <Avatar
+                    key={member.id}
+                    size="sm"
+                    className={cn(
+                      "ring-2",
+                      member.id === user?.id ? "ring-foreground" : "ring-background"
+                    )}
+                    title={`${member.firstName} ${member.lastName}`}
+                  >
+                    <AvatarImage src={member.avatarUrl ?? undefined} />
+                    <AvatarFallback>
+                      {`${member.firstName[0] ?? ""}${member.lastName[0] ?? ""}`.toUpperCase()}
+                    </AvatarFallback>
+                    {projectGroup?.createdBy?.id === member.id && (
+                      <AvatarBadge className="top-0 right-0 bottom-auto text-[8px]">
+                        A
+                      </AvatarBadge>
+                    )}
+                  </Avatar>
+                ))}
+                {overflowMemberCount > 0 && (
+                  <AvatarGroupCount className="size-6 text-[10px] ring-2 ring-background">
+                    +{overflowMemberCount}
+                  </AvatarGroupCount>
+                )}
+              </div>
+            ) : (
+              <span className="rounded-full bg-muted px-2 py-0.5 text-muted-foreground">
+                {task.project.name}
+              </span>
+            )
           )}
         </div>
         <div className="line-clamp-1">
