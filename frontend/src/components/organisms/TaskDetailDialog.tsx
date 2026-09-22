@@ -1,12 +1,15 @@
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-import type { Task } from "@/services/taskService";
+import { TaskFrequency, type Task } from "@/services/taskService";
 import { categoryLabels, frequencyLabels } from "@/lib/taskCategoryStyles";
 import { categoryDot } from "@/utils/calendarGrid";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import ProgressIndicator from "@/components/atoms/ProgressIndicator";
 import DetailDialog from "@/components/molecules/DetailDialog";
 import TaskCardMenu from "@/components/organisms/TaskCardMenu";
+import { pastIntervals, parseDateOnly } from "@/utils/taskCompletions";
+import { useTasksContext } from "@/contexts/TasksContext";
 
 type TaskDetailDialogProps = {
   task: Task | null;
@@ -18,7 +21,43 @@ type TaskDetailDialogProps = {
   onToggleDone: () => void;
   onTaskUpdated?: (task: Task) => void;
   isArchived: boolean;
+  /** Ob das aktuelle Frequenz-Intervall bereits erledigt ist - von TaskCard/useTaskCard übernommen, damit beide Stellen exakt dieselbe (Projekt- vs. persönliche Task-)Logik verwenden (#152). */
+  doneForCurrentPeriod: boolean;
 };
+
+/** Verlauf vergangener Frequenz-Intervalle mit Nachtrag/Rückgängig pro Tag
+ * (#152) - nur für persönliche, wiederkehrende Tasks (ONCE hat kein
+ * Intervall-Konzept, Projekt-Tasks liegen ausserhalb des Feature-Scopes). */
+function CompletionHistoryList({ task }: { task: Task }) {
+  const { handleAddCompletion, handleRemoveCompletion } = useTasksContext();
+  const intervals = pastIntervals(task);
+
+  if (intervals.length === 0) return null;
+
+  return (
+    <div className="flex flex-col gap-2 border-t border-border pt-3">
+      <span className="text-xs text-muted-foreground">Verlauf</span>
+      <div className="flex max-h-48 flex-col gap-1 overflow-y-auto">
+        {intervals.map((interval) => (
+          <label
+            key={interval.index}
+            className="flex items-center gap-2 rounded-md px-1 py-1 text-sm hover:bg-muted"
+          >
+            <Checkbox
+              checked={interval.completedOn !== null}
+              onCheckedChange={() =>
+                interval.completedOn
+                  ? handleRemoveCompletion(task.id, interval.completedOn)
+                  : handleAddCompletion(task.id, interval.representativeDate)
+              }
+            />
+            {format(parseDateOnly(interval.representativeDate), "dd.MM.yyyy", { locale: de })}
+          </label>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 /** Read-only Task-Detailansicht (Name, Kategorie, Beschreibung, Zeitrahmen,
  * Fortschritt) mit Zugriff auf das ⋮-Menü. Ursprünglich im Kalender gebaut
@@ -34,6 +73,7 @@ function TaskDetailDialog({
   onToggleDone,
   onTaskUpdated,
   isArchived,
+  doneForCurrentPeriod,
 }: TaskDetailDialogProps) {
   return (
     <DetailDialog open={open} onClose={onClose} title={task?.name}>
@@ -98,10 +138,24 @@ function TaskDetailDialog({
               <ProgressIndicator value={task.progress} size={40} strokeWidth={4} />
               <span className="text-xs text-muted-foreground">Fortschritt</span>
             </div>
-            <Button size="sm" disabled={task.progress >= 100} onClick={onToggleDone}>
-              {task.progress >= 100 ? "Erledigt" : "Als erledigt markieren"}
+            <Button
+              size="sm"
+              variant={doneForCurrentPeriod ? "outline" : "default"}
+              disabled={Boolean(task.project) && doneForCurrentPeriod}
+              onClick={onToggleDone}
+              title={
+                !task.project && doneForCurrentPeriod
+                  ? "Klicken, um rückgängig zu machen"
+                  : undefined
+              }
+            >
+              {doneForCurrentPeriod ? "Erledigt" : "Als erledigt markieren"}
             </Button>
           </div>
+
+          {!task.project && task.frequency !== TaskFrequency.ONCE && (
+            <CompletionHistoryList task={task} />
+          )}
         </div>
       )}
     </DetailDialog>

@@ -9,10 +9,19 @@ import {
   type ReactNode,
 } from "react";
 import { useErrorBoundary } from "react-error-boundary";
-import { assignSelf, deleteTask, getTasks, patchTask, unassignSelf } from "@/services/taskService";
+import {
+  addTaskCompletion,
+  assignSelf,
+  deleteTask,
+  getTasks,
+  patchTask,
+  removeTaskCompletion,
+  unassignSelf,
+} from "@/services/taskService";
 import type { Task } from "@/services/taskService";
 import { showErrorToast } from "@/lib/toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { currentPeriodCompletion, today } from "@/utils/taskCompletions";
 
 type TasksContextValue = {
   tasks: Task[];
@@ -26,6 +35,10 @@ type TasksContextValue = {
   handleResetProgress: (taskId: string) => Promise<void>;
   handleDelete: (taskId: string) => Promise<void>;
   handleToggleDone: (taskId: string) => Promise<void>;
+  /** Nachträgliches Abhaken eines vergangenen Frequenz-Intervalls (#152), z.B. aus der Verlaufs-Liste in TaskDetailDialog. */
+  handleAddCompletion: (taskId: string, date: string) => Promise<void>;
+  /** Rückgängigmachen eines einzelnen Häkchens (#152), ohne den restlichen Fortschritt zurückzusetzen. */
+  handleRemoveCompletion: (taskId: string, date: string) => Promise<void>;
   handleUpdateTask: (updatedTask: Task) => void;
   /** Berücksichtigt bei geteilten Projekt-Tasks den individuellen Archiv-Status (task.archivedBy). */
   isArchivedForCurrentUser: (task: Task) => boolean;
@@ -207,14 +220,17 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     const previousAmountDid = task.amountDid;
     const previousProgress = task.progress;
     const previousLastAmountDidAt = task.lastAmountDidAt;
+    const previousCompletions = task.completions;
 
     setTasks((prev) =>
       prev.map((t) =>
-        t.id === taskId ? { ...t, amountDid: 0, progress: 0, lastAmountDidAt: null } : t
+        t.id === taskId
+          ? { ...t, amountDid: 0, progress: 0, lastAmountDidAt: null, completions: [] }
+          : t
       )
     );
 
-    await patchTask(taskId, { resetProgress: true, amountDid: 0 }).catch((err) => {
+    await patchTask(taskId, { resetProgress: true }).catch((err) => {
       setTasks((prev) =>
         prev.map((t) =>
           t.id === taskId
@@ -223,6 +239,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
                 amountDid: previousAmountDid,
                 progress: previousProgress,
                 lastAmountDidAt: previousLastAmountDidAt,
+                completions: previousCompletions,
               }
             : t
         )
@@ -241,28 +258,59 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const handleToggleDone = useCallback(async (taskId: string) => {
-    const targetTask = tasksRef.current.find((task) => task.id === taskId);
-    if (!targetTask) return;
-
-    const previousAmountDid = targetTask.amountDid;
-    const newAmountDid = (previousAmountDid ?? 0) + 1;
-
-    setTasks((prev) =>
-      prev.map((task) => (task.id === taskId ? { ...task, amountDid: newAmountDid } : task))
-    );
-
-    await patchTask(taskId, { amountDid: newAmountDid })
-      .then((updatedTask) => {
-        setTasks((prev) => prev.map((task) => (task.id === taskId ? updatedTask : task)));
-      })
-      .catch((err) => {
-        setTasks((prev) =>
-          prev.map((task) => (task.id === taskId ? { ...task, amountDid: previousAmountDid } : task))
-        );
-        showErrorToast(err instanceof Error ? err.message : "Fehler beim Aktualisieren der erledigten Menge");
-      });
+  // Nachträgliches Abhaken/Rückgängig eines einzelnen Tages (#152), z.B. aus
+  // der Verlaufs-Liste in TaskDetailDialog oder (mit date=heute) vom
+  // primären Abhaken-Toggle unten. Kein optimistisches Update, da Konflikt-
+  // /Datums-Validierung serverseitig passiert (siehe TaskService) und der
+  // Server-Stand (neu abgeleitetes amountDid/progress) direkt übernommen wird.
+  const handleAddCompletion = useCallback(async (taskId: string, date: string) => {
+    try {
+      const updatedTask = await addTaskCompletion(taskId, date);
+      setTasks((prev) => prev.map((t) => (t.id === taskId ? updatedTask : t)));
+    } catch (err) {
+      showErrorToast(err instanceof Error ? err.message : "Fehler beim Abhaken des Tages");
+    }
   }, []);
+
+  const handleRemoveCompletion = useCallback(async (taskId: string, date: string) => {
+    try {
+      const updatedTask = await removeTaskCompletion(taskId, date);
+      setTasks((prev) => prev.map((t) => (t.id === taskId ? updatedTask : t)));
+    } catch (err) {
+      showErrorToast(err instanceof Error ? err.message : "Fehler beim Rückgängigmachen des Tages");
+    }
+  }, []);
+
+  // Der primäre Abhaken-Button ist ein Toggle (#152): ist das aktuelle
+  // Frequenz-Intervall bereits erledigt, nimmt ein erneuter Klick genau
+  // diese Completion wieder zurück, statt eine neue anzulegen. Geteilte
+  // Projekt-Tasks liegen ausserhalb von #152 (siehe Backend) und behalten
+  // ihre bisherige amountDid-Increment-Logik.
+  const handleToggleDone = useCallback(
+    async (taskId: string) => {
+      const targetTask = tasksRef.current.find((task) => task.id === taskId);
+      if (!targetTask) return;
+
+      if (targetTask.project) {
+        const newAmountDid = (targetTask.amountDid ?? 0) + 1;
+        try {
+          const updatedTask = await patchTask(taskId, { amountDid: newAmountDid });
+          setTasks((prev) => prev.map((t) => (t.id === taskId ? updatedTask : t)));
+        } catch (err) {
+          showErrorToast(err instanceof Error ? err.message : "Fehler beim Aktualisieren der erledigten Menge");
+        }
+        return;
+      }
+
+      const existingCompletionDate = currentPeriodCompletion(targetTask);
+      if (existingCompletionDate) {
+        await handleRemoveCompletion(taskId, existingCompletionDate);
+      } else {
+        await handleAddCompletion(taskId, today());
+      }
+    },
+    [handleAddCompletion, handleRemoveCompletion]
+  );
 
   const handleUpdateTask = useCallback((updatedTask: Task) => {
     setTasks((prev) => prev.map((task) => (task.id === updatedTask.id ? updatedTask : task)));
@@ -280,6 +328,8 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     handleResetProgress,
     handleDelete,
     handleToggleDone,
+    handleAddCompletion,
+    handleRemoveCompletion,
     handleUpdateTask,
     isArchivedForCurrentUser,
     fetchTasks,

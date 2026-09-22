@@ -15,6 +15,7 @@ import {
   type CalendarDay,
 } from "@/utils/calendarGrid";
 import { toDateOnlyString } from "@/utils/formatDate";
+import { isDoneForCurrentPeriod } from "@/utils/taskCompletions";
 import { cn } from "@/lib/utils";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
@@ -415,6 +416,7 @@ function CalendarPage() {
         onToggleDone={() => selectedTask && handleToggleDone(selectedTask.id)}
         onTaskUpdated={handleUpdateTask}
         isArchived={selectedTask?.isArchived ?? false}
+        doneForCurrentPeriod={selectedTask ? isDoneForCurrentPeriod(selectedTask) : false}
       />
       </div>
     </div>

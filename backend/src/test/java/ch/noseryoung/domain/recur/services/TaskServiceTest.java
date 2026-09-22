@@ -8,6 +8,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -23,11 +26,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import ch.noseryoung.domain.recur.dto.CreateTaskRequest;
+import ch.noseryoung.domain.recur.dto.PatchTaskRequest;
 import ch.noseryoung.domain.recur.enums.Category;
 import ch.noseryoung.domain.recur.enums.Frequency;
+import ch.noseryoung.domain.recur.exceptions.InvalidCompletionException;
 import ch.noseryoung.domain.recur.exceptions.TaskNotFoundException;
 import ch.noseryoung.domain.recur.models.Task;
 import ch.noseryoung.domain.recur.models.User;
+import ch.noseryoung.domain.recur.repositories.ProjectRepository;
 import ch.noseryoung.domain.recur.repositories.TaskRepository;
 import ch.noseryoung.domain.recur.security.CustomUserDetails;
 import ch.noseryoung.domain.recur.utils.TaskUtil;
@@ -35,9 +42,10 @@ import ch.noseryoung.domain.recur.utils.TaskUtil;
 /**
  * Deckt die zentralen Business-Regeln von TaskService ab, wie sie in
  * CLAUDE.md dokumentiert sind: alle Task-Abfragen sind auf den eingeloggten
- * Owner beschraenkt, Loeschen ist nur fuer archivierte Tasks erlaubt, und
+ * Owner beschraenkt, Loeschen ist nur fuer archivierte Tasks erlaubt,
  * patchTask() behandelt unveraenderte Felder als "nicht anfassen" statt sie
- * zu ueberschreiben.
+ * zu ueberschreiben, und die Completion-Historie (#152) haelt die Regel "max.
+ * 1 Completion pro Frequenz-Intervall, ONCE max. 1 insgesamt" ein.
  */
 @ExtendWith(MockitoExtension.class)
 class TaskServiceTest {
@@ -46,14 +54,17 @@ class TaskServiceTest {
     private TaskRepository taskRepository;
 
     @Mock
-    private TaskUtil taskUtil;
+    private ProjectRepository projectRepository;
+
+    @Mock
+    private GroupMemberVisibilityService visibilityService;
 
     private TaskService taskService;
     private User owner;
 
     @BeforeEach
     void setUp() {
-        taskService = new TaskService(taskRepository, taskUtil);
+        taskService = new TaskService(taskRepository, projectRepository, new TaskUtil(), visibilityService);
 
         owner = User.builder().id(UUID.randomUUID()).email("owner@example.com").build();
         CustomUserDetails principal = new CustomUserDetails(owner);
@@ -68,20 +79,19 @@ class TaskServiceTest {
     }
 
     @Test
-    void getTasks_returnsOnlyTasksOwnedByCurrentUser() {
+    void getTasks_returnsOnlyTasksVisibleToCurrentUser() {
         Task task = existingTask();
-        when(taskRepository.findByOwner(owner)).thenReturn(List.of(task));
+        when(taskRepository.findVisibleToUser(owner)).thenReturn(List.of(task));
 
         ResponseEntity<java.util.Collection<Task>> response = taskService.getTasks(null, null);
 
         assertThat(response.getBody()).containsExactly(task);
-        verify(taskUtil, times(1)).calculateProgress(task);
     }
 
     @Test
     void getTask_throwsWhenTaskDoesNotBelongToCurrentUser() {
         UUID id = UUID.randomUUID();
-        when(taskRepository.findByIdAndOwner(id, owner)).thenReturn(Optional.empty());
+        when(taskRepository.findById(id)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> taskService.getTask(id))
                 .isInstanceOf(TaskNotFoundException.class);
@@ -90,7 +100,7 @@ class TaskServiceTest {
     @Test
     void getTask_returnsTaskWhenOwnedByCurrentUser() {
         Task task = existingTask();
-        when(taskRepository.findByIdAndOwner(task.getId(), owner)).thenReturn(Optional.of(task));
+        when(taskRepository.findById(task.getId())).thenReturn(Optional.of(task));
 
         ResponseEntity<Task> response = taskService.getTask(task.getId());
 
@@ -99,13 +109,14 @@ class TaskServiceTest {
 
     @Test
     void createTask_assignsCurrentUserAsOwner() {
-        Task task = Task.builder().name("Neu").build();
+        CreateTaskRequest request = new CreateTaskRequest(
+                "Neu", Category.WORK, Frequency.DAILY, "Beschreibung", Instant.now(), null, null, null);
 
-        ResponseEntity<Task> response = taskService.createTask(task);
+        ResponseEntity<Task> response = taskService.createTask(request);
 
         assertThat(response.getStatusCode().value()).isEqualTo(201);
-        assertThat(task.getOwner()).isEqualTo(owner);
-        verify(taskRepository).save(task);
+        assertThat(response.getBody().getOwner()).isEqualTo(owner);
+        verify(taskRepository).save(any(Task.class));
     }
 
     @Test
@@ -113,45 +124,36 @@ class TaskServiceTest {
         Task existing = existingTask();
         existing.setName("Alter Name");
         existing.setDescription("Alte Beschreibung");
-        when(taskRepository.findByIdAndOwner(existing.getId(), owner)).thenReturn(Optional.of(existing));
+        when(taskRepository.findById(existing.getId())).thenReturn(Optional.of(existing));
 
-        Task patch = blankPatch();
-        patch.setName("Neuer Name");
+        PatchTaskRequest patch = blankPatch("Neuer Name", null);
 
-        taskService.patchTask(existing.getId(), patch, null, null, null, null);
+        taskService.patchTask(existing.getId(), patch, null, null, null, null, null);
 
         assertThat(existing.getName()).isEqualTo("Neuer Name");
         assertThat(existing.getDescription()).isEqualTo("Alte Beschreibung");
     }
 
     @Test
-    void patchTask_resetProgressZeroesAmountDid() {
+    void patchTask_resetProgressClearsCompletionsAndAmountDid() {
         Task existing = existingTask();
+        existing.getCompletions().add(LocalDate.now());
         existing.setAmountDid(7);
-        when(taskRepository.findByIdAndOwner(existing.getId(), owner)).thenReturn(Optional.of(existing));
+        when(taskRepository.findById(existing.getId())).thenReturn(Optional.of(existing));
 
-        taskService.patchTask(existing.getId(), blankPatch(), true, null, null, null);
+        taskService.patchTask(existing.getId(), blankPatch(null, null), true, null, null, null, null);
 
+        assertThat(existing.getCompletions()).isEmpty();
         assertThat(existing.getAmountDid()).isEqualTo(0);
-    }
-
-    @Test
-    void patchTask_amountDidQueryParamSetsValueDirectly() {
-        Task existing = existingTask();
-        existing.setAmountDid(0);
-        when(taskRepository.findByIdAndOwner(existing.getId(), owner)).thenReturn(Optional.of(existing));
-
-        taskService.patchTask(existing.getId(), blankPatch(), null, null, null, 3);
-
-        assertThat(existing.getAmountDid()).isEqualTo(3);
+        assertThat(existing.getLastAmountDidAt()).isNull();
     }
 
     @Test
     void patchTask_favoriteAndArchivedQueryParamsAreApplied() {
         Task existing = existingTask();
-        when(taskRepository.findByIdAndOwner(existing.getId(), owner)).thenReturn(Optional.of(existing));
+        when(taskRepository.findById(existing.getId())).thenReturn(Optional.of(existing));
 
-        taskService.patchTask(existing.getId(), blankPatch(), null, true, true, null);
+        taskService.patchTask(existing.getId(), blankPatch(null, null), null, true, true, null, null);
 
         assertThat(existing.getIsFavorite()).isTrue();
         assertThat(existing.getIsArchived()).isTrue();
@@ -161,17 +163,122 @@ class TaskServiceTest {
     @Test
     void patchTask_throwsWhenTaskDoesNotBelongToCurrentUser() {
         UUID id = UUID.randomUUID();
-        when(taskRepository.findByIdAndOwner(id, owner)).thenReturn(Optional.empty());
+        when(taskRepository.findById(id)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> taskService.patchTask(id, Task.builder().build(), null, null, null, null))
+        assertThatThrownBy(() -> taskService.patchTask(id, blankPatch(null, null), null, null, null, null, null))
                 .isInstanceOf(TaskNotFoundException.class);
+    }
+
+    @Test
+    void patchTask_amountDidQueryParamSetsValueDirectly() {
+        // Bleibt für geteilte Projekt-Tasks bestehen, die #152 bewusst nicht
+        // erfasst (siehe TaskService#addCompletion/removeCompletion, nur
+        // persönliche Tasks) - amountDid ist dort weiterhin der einzige Weg,
+        // Fortschritt zu setzen.
+        Task existing = existingTask();
+        when(taskRepository.findById(existing.getId())).thenReturn(Optional.of(existing));
+
+        taskService.patchTask(existing.getId(), blankPatch(null, null), null, null, null, 3, null);
+
+        assertThat(existing.getAmountDid()).isEqualTo(3);
+        assertThat(existing.getCompletions()).isEmpty();
+    }
+
+    @Test
+    void addCompletion_addsDateAndRecomputesProgress() {
+        Task existing = dailyTask(LocalDate.now().minusDays(5));
+        when(taskRepository.findByIdAndOwner(existing.getId(), owner)).thenReturn(Optional.of(existing));
+
+        LocalDate today = LocalDate.now();
+        ResponseEntity<Task> response = taskService.addCompletion(existing.getId(), today);
+
+        assertThat(response.getBody().getCompletions()).containsExactly(today);
+        assertThat(response.getBody().getAmountDid()).isEqualTo(1);
+        verify(taskRepository).save(existing);
+    }
+
+    @Test
+    void addCompletion_rejectsFutureDate() {
+        Task existing = dailyTask(LocalDate.now().minusDays(5));
+        when(taskRepository.findByIdAndOwner(existing.getId(), owner)).thenReturn(Optional.of(existing));
+
+        assertThatThrownBy(() -> taskService.addCompletion(existing.getId(), LocalDate.now().plusDays(1)))
+                .isInstanceOf(InvalidCompletionException.class);
+    }
+
+    @Test
+    void addCompletion_rejectsDateBeforeTaskCreation() {
+        Task existing = dailyTask(LocalDate.now().minusDays(5));
+        when(taskRepository.findByIdAndOwner(existing.getId(), owner)).thenReturn(Optional.of(existing));
+
+        assertThatThrownBy(() -> taskService.addCompletion(existing.getId(), LocalDate.now().minusDays(10)))
+                .isInstanceOf(InvalidCompletionException.class);
+    }
+
+    @Test
+    void addCompletion_rejectsSecondDayInSameWeeklyInterval() {
+        Task existing = weeklyTask(LocalDate.now().minusDays(3));
+        when(taskRepository.findByIdAndOwner(existing.getId(), owner)).thenReturn(Optional.of(existing));
+
+        taskService.addCompletion(existing.getId(), LocalDate.now().minusDays(1));
+
+        assertThatThrownBy(() -> taskService.addCompletion(existing.getId(), LocalDate.now()))
+                .isInstanceOf(InvalidCompletionException.class);
+    }
+
+    @Test
+    void addCompletion_rejectsSecondCompletionForOnceTask() {
+        Task existing = Task.builder()
+                .id(UUID.randomUUID())
+                .owner(owner)
+                .frequency(Frequency.ONCE)
+                .dateCreated(Instant.now().minus(5, ChronoUnit.DAYS))
+                .build();
+        existing.getCompletions().add(LocalDate.now().minusDays(2));
+        when(taskRepository.findByIdAndOwner(existing.getId(), owner)).thenReturn(Optional.of(existing));
+
+        assertThatThrownBy(() -> taskService.addCompletion(existing.getId(), LocalDate.now()))
+                .isInstanceOf(InvalidCompletionException.class);
+    }
+
+    @Test
+    void addCompletion_backfillsLegacyAmountDidBeforeCheckingIntervalConflict() {
+        // Bestandstask von vor #152: kein Completion-Set, nur der alte Zähler.
+        LocalDate created = LocalDate.now().minusDays(20);
+        Task existing = weeklyTask(created);
+        existing.setAmountDid(2);
+        existing.setLastAmountDidAt(created.plusDays(7).atStartOfDay(java.time.ZoneOffset.UTC).toInstant());
+        when(taskRepository.findByIdAndOwner(existing.getId(), owner)).thenReturn(Optional.of(existing));
+
+        // Ein anderer Tag in derselben (synthetisch belegten) Woche ist blockiert.
+        assertThatThrownBy(() -> taskService.addCompletion(existing.getId(), created.plusDays(8)))
+                .isInstanceOf(InvalidCompletionException.class);
+
+        // Eine neue, noch nicht abgedeckte Woche funktioniert weiterhin.
+        ResponseEntity<Task> response = taskService.addCompletion(existing.getId(), LocalDate.now());
+        assertThat(response.getBody().getAmountDid()).isEqualTo(3);
+    }
+
+    @Test
+    void removeCompletion_removesDateAndRecomputesProgress() {
+        Task existing = dailyTask(LocalDate.now().minusDays(2));
+        LocalDate today = LocalDate.now();
+        existing.getCompletions().add(today);
+        existing.setAmountDid(1);
+        when(taskRepository.findByIdAndOwner(existing.getId(), owner)).thenReturn(Optional.of(existing));
+
+        ResponseEntity<Task> response = taskService.removeCompletion(existing.getId(), today);
+
+        assertThat(response.getBody().getCompletions()).isEmpty();
+        assertThat(response.getBody().getAmountDid()).isEqualTo(0);
+        verify(taskRepository).save(existing);
     }
 
     @Test
     void deleteTask_rejectsDeletionOfNonArchivedTask() {
         Task existing = existingTask();
         existing.setIsArchived(false);
-        when(taskRepository.findByIdAndOwner(existing.getId(), owner)).thenReturn(Optional.of(existing));
+        when(taskRepository.findById(existing.getId())).thenReturn(Optional.of(existing));
 
         ResponseEntity<Task> response = taskService.deleteTask(existing.getId());
 
@@ -183,7 +290,7 @@ class TaskServiceTest {
     void deleteTask_allowsDeletionOfArchivedTask() {
         Task existing = existingTask();
         existing.setIsArchived(true);
-        when(taskRepository.findByIdAndOwner(existing.getId(), owner)).thenReturn(Optional.of(existing));
+        when(taskRepository.findById(existing.getId())).thenReturn(Optional.of(existing));
 
         ResponseEntity<Task> response = taskService.deleteTask(existing.getId());
 
@@ -194,7 +301,7 @@ class TaskServiceTest {
     @Test
     void deleteTask_throwsWhenTaskDoesNotBelongToCurrentUser() {
         UUID id = UUID.randomUUID();
-        when(taskRepository.findByIdAndOwner(id, owner)).thenReturn(Optional.empty());
+        when(taskRepository.findById(id)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> taskService.deleteTask(id))
                 .isInstanceOf(TaskNotFoundException.class);
@@ -211,12 +318,29 @@ class TaskServiceTest {
                 .build();
     }
 
-    // Simuliert einen echten PATCH-Body (via Jackson deserialisiert): nur
-    // die tatsaechlich mitgeschickten Felder sind gesetzt. @Builder.Default
-    // wuerde isFavorite/isArchived sonst stillschweigend auf false statt
-    // null setzen, was patchTask()'s "nicht gesetzt = nicht aendern"-Logik
-    // verfaelschen wuerde.
-    private static Task blankPatch() {
-        return Task.builder().isFavorite(null).isArchived(null).build();
+    private Task dailyTask(LocalDate created) {
+        return Task.builder()
+                .id(UUID.randomUUID())
+                .category(Category.WORK)
+                .frequency(Frequency.DAILY)
+                .owner(owner)
+                .dateCreated(created.atStartOfDay(java.time.ZoneOffset.UTC).toInstant())
+                .build();
+    }
+
+    private Task weeklyTask(LocalDate created) {
+        return Task.builder()
+                .id(UUID.randomUUID())
+                .category(Category.WORK)
+                .frequency(Frequency.WEEKLY)
+                .owner(owner)
+                .dateCreated(created.atStartOfDay(java.time.ZoneOffset.UTC).toInstant())
+                .build();
+    }
+
+    // Simuliert einen echten PATCH-Body (via Jackson deserialisiert): nur die
+    // tatsaechlich mitgeschickten Felder sind gesetzt.
+    private static PatchTaskRequest blankPatch(String name, Category category) {
+        return new PatchTaskRequest(name, category, null, null, null, null, null, null, null, null);
     }
 }
