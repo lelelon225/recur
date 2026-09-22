@@ -10,7 +10,7 @@ Recur — a full-stack habit/task tracker. Backend: Java 25 / Spring Boot 4.0.6 
 
 Frontend (`frontend/`, package manager is **yarn**):
 - `yarn dev` — start dev server (port 3000)
-- `yarn build` — `next build`
+- `yarn build` — `next build --webpack` (forced off Turbopack, Next 16's default — `@ducanh2912/next-pwa` injects a webpack config that Turbopack rejects)
 - `yarn typecheck` — `tsc --noEmit`
 - `yarn lint` — ESLint (flat config, no Prettier configured)
 - No test script or test framework exists in the frontend.
