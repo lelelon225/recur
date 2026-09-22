@@ -1,13 +1,6 @@
 import type { NextConfig } from "next";
 import withPWAInit, { runtimeCaching as defaultRuntimeCaching } from "@ducanh2912/next-pwa";
 
-// next-pwa's default runtimeCaching NetworkFirst-caches any same-origin GET,
-// including our /api, /oauth2, /login/oauth2 backend-proxy routes (see
-// src/proxy.ts) - that means live task data and OAuth redirects could be
-// served stale from cache. These three prefixes are prepended as NetworkOnly
-// so they're matched (and excluded from caching) before the defaults below.
-const BACKEND_PROXY_PREFIXES = ["/api", "/oauth2", "/login/oauth2"];
-
 const withPWA = withPWAInit({
   dest: "public",
   register: true,
@@ -17,8 +10,19 @@ const withPWA = withPWAInit({
   workboxOptions: {
     runtimeCaching: [
       {
+        // next-pwa's default runtimeCaching NetworkFirst-caches any
+        // same-origin GET, including our /api, /oauth2, /login/oauth2
+        // backend-proxy routes (see src/proxy.ts) - that means live task
+        // data and OAuth redirects could be served stale from cache. This
+        // route is prepended as NetworkOnly so it's matched (and excluded
+        // from caching) before the defaults below.
+        // The prefix list is a literal INSIDE this function, not a module-
+        // level const: generateSW serializes urlPattern via
+        // Function.prototype.toString() into the emitted sw.js, which drops
+        // the closure - referencing an outer const here throws
+        // "ReferenceError: ... is not defined" at runtime for every fetch.
         urlPattern: ({ url, sameOrigin }) =>
-          sameOrigin && BACKEND_PROXY_PREFIXES.some((prefix) => url.pathname.startsWith(prefix)),
+          sameOrigin && ["/api", "/oauth2", "/login/oauth2"].some((prefix) => url.pathname.startsWith(prefix)),
         handler: "NetworkOnly",
       },
       ...defaultRuntimeCaching,
