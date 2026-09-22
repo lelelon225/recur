@@ -28,6 +28,8 @@ Full stack locally: `./start-dev.ps1` (Windows) starts Docker, backend, and fron
 
 Auth is hybrid: stateless JWT (`jjwt`) for normal API calls via `JwtAuthenticationFilter`, plus Spring Security OAuth2/OIDC login for Google, sharing one `SecurityFilterChain` in `SecurityConfig`. Touch `SecurityConfig`/`JwtAuthenticationFilter`/OAuth2 handlers together when changing auth.
 
+`NotificationSettings.reminderLeadTime` (account-level, set via the "Erinnerungs-Vorlauf" field in `NotificationForm.tsx`) is only a **default/fallback**: `TaskReminderScheduler` resolves the actual lead time per task as `TaskReminderOverride.reminderLeadTime` (per-task preset) → else `NotificationSettings.reminderLeadTime` → else hardcoded 24h. It still applies to every task that has no individual override.
+
 **Frontend** routing lives in `src/app/` (Next.js App Router — folder structure is the URL structure, `page.tsx` files mark routable segments), but those `page.tsx` files are thin wrappers: actual page logic lives in `src/components/pages/`, which follows atomic design under `src/components/`: `atoms/ molecules/ organisms/ pages/ templates/`, plus `ui/` (shadcn primitives) and `auth/`, `error/`. Path alias `@/` → `src/`. State is plain React Context (`TasksContext`, `AddTaskContext`, `AuthContext`) — no Redux/Zustand. Forms use **Formik + Yup** (not react-hook-form/zod, despite the `schemas/` folder name). Domain types (`Task`, `TaskCategory`, `TaskFrequency`, etc.) live colocated in `services/taskService.ts`, not in `types/`. All API calls go through the shared axios instance in `services/api.ts`; service functions normalize errors via `extractErrorMessage` and convert dates to ISO instants before sending (backend fields are Java `Instant`).
 
 ## Environment
@@ -37,6 +39,7 @@ Postgres runs on host port **5436** (not 5432) — see `docker-compose.yml` and 
 ## Known issues
 
 - **Transactional email is effectively non-functional in production**: `noreply@recur.dpdns.org` (and the `dev.recur.dpdns.org`/`www.recur.dpdns.org` links embedded in verification/password-reset emails) sit on `dpdns.org`, a free dynamic-DNS zone listed on Spamhaus DBL (phish/botnet). Most recipient mail servers (confirmed with Proton Mail) hard-reject these emails with `554 5.7.1 rejected by rspamd filter`, regardless of SPF/DKIM/DMARC correctness — verified not to be a Brevo, Cloudflare, or app-code issue. See #126. Anyone building on top of `EmailService` (e.g. #102's notification delivery) should know delivery is currently blocked until the domain is migrated off `dpdns.org` — don't assume a broken send-path bug without checking this first.
+- The email-notification toggle in `NotificationForm.tsx` ("E-Mail-Benachrichtigungen") is hard-disabled (forced off, `disabled` switch) until the `dpdns.org` delivery issue above is fixed — don't re-enable it without fixing delivery first. Note: `NotificationDispatchService` also already has its own server-side kill switch (`app.notifications.email-enabled` / `NOTIFICATIONS_EMAIL_ENABLED`, default `false`) gating reminder/overdue/project-task-created emails independent of this UI toggle.
 
 ## Conventions
 

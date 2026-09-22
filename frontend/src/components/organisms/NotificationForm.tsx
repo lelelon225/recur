@@ -29,16 +29,12 @@ function NotificationForm({ values, disabled, onFieldChange }: NotificationFormP
         <FieldContent>
           <FieldTitle>E-Mail-Benachrichtigungen</FieldTitle>
           <FieldDescription>
-            Erinnerungen und Überfällig-Hinweise zu deinen Aufgaben per
-            E-Mail. Hinweis: unser E-Mail-Versand wird derzeit von manchen
-            Mail-Providern blockiert - die Zustellung ist nicht garantiert.
+            Aktuell nicht verfügbar: unser E-Mail-Versand wird derzeit von
+            manchen Mail-Providern blockiert, daher ist der Versand
+            serverseitig deaktiviert.
           </FieldDescription>
         </FieldContent>
-        <Switch
-          disabled={disabled}
-          checked={values.emailEnabled}
-          onCheckedChange={(checked) => onFieldChange({ emailEnabled: checked })}
-        />
+        <Switch disabled checked={false} />
       </Field>
       <FieldSeparator />
       <Field orientation="horizontal">
