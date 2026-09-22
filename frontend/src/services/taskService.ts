@@ -48,6 +48,8 @@ export interface Task {
   updatedAt?: string | null;
   daysInSpan?: number | null;
   amountDid?: number | null;
+  /** Zeitpunkt des letzten Fortschritts-Increments - Basis für die Abhaken-Sperre pro Frequenz-Intervall (#136). */
+  lastAmountDidAt?: string | null;
   isFavorite?: boolean | null;
   isArchived: boolean;
   durationMinutes?: number | null;
@@ -67,6 +69,7 @@ export type ServerOwnedFields =
   | "id"
   | "dateCreated"
   | "updatedAt"
+  | "lastAmountDidAt"
   | "project"
   | "completedBy"
   | "isArchived"
