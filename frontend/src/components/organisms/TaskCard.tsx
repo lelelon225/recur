@@ -93,8 +93,7 @@ function TaskCard({
     handleResetProgress,
   } = useTaskCard({
     progress: task.progress,
-    frequency: task.frequency,
-    lastAmountDidAt: task.lastAmountDidAt,
+    task,
     onToggleFavorite,
     onToggleEdit,
     onToggleMenu,
@@ -155,7 +154,20 @@ function TaskCard({
         <ProgressIndicator value={clampedProgress} />
         <div className="flex items-center gap-2">
           {!selectMode && (
-            <Button size="sm" disabled={doneForCurrentPeriod} onClick={handleDone}>
+            <Button
+              size="sm"
+              variant={doneForCurrentPeriod ? "outline" : "default"}
+              // Geteilte Projekt-Tasks (ausserhalb von #152) behalten die alte
+              // Sperre; persönliche Tasks sind stattdessen toggle-bar (Klick
+              // macht das Häkchen wieder rückgängig).
+              disabled={Boolean(task.project) && doneForCurrentPeriod}
+              onClick={handleDone}
+              title={
+                !task.project && doneForCurrentPeriod
+                  ? "Klicken, um rückgängig zu machen"
+                  : undefined
+              }
+            >
               {doneForCurrentPeriod ? "Erledigt" : "Abhaken"}
             </Button>
           )}
@@ -279,6 +291,7 @@ function TaskCard({
           onToggleDone={handleDone}
           onTaskUpdated={onTaskUpdated}
           isArchived={isArchivedForCurrentUser(task)}
+          doneForCurrentPeriod={doneForCurrentPeriod}
         />
       </div>
     </Card>

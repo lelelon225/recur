@@ -6,6 +6,11 @@ import ch.noseryoung.domain.recur.enums.Frequency;
 import ch.noseryoung.domain.recur.models.Task;
 
 import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.EnumMap;
 
 @Component
@@ -72,5 +77,80 @@ public class TaskUtil {
         double progress = (task.getAmountDid() / expectedRepsTotal) * 100.0;
 
         task.setProgress(progress);
+    }
+
+    /**
+     * Bestandstasks von vor #152 kennen nur den alten amountDid-Zähler, kein
+     * Completion-Set. Übersetzt diesen einmalig lazy in synthetische, je 1
+     * Intervall auseinanderliegende Completions, damit ihr Fortschritt beim
+     * ersten Aufruf nicht auf 0 zurückfällt. No-op sobald das Set mindestens
+     * eine echte Completion enthält - MUSS daher vor jeder Mutation des Sets
+     * aufgerufen werden (nicht danach: sonst hielte ein zwischenzeitlich auf
+     * 0 geleertes Set das alte, noch nicht nachgezogene amountDid für "zu
+     * migrierende Historie" und würde eine gerade entfernte Completion sofort
+     * wieder zurückschreiben).
+     */
+    public void backfillLegacyCompletionsIfNeeded(Task task) {
+        if (!task.getCompletions().isEmpty()) {
+            return;
+        }
+        backfillLegacyCompletions(task);
+    }
+
+    /** Leitet amountDid/lastAmountDidAt unbedingt aus dem aktuellen Completion-Set ab (#152), inkl. Zurücksetzen auf 0/null wenn leer. */
+    public void deriveFromCompletions(Task task) {
+        task.setAmountDid(task.getCompletions().size());
+        task.setLastAmountDidAt(
+                task.getCompletions().stream()
+                        .max(Comparator.naturalOrder())
+                        .map(date -> date.atStartOfDay(ZoneOffset.UTC).toInstant())
+                        .orElse(null));
+    }
+
+    /** Convenience für reine Lesepfade: Backfill (falls nötig) + Ableitung in einem Schritt. */
+    public void syncCompletions(Task task) {
+        backfillLegacyCompletionsIfNeeded(task);
+        deriveFromCompletions(task);
+    }
+
+    private void backfillLegacyCompletions(Task task) {
+        if (task.getAmountDid() == null || task.getAmountDid() <= 0) {
+            return;
+        }
+
+        Instant anchor = task.getLastAmountDidAt() != null ? task.getLastAmountDidAt() : task.getDateCreated();
+        LocalDate anchorDate = anchor != null
+                ? anchor.atZone(ZoneOffset.UTC).toLocalDate()
+                : LocalDate.now(ZoneOffset.UTC);
+
+        if (task.getFrequency() == Frequency.ONCE) {
+            task.getCompletions().add(anchorDate);
+            return;
+        }
+
+        Integer intervalDays = getFrequencyNumber(task.getFrequency());
+        if (intervalDays == null) {
+            return;
+        }
+
+        for (int i = 0; i < task.getAmountDid(); i++) {
+            task.getCompletions().add(anchorDate.minusDays((long) i * intervalDays));
+        }
+    }
+
+    /**
+     * Welches Frequenz-Intervall (gezählt seit dateCreated) ein Datum
+     * abdeckt - Basis für die Regel "max. 1 Completion pro Intervall" (#152).
+     * null bei ONCE oder fehlender Frequenz/dateCreated (kein Intervall-
+     * Konzept dort).
+     */
+    public Long intervalIndexOf(Task task, LocalDate date) {
+        Integer intervalDays = getFrequencyNumber(task.getFrequency());
+        if (intervalDays == null || task.getDateCreated() == null) {
+            return null;
+        }
+
+        LocalDate createdDate = task.getDateCreated().atZone(ZoneOffset.UTC).toLocalDate();
+        return Math.floorDiv(ChronoUnit.DAYS.between(createdDate, date), intervalDays);
     }
 }

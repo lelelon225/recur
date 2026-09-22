@@ -48,8 +48,10 @@ export interface Task {
   updatedAt?: string | null;
   daysInSpan?: number | null;
   amountDid?: number | null;
-  /** Zeitpunkt des letzten Fortschritts-Increments - Basis für die Abhaken-Sperre pro Frequenz-Intervall (#136). */
+  /** Zeitpunkt des letzten Fortschritts-Increments - vom Server aus completions abgeleitet (#152). */
   lastAmountDidAt?: string | null;
+  /** Completion-Historie als Datums-Strings (YYYY-MM-DD) - Source of Truth für amountDid/progress, Basis für die Verlaufs-Liste und den Abhaken-Toggle (#152). */
+  completions?: string[] | null;
   isFavorite?: boolean | null;
   isArchived: boolean;
   durationMinutes?: number | null;
@@ -70,6 +72,7 @@ export type ServerOwnedFields =
   | "dateCreated"
   | "updatedAt"
   | "lastAmountDidAt"
+  | "completions"
   | "project"
   | "completedBy"
   | "isArchived"
@@ -85,6 +88,7 @@ export type PatchTaskOptions = {
   resetProgress?: boolean;
   favorite?: boolean;
   archived?: boolean;
+  /** Nur noch für geteilte Projekt-Tasks (#152: persönliche Tasks laufen über addTaskCompletion/removeTaskCompletion). */
   amountDid?: number;
   /** Setzt den Task explizit zurück auf persönlich (kein Projekt mehr). */
   unassignProject?: boolean;
@@ -179,6 +183,26 @@ function patchTask(id: string, options: PatchTaskOptions = {}): Promise<Task> {
     });
 }
 
+/** Hakt einen einzelnen Tag nachträglich ab (#152) - date als "YYYY-MM-DD". */
+function addTaskCompletion(id: string, date: string): Promise<Task> {
+  return api
+    .put(`/task/${id}/completions/${date}`)
+    .then((response) => response.data as Task)
+    .catch((err: unknown) => {
+      throw new Error(extractErrorMessage(err, "Fehler beim Abhaken des Tages"));
+    });
+}
+
+/** Macht ein einzelnes Häkchen wieder rückgängig (#152) - date als "YYYY-MM-DD". */
+function removeTaskCompletion(id: string, date: string): Promise<Task> {
+  return api
+    .delete(`/task/${id}/completions/${date}`)
+    .then((response) => response.data as Task)
+    .catch((err: unknown) => {
+      throw new Error(extractErrorMessage(err, "Fehler beim Rückgängigmachen des Tages"));
+    });
+}
+
 function deleteTask(id: string): Promise<void> {
   return api
     .delete(`/task/${id}`)
@@ -227,4 +251,6 @@ export {
   deleteAllTasks,
   assignSelf,
   unassignSelf,
+  addTaskCompletion,
+  removeTaskCompletion,
 };

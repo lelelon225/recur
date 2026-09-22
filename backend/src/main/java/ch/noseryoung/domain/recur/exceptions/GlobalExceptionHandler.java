@@ -80,6 +80,22 @@ public class GlobalExceptionHandler {
                                                 getPath(request)));
         }
 
+        @ExceptionHandler(InvalidCompletionException.class)
+        public ResponseEntity<ErrorResponse> handleInvalidCompletion(
+                        InvalidCompletionException ex,
+                        WebRequest request) {
+
+                logger.info("Completion rejected: {}", ex.getMessage());
+
+                return ResponseEntity
+                                .status(HttpStatus.BAD_REQUEST)
+                                .body(ErrorResponse.of(
+                                                400,
+                                                "Invalid completion",
+                                                ex.getMessage(),
+                                                getPath(request)));
+        }
+
         @ExceptionHandler(GroupNotFoundException.class)
         public ResponseEntity<ErrorResponse> handleGroupNotFound(
                         GroupNotFoundException ex,

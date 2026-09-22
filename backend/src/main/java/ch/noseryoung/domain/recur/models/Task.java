@@ -1,6 +1,7 @@
 package ch.noseryoung.domain.recur.models;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.*;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -88,6 +89,17 @@ public class Task {
         // wieder auf null gesetzt.
         @Column(name = "last_amount_did_at")
         private Instant lastAmountDidAt;
+
+        // Completion-Historie pro Kalendertag (#152) - Source of Truth für
+        // amountDid/progress/lastAmountDidAt, die daraus abgeleitet werden (siehe
+        // TaskUtil#syncCompletions). Nur bei persönlichen Tasks genutzt (owner !=
+        // null), Projekt-Tasks bleiben bei der bisherigen completedBy-Logik.
+        @Builder.Default
+        @ElementCollection
+        @CollectionTable(name = "task_completion", joinColumns = @JoinColumn(name = "task_id"), uniqueConstraints = @UniqueConstraint(columnNames = {
+                        "task_id", "completion_date" }))
+        @Column(name = "completion_date")
+        private Set<LocalDate> completions = new HashSet<>();
 
         @Builder.Default
         @Column(name = "is_favorite", nullable = false, columnDefinition = "boolean default false")
