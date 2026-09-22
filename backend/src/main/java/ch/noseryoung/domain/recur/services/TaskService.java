@@ -34,13 +34,16 @@ public class TaskService {
         private final ProjectRepository projectRepository;
         private final TaskUtil taskUtil;
         private final GroupMemberVisibilityService visibilityService;
+        private final NotificationDispatchService notificationDispatchService;
 
         public TaskService(TaskRepository taskRepository, ProjectRepository projectRepository, TaskUtil taskUtil,
-                        GroupMemberVisibilityService visibilityService) {
+                        GroupMemberVisibilityService visibilityService,
+                        NotificationDispatchService notificationDispatchService) {
                 this.taskRepository = taskRepository;
                 this.projectRepository = projectRepository;
                 this.taskUtil = taskUtil;
                 this.visibilityService = visibilityService;
+                this.notificationDispatchService = notificationDispatchService;
         }
 
         // Ein Task ist sichtbar/bearbeitbar für seinen persönlichen owner, oder -
@@ -257,8 +260,22 @@ public class TaskService {
                 updateCompletedBy(task, currentUser);
 
                 taskRepository.save(task);
+                notifyGroupOfNewProjectTask(task, currentUser);
 
                 return ResponseEntity.status(201).body(maskMembers(task, currentUser));
+        }
+
+        // #102: benachrichtigt alle übrigen Gruppenmitglieder, wenn jemand einen
+        // neuen geteilten Projekt-Task erstellt hat. Persönliche Tasks (kein
+        // project) betreffen niemand anderen und lösen daher nichts aus.
+        private void notifyGroupOfNewProjectTask(Task task, User creator) {
+                if (task.getProject() == null || task.getProject().getGroup() == null) {
+                        return;
+                }
+
+                task.getProject().getGroup().getMembers().stream()
+                                .filter(member -> !member.equals(creator))
+                                .forEach(member -> notificationDispatchService.sendProjectTaskCreated(member, task, creator));
         }
 
         // PATCH METHODS

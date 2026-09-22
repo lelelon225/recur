@@ -7,7 +7,7 @@ function DatenschutzPage() {
   return (
     <LegalPageLayout
       title="Datenschutzerklärung"
-      lastUpdated="16. September 2026"
+      lastUpdated="22. September 2026"
     >
       <p className="text-muted-foreground">
         Diese Datenschutzerklärung informiert dich darüber, welche
@@ -74,17 +74,24 @@ function DatenschutzPage() {
           </li>
           <li>
             <span className="font-medium text-foreground">
-              Benachrichtigungseinstellungen (optional, aktuell nicht aktiv):
+              Benachrichtigungseinstellungen:
             </span>{" "}
             In deinen Benachrichtigungseinstellungen kannst du E-Mail- und
-            Push-Benachrichtigungen aktivieren oder deaktivieren. Aktuell
-            versenden wir noch keine inhaltlichen Benachrichtigungen (z.B.
-            Erinnerungen); die Einstellung reserviert deine Präferenz für den
-            Fall, dass wir eine solche Funktion künftig einführen. Davon
-            unberührt sind technisch notwendige E-Mails wie die
-            E-Mail-Bestätigung bei der Registrierung (siehe unten). Wird eine
-            inhaltliche Benachrichtigungsfunktion eingeführt, aktualisieren
-            wir diese Datenschutzerklärung entsprechend.
+            Push-Benachrichtigungen für Aufgaben-Erinnerungen aktivieren oder
+            deaktivieren sowie festlegen, wie lange vor dem Fälligkeitsdatum
+            einer Aufgabe du erinnert werden möchtest. Ist E-Mail aktiviert,
+            versenden wir Erinnerungs- und Überfällig-E-Mails über unseren
+            E-Mail-Dienstleister Brevo (siehe unten); die Zustellung ist
+            aktuell nicht garantiert (siehe Abschnitt
+            "E-Mail-Verifizierung und Kontowiederherstellung"). Ist Push
+            aktiviert, speichern wir die vom Browser bereitgestellte
+            Push-Subscription (Endpoint-URL und Verschlüsselungsschlüssel
+            deines Geräts), um dir Erinnerungen als Browser-Benachrichtigung
+            zuzustellen; diese Daten werden gelöscht, sobald du Push wieder
+            deaktivierst oder die Subscription ungültig wird. In geteilten
+            Projekten wird zudem allen Gruppenmitgliedern (ausser der
+            erstellenden Person) eine Benachrichtigung geschickt, wenn ein
+            neuer Task für das Projekt erstellt wird.
           </li>
         </ul>
       </section>

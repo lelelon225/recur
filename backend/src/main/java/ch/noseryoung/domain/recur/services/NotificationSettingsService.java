@@ -55,6 +55,9 @@ public class NotificationSettingsService {
         if (update.pushEnabled() != null) {
             settings.setPushEnabled(update.pushEnabled());
         }
+        if (update.reminderLeadTime() != null) {
+            settings.setReminderLeadTime(update.reminderLeadTime());
+        }
 
         notificationSettingsRepository.save(settings);
 

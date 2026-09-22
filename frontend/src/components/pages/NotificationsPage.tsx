@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { NotificationSettings } from "@/types/notifications";
 import { updateNotificationSettings } from "@/services/notificationService";
+import { disablePushNotifications, enablePushNotifications } from "@/services/pushService";
 import { Spinner } from "@/components/ui/spinner";
 import NotificationForm from "../organisms/NotificationForm";
 import useNotificationSettings from "@/hooks/useNotificationSettings";
@@ -20,6 +21,15 @@ function NotificationsPage({ initialSettings }: NotificationsPageProps) {
     setError(null);
     setSaving(true);
     try {
+      // Browser-Berechtigung/Subscription zuerst - schlägt das fehl (z.B.
+      // Berechtigung verweigert), soll gar nicht erst emailEnabled/pushEnabled
+      // beim Backend gespeichert werden.
+      if (update.pushEnabled === true) {
+        await enablePushNotifications();
+      } else if (update.pushEnabled === false) {
+        await disablePushNotifications();
+      }
+
       const saved = await updateNotificationSettings(update);
       setSettings(saved);
     } catch (error) {

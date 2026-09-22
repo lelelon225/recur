@@ -1,5 +1,6 @@
 package ch.noseryoung.domain.recur.dto;
 
+import ch.noseryoung.domain.recur.enums.ReminderLeadTime;
 import ch.noseryoung.domain.recur.models.NotificationSettings;
 
 // Auch für PATCH /api/auth/me/notification-settings verwendet: null-Felder
@@ -7,11 +8,13 @@ import ch.noseryoung.domain.recur.models.NotificationSettings;
 // NotificationSettingsService.updateCurrentSettings).
 public record NotificationSettingsResponse(
         Boolean emailEnabled,
-        Boolean pushEnabled) {
+        Boolean pushEnabled,
+        ReminderLeadTime reminderLeadTime) {
 
     public static NotificationSettingsResponse from(NotificationSettings settings) {
         return new NotificationSettingsResponse(
                 settings.getEmailEnabled(),
-                settings.getPushEnabled());
+                settings.getPushEnabled(),
+                settings.getReminderLeadTime());
     }
 }
