@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import ch.noseryoung.domain.recur.dto.PushSubscriptionRequest;
 import ch.noseryoung.domain.recur.models.PushSubscription;
@@ -52,6 +53,10 @@ public class PushSubscriptionService {
         pushSubscriptionRepository.save(subscription);
     }
 
+    // deleteByEndpoint is a derived delete query (load+remove under the
+    // hood) - needs an active transaction, or Hibernate throws
+    // TransactionRequiredException.
+    @Transactional
     public void unsubscribe(String endpoint) {
         pushSubscriptionRepository.deleteByEndpoint(endpoint);
     }
