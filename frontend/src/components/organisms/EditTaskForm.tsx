@@ -58,6 +58,7 @@ function EditTaskForm({ task, onClose, onTaskUpdated }: EditTaskFormProps) {
         startDate: localStartDate,
         startTimeOfDay: localStartTime,
         projectId: task.project?.id ?? "",
+        reminderLeadTime: task.reminderLeadTime ?? "",
       }}
       onSubmit={handleSubmit}
       validationSchema={editTaskValidationSchema}

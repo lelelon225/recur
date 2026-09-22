@@ -7,9 +7,11 @@ import FormDateField from "@/components/molecules/FormDateField";
 import FormDateTimeField from "@/components/molecules/FormDateTimeField";
 import FormDurationField from "@/components/molecules/FormDurationField";
 import FormSelector from "@/components/molecules/FormSelector";
+import FormReminderLeadTimeField from "@/components/molecules/FormReminderLeadTimeField";
 import ProjectSelector from "@/components/molecules/ProjectSelector";
 import { toDateOnlyString } from "@/utils/formatDate";
 import { roundUpToQuarterHour } from "@/utils/taskFormDefaults";
+import type { ReminderLeadTime } from "@/types/notifications";
 
 export type FormValues = {
   name: string;
@@ -21,6 +23,7 @@ export type FormValues = {
   startDate: string;
   startTimeOfDay: string;
   projectId: string;
+  reminderLeadTime: ReminderLeadTime | "";
 };
 
 // Fehler werden nur nach dem Verlassen des Felds (touched) angezeigt, nicht
@@ -134,6 +137,7 @@ export function TaskDetailFields({ values }: DetailFieldsProps) {
       <FormDurationField />
       <ProjectSelector />
       <FormDateTimeField label="Start" />
+      <FormReminderLeadTimeField />
     </>
   );
 }

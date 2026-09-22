@@ -41,6 +41,7 @@ const INITIAL_VALUES: FormValues = {
   startDate: "",
   startTimeOfDay: "",
   projectId: "",
+  reminderLeadTime: "",
 };
 
 function AddTaskForm({ onClose, onTaskCreated, prefill }: AddTaskFormProps) {

@@ -57,6 +57,7 @@ function useAddTaskForm({ onClose, onTaskCreated }: UseAddTaskFormParams) {
         values.frequency
       ),
       projectId: values.projectId || null,
+      reminderLeadTime: values.reminderLeadTime || null,
     };
 
     try {

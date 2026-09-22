@@ -4,6 +4,7 @@ import java.time.Instant;
 
 import ch.noseryoung.domain.recur.enums.Category;
 import ch.noseryoung.domain.recur.enums.Frequency;
+import ch.noseryoung.domain.recur.enums.ReminderLeadTime;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -22,6 +23,10 @@ public record CreateTaskRequest(
                 Integer durationMinutes,
 
                 Instant startTime,
+
+                // Optionaler Override des Erinnerungs-Vorlaufs für diesen Task; null
+                // nutzt die Kontoeinstellung (siehe Task.reminderLeadTime).
+                ReminderLeadTime reminderLeadTime,
 
                 ProjectReference project) {
 }

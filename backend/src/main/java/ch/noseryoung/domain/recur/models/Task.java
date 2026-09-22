@@ -9,6 +9,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import ch.noseryoung.domain.recur.enums.Category;
 import ch.noseryoung.domain.recur.enums.Frequency;
+import ch.noseryoung.domain.recur.enums.ReminderLeadTime;
 import lombok.*;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -122,6 +123,14 @@ public class Task {
 
         @Column(name = "start_time")
         private Instant startTime;
+
+        // Überschreibt pro Task den Erinnerungs-Vorlauf aus den
+        // NotificationSettings des Empfängers (#102-Follow-up). Null = kein
+        // Override, TaskReminderScheduler fällt dann auf die Kontoeinstellung
+        // zurück.
+        @Enumerated(EnumType.STRING)
+        @Column(name = "reminder_lead_time")
+        private ReminderLeadTime reminderLeadTime;
 
         // Optionale Zuordnung zu einem Gruppen-Projekt. Gesetzt <=> der Task ist
         // ein geteiltes Checklisten-Item für alle Mitglieder der Projekt-Gruppe

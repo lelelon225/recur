@@ -7,6 +7,7 @@ import {
   showWarningToast,
 } from "@/lib/toast";
 import { resolveStartTime } from "@/utils/taskFormDefaults";
+import type { ReminderLeadTime } from "@/types/notifications";
 
 export type EditableTaskFields = Pick<
   Task,
@@ -16,6 +17,7 @@ export type EditableTaskFields = Pick<
   startDate: string;
   startTimeOfDay: string;
   projectId: string;
+  reminderLeadTime: ReminderLeadTime | "";
 };
 
 function valuesChanged(values: EditableTaskFields, original: Task): boolean {
@@ -49,7 +51,8 @@ function valuesChanged(values: EditableTaskFields, original: Task): boolean {
     valDate === origDate &&
     valStartDate === origStartDate &&
     valStartTime === origStartTime &&
-    normStr(values.projectId) === normStr(original.project?.id)
+    normStr(values.projectId) === normStr(original.project?.id) &&
+    normStr(values.reminderLeadTime) === normStr(original.reminderLeadTime)
   );
 }
 
@@ -99,6 +102,7 @@ function useEditTaskForm({
         ...restValues,
         startTime: startTimeIso,
         projectId: projectId || null,
+        reminderLeadTime: restValues.reminderLeadTime || null,
       };
 
       const projectUnchanged = projectId === (task.project?.id ?? "");

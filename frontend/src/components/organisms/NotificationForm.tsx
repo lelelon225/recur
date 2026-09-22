@@ -14,20 +14,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { NotificationSettings, ReminderLeadTime } from "@/types/notifications";
+import { LEAD_TIME_OPTIONS } from "@/constants/taskOptions";
 
 type NotificationFormProps = {
   values: NotificationSettings;
   disabled?: boolean;
   onFieldChange: (update: Partial<NotificationSettings>) => void;
 };
-
-const LEAD_TIME_OPTIONS: { value: ReminderLeadTime; label: string }[] = [
-  { value: "AT_DUE_TIME", label: "Zum Fälligkeitszeitpunkt" },
-  { value: "ONE_HOUR", label: "1 Stunde vorher" },
-  { value: "SIX_HOURS", label: "6 Stunden vorher" },
-  { value: "TWENTY_FOUR_HOURS", label: "24 Stunden vorher" },
-  { value: "THREE_DAYS", label: "3 Tage vorher" },
-];
 
 function NotificationForm({ values, disabled, onFieldChange }: NotificationFormProps) {
   return (

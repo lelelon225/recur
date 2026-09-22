@@ -1,5 +1,6 @@
 package ch.noseryoung.domain.recur.services;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import ch.noseryoung.domain.recur.models.NotificationSettings;
@@ -16,6 +17,15 @@ public class NotificationDispatchService {
     private final NotificationSettingsRepository notificationSettingsRepository;
     private final EmailService emailService;
     private final PushNotificationService pushNotificationService;
+
+    // Vorläufiger globaler Kill-Switch für Task-Benachrichtigungs-Mails
+    // (Erinnerung/Überfällig/neuer Projekt-Task), unabhängig vom
+    // Nutzer-Toggle emailEnabled - siehe bekanntes dpdns.org-Zustell-
+    // problem in CLAUDE.md (#126). Betrifft nicht Verifizierungs-/
+    // Passwort-Reset-/Willkommens-Mails in EmailService, die weiter
+    // versendet werden. Push bleibt unverändert an.
+    @Value("${app.notifications.email-enabled:false}")
+    private boolean emailNotificationsEnabled;
 
     public NotificationDispatchService(
             NotificationSettingsRepository notificationSettingsRepository,
@@ -38,7 +48,7 @@ public class NotificationDispatchService {
 
     public void sendReminder(User recipient, Task task) {
         NotificationSettings settings = settingsFor(recipient);
-        if (Boolean.TRUE.equals(settings.getEmailEnabled())) {
+        if (emailNotificationsEnabled && Boolean.TRUE.equals(settings.getEmailEnabled())) {
             emailService.sendTaskReminderEmail(recipient, task);
         }
         if (Boolean.TRUE.equals(settings.getPushEnabled())) {
@@ -49,7 +59,7 @@ public class NotificationDispatchService {
 
     public void sendOverdue(User recipient, Task task) {
         NotificationSettings settings = settingsFor(recipient);
-        if (Boolean.TRUE.equals(settings.getEmailEnabled())) {
+        if (emailNotificationsEnabled && Boolean.TRUE.equals(settings.getEmailEnabled())) {
             emailService.sendTaskOverdueEmail(recipient, task);
         }
         if (Boolean.TRUE.equals(settings.getPushEnabled())) {
@@ -60,7 +70,7 @@ public class NotificationDispatchService {
 
     public void sendProjectTaskCreated(User recipient, Task task, User creator) {
         NotificationSettings settings = settingsFor(recipient);
-        if (Boolean.TRUE.equals(settings.getEmailEnabled())) {
+        if (emailNotificationsEnabled && Boolean.TRUE.equals(settings.getEmailEnabled())) {
             emailService.sendProjectTaskCreatedEmail(recipient, task, creator);
         }
         if (Boolean.TRUE.equals(settings.getPushEnabled())) {
