@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   createTask,
+  setTaskReminderLeadTime,
   TaskCategory,
   TaskFrequency,
   type NewTask,
@@ -57,11 +58,21 @@ function useAddTaskForm({ onClose, onTaskCreated }: UseAddTaskFormParams) {
         values.frequency
       ),
       projectId: values.projectId || null,
-      reminderLeadTime: values.reminderLeadTime || null,
     };
 
     try {
-      const createdTask = await createTask(payload);
+      let createdTask = await createTask(payload);
+
+      // Erinnerungs-Vorlauf ist ein Pro-User-Override (#102-Follow-up), kein
+      // Feld des Tasks selbst - kann daher erst gesetzt werden, sobald der
+      // Task existiert, über einen eigenen Endpoint statt im create-Payload.
+      if (values.reminderLeadTime) {
+        createdTask = await setTaskReminderLeadTime(
+          createdTask.id,
+          values.reminderLeadTime
+        );
+      }
+
       showSuccessToast("Aufgabe erfolgreich erstellt.");
       onTaskCreated?.(createdTask);
 

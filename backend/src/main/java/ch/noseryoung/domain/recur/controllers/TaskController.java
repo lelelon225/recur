@@ -2,6 +2,7 @@ package ch.noseryoung.domain.recur.controllers;
 
 import ch.noseryoung.domain.recur.dto.CreateTaskRequest;
 import ch.noseryoung.domain.recur.dto.PatchTaskRequest;
+import ch.noseryoung.domain.recur.dto.ReminderLeadTimeRequest;
 import ch.noseryoung.domain.recur.models.Task;
 import ch.noseryoung.domain.recur.services.TaskService;
 
@@ -81,6 +82,15 @@ public class TaskController {
         @PostMapping({ "/{id}/unassign", "/{id}/unassign/" })
         public ResponseEntity<Task> unassignSelf(@PathVariable UUID id) {
                 return taskService.unassignSelf(id);
+        }
+
+        // Erinnerungs-Vorlauf-Override des aktuellen Users für diesen Task
+        // (#102-Follow-up) - pro (task, user), nicht Teil von PatchTaskRequest,
+        // siehe TaskService#setReminderLeadTime.
+        @PutMapping({ "/{id}/reminder-lead-time", "/{id}/reminder-lead-time/" })
+        public ResponseEntity<Task> setReminderLeadTime(@PathVariable UUID id,
+                        @RequestBody ReminderLeadTimeRequest request) {
+                return taskService.setReminderLeadTime(id, request.reminderLeadTime());
         }
 
         @DeleteMapping({ "/{id}", "/{id}/" })

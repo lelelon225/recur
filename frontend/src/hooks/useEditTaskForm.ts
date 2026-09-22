@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { patchTask } from "@/services/taskService";
+import { patchTask, setTaskReminderLeadTime } from "@/services/taskService";
 import type { Task } from "@/services/taskService";
 import {
   showErrorToast,
@@ -96,25 +96,38 @@ function useEditTaskForm({
         values.frequency
       );
 
-      const { startDate, startTimeOfDay, projectId, ...restValues } = values;
+      const { startDate, startTimeOfDay, projectId, reminderLeadTime, ...restValues } =
+        values;
 
       const payload = {
         ...restValues,
         startTime: startTimeIso,
         projectId: projectId || null,
-        reminderLeadTime: restValues.reminderLeadTime || null,
       };
 
       const projectUnchanged = projectId === (task.project?.id ?? "");
+      // Erinnerungs-Vorlauf ist ein Pro-User-Override (#102-Follow-up), kein
+      // Feld des (bei Projekt-Tasks geteilten) Tasks selbst - läuft daher
+      // über einen eigenen Endpoint statt patchTask's Body.
+      const reminderChanged =
+        (values.reminderLeadTime || "") !== (task.reminderLeadTime || "");
 
       try {
-        const updatedTask = await patchTask(task.id, {
+        let updatedTask = await patchTask(task.id, {
           task: payload,
           // Nur explizit zurücksetzen, wenn projectId wirklich auf "persönlich"
           // geändert wurde - sonst würde ein unverändertes "" fälschlich ein
           // bereits zugeordnetes Projekt entfernen.
           unassignProject: !projectUnchanged && !projectId ? true : undefined,
         });
+
+        if (reminderChanged) {
+          updatedTask = await setTaskReminderLeadTime(
+            task.id,
+            reminderLeadTime || null
+          );
+        }
+
         showSuccessToast("Aufgabe erfolgreich aktualisiert");
         onTaskUpdated?.(updatedTask);
 

@@ -4,14 +4,17 @@ import ch.noseryoung.domain.recur.dto.CreateTaskRequest;
 import ch.noseryoung.domain.recur.dto.PatchTaskRequest;
 import ch.noseryoung.domain.recur.dto.ProjectReference;
 import ch.noseryoung.domain.recur.enums.Frequency;
+import ch.noseryoung.domain.recur.enums.ReminderLeadTime;
 import ch.noseryoung.domain.recur.exceptions.InvalidCompletionException;
 import ch.noseryoung.domain.recur.exceptions.NotGroupMemberException;
 import ch.noseryoung.domain.recur.exceptions.ProjectNotFoundException;
 import ch.noseryoung.domain.recur.exceptions.TaskNotFoundException;
 import ch.noseryoung.domain.recur.models.Project;
 import ch.noseryoung.domain.recur.models.Task;
+import ch.noseryoung.domain.recur.models.TaskReminderOverride;
 import ch.noseryoung.domain.recur.models.User;
 import ch.noseryoung.domain.recur.repositories.ProjectRepository;
+import ch.noseryoung.domain.recur.repositories.TaskReminderOverrideRepository;
 import ch.noseryoung.domain.recur.repositories.TaskRepository;
 import ch.noseryoung.domain.recur.security.CustomUserDetails;
 import ch.noseryoung.domain.recur.utils.TaskUtil;
@@ -35,15 +38,18 @@ public class TaskService {
         private final TaskUtil taskUtil;
         private final GroupMemberVisibilityService visibilityService;
         private final NotificationDispatchService notificationDispatchService;
+        private final TaskReminderOverrideRepository taskReminderOverrideRepository;
 
         public TaskService(TaskRepository taskRepository, ProjectRepository projectRepository, TaskUtil taskUtil,
                         GroupMemberVisibilityService visibilityService,
-                        NotificationDispatchService notificationDispatchService) {
+                        NotificationDispatchService notificationDispatchService,
+                        TaskReminderOverrideRepository taskReminderOverrideRepository) {
                 this.taskRepository = taskRepository;
                 this.projectRepository = projectRepository;
                 this.taskUtil = taskUtil;
                 this.visibilityService = visibilityService;
                 this.notificationDispatchService = notificationDispatchService;
+                this.taskReminderOverrideRepository = taskReminderOverrideRepository;
         }
 
         // Ein Task ist sichtbar/bearbeitbar für seinen persönlichen owner, oder -
@@ -76,8 +82,18 @@ public class TaskService {
         // (siehe GroupMemberVisibilityService) - die verwaltete Entity bleibt
         // unangetastet, damit nichts davon in die echten Zuweisungs-/Archiv-
         // Tabellen zurückgeschrieben wird. Persönliche Tasks sind immer nur für
-        // ihren eigenen owner sichtbar, daher hier ein No-Op.
+        // ihren eigenen owner sichtbar, daher hier sonst ein No-Op.
+        //
+        // Befüllt ausserdem das transiente Task.reminderLeadTime mit dem
+        // Override des jeweiligen viewer für diesen Task (#102-Follow-up) -
+        // dieser gemeinsame Response-Pfad ist der einzige Ort, an dem ein Task
+        // je nach Betrachter unterschiedlich befüllt zurückgegeben wird, daher
+        // hier statt an jeder einzelnen Aufrufstelle.
         private Task maskMembers(Task task, User viewer) {
+                task.setReminderLeadTime(taskReminderOverrideRepository.findByTaskAndUser(task, viewer)
+                                .map(TaskReminderOverride::getReminderLeadTime)
+                                .orElse(null));
+
                 if (task.getProject() == null) {
                         return task;
                 }
@@ -245,7 +261,6 @@ public class TaskService {
                                 .dateUntil(request.dateUntil())
                                 .durationMinutes(request.durationMinutes())
                                 .startTime(request.startTime())
-                                .reminderLeadTime(request.reminderLeadTime())
                                 .build();
 
                 ProjectReference project = request.project();
@@ -316,10 +331,6 @@ public class TaskService {
 
                 if (request.durationMinutes() != null) {
                         existingTask.setDurationMinutes(request.durationMinutes());
-                }
-
-                if (request.reminderLeadTime() != null) {
-                        existingTask.setReminderLeadTime(request.reminderLeadTime());
                 }
 
                 if (request.isFavorite() != null) {
@@ -404,6 +415,37 @@ public class TaskService {
                 task.getAssignedMembers().remove(currentUser);
                 task.getArchivedBy().remove(currentUser);
                 taskRepository.save(task);
+
+                return ResponseEntity.ok(maskMembers(task, currentUser));
+        }
+
+        // Setzt/löscht den Erinnerungs-Vorlauf-Override des aktuellen Users für
+        // diesen Task (#102-Follow-up). Bewusst ein eigener Endpoint statt Teil
+        // von PatchTaskRequest: bei geteilten Projekt-Tasks darf ein Mitglied
+        // damit nur seine eigene Erinnerung ändern, nie die der anderen
+        // zugewiesenen Mitglieder. leadTime == null löscht den Override wieder
+        // (zurück auf die Kontoeinstellung).
+        public ResponseEntity<Task> setReminderLeadTime(UUID id, ReminderLeadTime leadTime) {
+                User currentUser = getCurrentUser();
+                Task task = taskRepository.findById(id)
+                                .filter(t -> hasAccess(t, currentUser))
+                                .orElseThrow(() -> new TaskNotFoundException(id));
+
+                Optional<TaskReminderOverride> existing = taskReminderOverrideRepository.findByTaskAndUser(task,
+                                currentUser);
+
+                if (leadTime == null) {
+                        existing.ifPresent(taskReminderOverrideRepository::delete);
+                } else if (existing.isPresent()) {
+                        existing.get().setReminderLeadTime(leadTime);
+                        taskReminderOverrideRepository.save(existing.get());
+                } else {
+                        taskReminderOverrideRepository.save(TaskReminderOverride.builder()
+                                        .task(task)
+                                        .user(currentUser)
+                                        .reminderLeadTime(leadTime)
+                                        .build());
+                }
 
                 return ResponseEntity.ok(maskMembers(task, currentUser));
         }
