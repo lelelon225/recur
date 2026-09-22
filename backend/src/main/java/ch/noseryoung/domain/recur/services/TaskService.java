@@ -4,6 +4,7 @@ import ch.noseryoung.domain.recur.dto.CreateTaskRequest;
 import ch.noseryoung.domain.recur.dto.PatchTaskRequest;
 import ch.noseryoung.domain.recur.dto.ProjectReference;
 import ch.noseryoung.domain.recur.enums.Frequency;
+import ch.noseryoung.domain.recur.exceptions.InvalidCompletionException;
 import ch.noseryoung.domain.recur.exceptions.NotGroupMemberException;
 import ch.noseryoung.domain.recur.exceptions.ProjectNotFoundException;
 import ch.noseryoung.domain.recur.exceptions.TaskNotFoundException;
@@ -16,6 +17,8 @@ import ch.noseryoung.domain.recur.security.CustomUserDetails;
 import ch.noseryoung.domain.recur.utils.TaskUtil;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -207,6 +210,12 @@ public class TaskService {
         private void recalculateAll(Collection<Task> tasks) {
                 tasks.forEach(task -> {
                         TaskUtil.calculateDaysInSpan(task);
+                        // Completion-Historie (#152) ist nur für persönliche Tasks im
+                        // Scope - geteilte Projekt-Tasks behalten ihre bestehende
+                        // amountDid-Logik (PATCH?amountDid=..) unverändert.
+                        if (task.getOwner() != null) {
+                                taskUtil.syncCompletions(task);
+                        }
                         taskUtil.calculateProgress(task);
                 });
         }
@@ -310,10 +319,13 @@ public class TaskService {
                 boolean isResetProgress = resetProgress != null && resetProgress;
 
                 if (isResetProgress) {
+                        existingTask.getCompletions().clear();
                         existingTask.setAmountDid(0);
                         existingTask.setLastAmountDidAt(null);
                 }
 
+                // Nur noch für geteilte Projekt-Tasks relevant (#152: persönliche
+                // Tasks laufen über addCompletion/removeCompletion, siehe unten).
                 if (amountDid != null && !isResetProgress) {
                         existingTask.setAmountDid(amountDid);
                         existingTask.setLastAmountDidAt(Instant.now());
@@ -388,6 +400,88 @@ public class TaskService {
                 taskRepository.save(existingTask);
 
                 return ResponseEntity.ok(existingTask);
+        }
+
+        // COMPLETION METHODS (#152) - nachträgliches Abhaken/Rückgängig einzelner
+        // Tage. Nur für persönliche Tasks (findByIdAndOwner statt hasAccess),
+        // Projekt-Tasks bleiben bei ihrer bestehenden completedBy-Logik.
+        public ResponseEntity<Task> addCompletion(UUID id, LocalDate date) {
+                User owner = getCurrentUser();
+                Task task = taskRepository.findByIdAndOwner(id, owner)
+                                .orElseThrow(() -> new TaskNotFoundException(id));
+
+                validateCompletionDate(task, date);
+                // Erst bestehenden amountDid-Zähler (Bestandstasks vor #152) in echte
+                // Completions zurückübersetzen, sonst würde die Intervall-Prüfung
+                // unten dessen Historie nicht kennen.
+                taskUtil.backfillLegacyCompletionsIfNeeded(task);
+
+                if (!task.getCompletions().contains(date)) {
+                        assertNoIntervalConflict(task, date);
+                        task.getCompletions().add(date);
+                }
+
+                TaskUtil.calculateDaysInSpan(task);
+                taskUtil.deriveFromCompletions(task);
+                taskUtil.calculateProgress(task);
+                taskRepository.save(task);
+
+                return ResponseEntity.ok(task);
+        }
+
+        public ResponseEntity<Task> removeCompletion(UUID id, LocalDate date) {
+                User owner = getCurrentUser();
+                Task task = taskRepository.findByIdAndOwner(id, owner)
+                                .orElseThrow(() -> new TaskNotFoundException(id));
+
+                // Backfill zuerst, damit "Rückgängig" bei einem Bestandstask (noch
+                // keine echten Completions, nur der alte amountDid-Zähler) überhaupt
+                // ein konkretes Datum zum Entfernen hat.
+                taskUtil.backfillLegacyCompletionsIfNeeded(task);
+                task.getCompletions().remove(date);
+
+                TaskUtil.calculateDaysInSpan(task);
+                taskUtil.deriveFromCompletions(task);
+                taskUtil.calculateProgress(task);
+                taskRepository.save(task);
+
+                return ResponseEntity.ok(task);
+        }
+
+        private void validateCompletionDate(Task task, LocalDate date) {
+                if (date.isAfter(LocalDate.now(ZoneOffset.UTC))) {
+                        throw new InvalidCompletionException("Ein Tag in der Zukunft kann nicht abgehakt werden");
+                }
+
+                if (task.getDateCreated() != null
+                                && date.isBefore(task.getDateCreated().atZone(ZoneOffset.UTC).toLocalDate())) {
+                        throw new InvalidCompletionException("Das Datum liegt vor der Erstellung dieser Aufgabe");
+                }
+        }
+
+        // Verhindert, dass für dasselbe Frequenz-Intervall (z.B. dieselbe Woche
+        // bei WEEKLY) an zwei verschiedenen Tagen abgehakt wird - amountDid zählt
+        // sonst mehr Wiederholungen als tatsächlich verstrichen sind. Bei ONCE
+        // gibt es kein Intervall, dort ist stattdessen insgesamt nur 1 Completion
+        // erlaubt.
+        private void assertNoIntervalConflict(Task task, LocalDate date) {
+                if (task.getFrequency() == Frequency.ONCE) {
+                        if (!task.getCompletions().isEmpty()) {
+                                throw new InvalidCompletionException("Dieser Task wurde bereits als erledigt markiert");
+                        }
+                        return;
+                }
+
+                Long intervalIndex = taskUtil.intervalIndexOf(task, date);
+                if (intervalIndex == null) {
+                        return;
+                }
+
+                boolean alreadyCoveredByAnotherDay = task.getCompletions().stream()
+                                .anyMatch(existing -> intervalIndex.equals(taskUtil.intervalIndexOf(task, existing)));
+                if (alreadyCoveredByAnotherDay) {
+                        throw new InvalidCompletionException("Für dieses Frequenz-Intervall wurde bereits ein Tag abgehakt");
+                }
         }
 
         // DELETE METHODS

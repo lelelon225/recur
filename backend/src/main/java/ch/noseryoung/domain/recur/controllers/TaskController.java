@@ -5,10 +5,12 @@ import ch.noseryoung.domain.recur.dto.PatchTaskRequest;
 import ch.noseryoung.domain.recur.models.Task;
 import ch.noseryoung.domain.recur.services.TaskService;
 
+import java.time.LocalDate;
 import java.util.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -42,7 +44,10 @@ public class TaskController {
         };
 
         // Alle Felder auf PatchTaskRequest sind optional (null = nicht ändern),
-        // deshalb reicht hier @Valid ohne eigene Validation-Group.
+        // deshalb reicht hier @Valid ohne eigene Validation-Group. amountDid bleibt
+        // hier (statt auf die Completion-Endpoints unten umgestellt) für geteilte
+        // Projekt-Tasks bestehen, die bewusst ausserhalb von #152 liegen (siehe
+        // TaskService#addCompletion/removeCompletion, nur für persönliche Tasks).
         @PatchMapping({ "/{id}", "/{id}/" })
         public ResponseEntity<Task> patchTask(@PathVariable UUID id, @Valid @RequestBody PatchTaskRequest request,
                         @RequestParam(required = false) Boolean resetProgress,
@@ -51,6 +56,21 @@ public class TaskController {
                         @RequestParam(required = false) @Min(0) @Max(1_000_000) Integer amountDid,
                         @RequestParam(required = false) Boolean unassignProject) {
                 return taskService.patchTask(id, request, resetProgress, favorite, archived, amountDid, unassignProject);
+        }
+
+        // Nachträgliches Abhaken/Rückgängig eines einzelnen Tages für persönliche
+        // Tasks (#152) - eigene Endpoints statt PATCH-Query-Params, da hier (anders
+        // als amountDid) Backend-seitig echte Konflikt-/Datums-Validierung nötig ist.
+        @PutMapping({ "/{id}/completions/{date}", "/{id}/completions/{date}/" })
+        public ResponseEntity<Task> addCompletion(@PathVariable UUID id,
+                        @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+                return taskService.addCompletion(id, date);
+        }
+
+        @DeleteMapping({ "/{id}/completions/{date}", "/{id}/completions/{date}/" })
+        public ResponseEntity<Task> removeCompletion(@PathVariable UUID id,
+                        @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+                return taskService.removeCompletion(id, date);
         }
 
         @PostMapping({ "/{id}/assign", "/{id}/assign/" })
