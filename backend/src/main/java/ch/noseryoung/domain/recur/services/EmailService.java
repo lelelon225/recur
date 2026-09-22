@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
+import ch.noseryoung.domain.recur.models.Task;
 import ch.noseryoung.domain.recur.models.User;
 
 @Service
@@ -63,6 +64,30 @@ public class EmailService {
         trySend(user.getEmail(), "Willkommen bei Recur",
                 "Hallo " + user.getFirstName() + ",\n\n"
                         + "willkommen bei Recur! Dein Konto wurde erfolgreich über Google erstellt.");
+    }
+
+    // #102: Erinnerungs-/Überfällig-/Projekt-Benachrichtigungen. Nutzt
+    // denselben Best-effort-trySend wie oben - ein Brevo-Ausfall darf den
+    // Scheduler-Durchlauf bzw. das Erstellen eines Tasks nicht abbrechen.
+    public void sendTaskReminderEmail(User recipient, Task task) {
+        trySend(recipient.getEmail(), "Erinnerung: \"" + task.getName() + "\" ist bald fällig",
+                "Hallo " + recipient.getFirstName() + ",\n\n"
+                        + "dein Task \"" + task.getName() + "\" ist bald fällig.\n\n"
+                        + "Viel Erfolg!");
+    }
+
+    public void sendTaskOverdueEmail(User recipient, Task task) {
+        trySend(recipient.getEmail(), "Überfällig: \"" + task.getName() + "\"",
+                "Hallo " + recipient.getFirstName() + ",\n\n"
+                        + "dein Task \"" + task.getName() + "\" ist überfällig und noch nicht erledigt.\n\n"
+                        + "Du kannst ihn in Recur abschliessen oder archivieren.");
+    }
+
+    public void sendProjectTaskCreatedEmail(User recipient, Task task, User creator) {
+        trySend(recipient.getEmail(), "Neuer Task in eurem Projekt: \"" + task.getName() + "\"",
+                "Hallo " + recipient.getFirstName() + ",\n\n"
+                        + creator.getFirstName() + " hat den Task \"" + task.getName()
+                        + "\" für euer gemeinsames Projekt erstellt.");
     }
 
     private void trySend(String to, String subject, String text) {

@@ -6,13 +6,28 @@ import {
   FieldSeparator,
 } from "@/components/ui/field";
 import { Switch } from "@/components/ui/switch";
-import type { NotificationSettings } from "@/types/notifications";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import type { NotificationSettings, ReminderLeadTime } from "@/types/notifications";
 
 type NotificationFormProps = {
   values: NotificationSettings;
   disabled?: boolean;
   onFieldChange: (update: Partial<NotificationSettings>) => void;
 };
+
+const LEAD_TIME_OPTIONS: { value: ReminderLeadTime; label: string }[] = [
+  { value: "AT_DUE_TIME", label: "Zum Fälligkeitszeitpunkt" },
+  { value: "ONE_HOUR", label: "1 Stunde vorher" },
+  { value: "SIX_HOURS", label: "6 Stunden vorher" },
+  { value: "TWENTY_FOUR_HOURS", label: "24 Stunden vorher" },
+  { value: "THREE_DAYS", label: "3 Tage vorher" },
+];
 
 function NotificationForm({ values, disabled, onFieldChange }: NotificationFormProps) {
   return (
@@ -21,21 +36,25 @@ function NotificationForm({ values, disabled, onFieldChange }: NotificationFormP
         <FieldContent>
           <FieldTitle>E-Mail-Benachrichtigungen</FieldTitle>
           <FieldDescription>
-            Vorübergehend deaktiviert: unser E-Mail-Versand wird derzeit von
-            Mail-Providern blockiert, wir können dir daher aktuell keine
-            E-Mails zu deinen Aufgaben zustellen.
+            Erinnerungen und Überfällig-Hinweise zu deinen Aufgaben per
+            E-Mail. Hinweis: unser E-Mail-Versand wird derzeit von manchen
+            Mail-Providern blockiert - die Zustellung ist nicht garantiert.
           </FieldDescription>
         </FieldContent>
-        <Switch disabled checked={false} />
+        <Switch
+          disabled={disabled}
+          checked={values.emailEnabled}
+          onCheckedChange={(checked) => onFieldChange({ emailEnabled: checked })}
+        />
       </Field>
       <FieldSeparator />
       <Field orientation="horizontal">
         <FieldContent>
           <FieldTitle>Push-Benachrichtigungen</FieldTitle>
           <FieldDescription>
-            Reserviert deine Präferenz für Push-Benachrichtigungen im
-            Browser oder auf dem Gerät. Diese Funktion ist aktuell noch
-            nicht aktiv, wir versenden derzeit keine Push-Benachrichtigungen.
+            Erinnerungen und Überfällig-Hinweise als Push-Benachrichtigung im
+            Browser. Beim Aktivieren fragen wir dich nach der
+            Benachrichtigungs-Berechtigung.
           </FieldDescription>
         </FieldContent>
         <Switch
@@ -43,6 +62,37 @@ function NotificationForm({ values, disabled, onFieldChange }: NotificationFormP
           checked={values.pushEnabled}
           onCheckedChange={(checked) => onFieldChange({ pushEnabled: checked })}
         />
+      </Field>
+      <FieldSeparator />
+      <Field orientation="horizontal">
+        <FieldContent>
+          <FieldTitle>Erinnerungs-Vorlauf</FieldTitle>
+          <FieldDescription>
+            Wie lange vor dem Fälligkeitsdatum einer Aufgabe du erinnert
+            werden möchtest.
+          </FieldDescription>
+        </FieldContent>
+        <Select
+          value={values.reminderLeadTime}
+          onValueChange={(value) =>
+            onFieldChange({ reminderLeadTime: value as ReminderLeadTime })
+          }
+        >
+          <SelectTrigger disabled={disabled} className="w-[200px] shrink-0">
+            <SelectValue>
+              {(value: ReminderLeadTime) =>
+                LEAD_TIME_OPTIONS.find((option) => option.value === value)?.label
+              }
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent className="w-[200px] min-w-0">
+            {LEAD_TIME_OPTIONS.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </Field>
     </div>
   );

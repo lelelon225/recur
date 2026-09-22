@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import ch.noseryoung.domain.recur.enums.ReminderLeadTime;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -35,4 +36,11 @@ public class NotificationSettings {
     @Builder.Default
     @Column(name = "push_enabled", nullable = false, columnDefinition = "boolean default true")
     private Boolean pushEnabled = true;
+
+    // Wie lange vor Task.dateUntil die Erinnerungs-Benachrichtigung (#102)
+    // verschickt wird - siehe ReminderLeadTime.
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(name = "reminder_lead_time", nullable = false, columnDefinition = "varchar(32) default 'TWENTY_FOUR_HOURS'")
+    private ReminderLeadTime reminderLeadTime = ReminderLeadTime.TWENTY_FOUR_HOURS;
 }

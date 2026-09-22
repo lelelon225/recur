@@ -29,6 +29,13 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
 
     public List<Task> findByProject(Project project);
 
+    // Kandidaten für den Erinnerungs-/Überfällig-Scheduler (#102): nicht
+    // archivierte Tasks mit einem Fälligkeitsdatum. Die Fenster-Prüfung
+    // (Lead-Time, 1h/1 Tag überfällig) läuft danach in-memory im Scheduler,
+    // da sie pro Empfänger unterschiedlich ausfallen kann (eigene
+    // NotificationSettings je Gruppenmitglied).
+    public List<Task> findByIsArchivedFalseAndDateUntilIsNotNull();
+
     public void deleteByProjectIn(Collection<Project> projects);
 
     // Sichtbar für einen User sind eigene persönliche Tasks (owner) sowie
