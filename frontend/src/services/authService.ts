@@ -1,4 +1,5 @@
 import api from "./api";
+import { showInfoToast } from "../lib/toast";
 import {
   type UserResponse,
   type AuthResponse,
@@ -169,6 +170,8 @@ export function deleteCurrentUser(): Promise<void> {
  */
 const AUTH_ENDPOINTS = ["/auth/login", "/auth/register", "/auth/me"];
 
+let sessionExpiredHandled = false;
+
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -178,10 +181,14 @@ api.interceptors.response.use(
       ? AUTH_ENDPOINTS.some((path) => url.includes(path))
       : false;
 
-    if (status === 401 && !isAuthEndpoint) {
+    if (status === 401 && !isAuthEndpoint && !sessionExpiredHandled) {
+      sessionExpiredHandled = true;
       clearToken();
       if (window.location.pathname !== "/login") {
-        window.location.href = "/login";
+        showInfoToast("Sitzung abgelaufen, du wirst weitergeleitet …");
+        setTimeout(() => {
+          window.location.href = "/login";
+        }, 1500);
       }
     }
 
