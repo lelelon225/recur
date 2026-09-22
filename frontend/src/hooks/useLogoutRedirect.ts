@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { clearToken } from "@/services/authService";
+import { clearToken, revokeRefreshToken } from "@/services/authService";
 
 const REDIRECT_DELAY_MS = 1200;
 
@@ -15,6 +15,7 @@ export function useLogoutRedirect() {
     const expired = searchParams.get("reason") === "expired";
 
     useEffect(() => {
+        revokeRefreshToken();
         clearToken();
         const timer = setTimeout(() => router.replace("/login"), REDIRECT_DELAY_MS);
         return () => clearTimeout(timer);

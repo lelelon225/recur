@@ -85,6 +85,25 @@ export async function exchangeOAuth2Token(): Promise<AuthResponse> {
     });
 }
 
+/**
+ * Tauscht das HttpOnly refresh_token-Cookie gegen einen frischen Access-Token
+ * ein und rotiert das Cookie mit (Server setzt ein neues via Set-Cookie).
+ */
+export async function refreshAccessToken(): Promise<AuthResponse> {
+  return await api
+    .post("/auth/refresh", {})
+    .then((response) => response.data as AuthResponse);
+}
+
+/**
+ * Best-effort: revoked die Server-Session zum aktuellen refresh_token-Cookie.
+ * Wird vor dem lokalen clearToken() aufgerufen, schlägt aber nie sichtbar
+ * fehl - ein bereits abgelaufenes/fehlendes Cookie ist kein Fehlerfall.
+ */
+export async function revokeRefreshToken(): Promise<void> {
+  await api.post("/auth/logout", {}).catch(() => undefined);
+}
+
 export async function getCurrentUser(): Promise<UserResponse> {
   return await api
     .get("/auth/me")
@@ -170,16 +189,49 @@ export function deleteCurrentUser(): Promise<void> {
  */
 const AUTH_ENDPOINTS = ["/auth/login", "/auth/register", "/auth/me"];
 
+// Endpunkte, für die ein 401 nie einen Silent-Refresh auslösen soll -
+// login/register haben naturgemäss noch keinen Access-Token, refresh/logout
+// dürfen sich nicht selbst retriggern (Endlosschleife).
+const REFRESH_EXEMPT_ENDPOINTS = ["/auth/login", "/auth/register", "/auth/refresh", "/auth/logout"];
+
 let sessionExpiredHandled = false;
+let refreshPromise: Promise<AuthResponse> | null = null;
 
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     const status = error?.response?.status;
     const url: string | undefined = error?.config?.url;
+    const originalRequest = error?.config;
     const isAuthEndpoint = url
       ? AUTH_ENDPOINTS.some((path) => url.includes(path))
       : false;
+    const isRefreshExempt = url
+      ? REFRESH_EXEMPT_ENDPOINTS.some((path) => url.includes(path))
+      : true;
+
+    // Abgelaufener Access-Token: einmal versuchen, ihn über das
+    // HttpOnly refresh_token-Cookie zu erneuern und den Original-Request
+    // zu wiederholen, statt sofort auszuloggen (#159). Mehrere gleichzeitige
+    // 401s teilen sich denselben Refresh-Aufruf (refreshPromise).
+    if (status === 401 && !isRefreshExempt && originalRequest && !originalRequest._retry) {
+      originalRequest._retry = true;
+      try {
+        if (!refreshPromise) {
+          refreshPromise = refreshAccessToken().finally(() => {
+            refreshPromise = null;
+          });
+        }
+        const { token } = await refreshPromise;
+        setToken(token);
+        originalRequest.headers = originalRequest.headers ?? {};
+        originalRequest.headers["Authorization"] = `Bearer ${token}`;
+        return api(originalRequest);
+      } catch {
+        // Refresh fehlgeschlagen (Cookie fehlt/abgelaufen/reused) -> Session
+        // ist endgültig weg, fällt durch zur normalen 401-Behandlung unten.
+      }
+    }
 
     if (status === 401 && !isAuthEndpoint && !sessionExpiredHandled) {
       sessionExpiredHandled = true;

@@ -272,6 +272,22 @@ public class GlobalExceptionHandler {
                                                 getPath(request)));
         }
 
+        @ExceptionHandler(InvalidRefreshTokenException.class)
+        public ResponseEntity<ErrorResponse> handleInvalidRefreshToken(
+                        InvalidRefreshTokenException ex,
+                        WebRequest request) {
+
+                logger.info("Refresh rejected: {}", ex.getMessage());
+
+                return ResponseEntity
+                                .status(HttpStatus.UNAUTHORIZED)
+                                .body(ErrorResponse.of(
+                                                401,
+                                                "Invalid refresh token",
+                                                ex.getMessage(),
+                                                getPath(request)));
+        }
+
         @ExceptionHandler(InvalidPasswordResetTokenException.class)
         public ResponseEntity<ErrorResponse> handleInvalidPasswordResetToken(
                         InvalidPasswordResetTokenException ex,

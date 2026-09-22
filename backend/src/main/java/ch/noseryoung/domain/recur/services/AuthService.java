@@ -28,7 +28,9 @@ import ch.noseryoung.domain.recur.repositories.UserPrivacySettingsRepository;
 import ch.noseryoung.domain.recur.repositories.UserRepository;
 import ch.noseryoung.domain.recur.repositories.VerificationTokenRepository;
 import ch.noseryoung.domain.recur.security.JwtService;
+import ch.noseryoung.domain.recur.security.RefreshTokenService;
 import io.jsonwebtoken.JwtException;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Service
 public class AuthService {
@@ -40,7 +42,14 @@ public class AuthService {
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final RefreshTokenService refreshTokenService;
     private final EmailService emailService;
+
+    // Bündelt den Access-Token (AuthResponse, geht in den Response-Body) mit
+    // dem rohen Refresh-Token (geht als HttpOnly-Cookie raus) - der Controller
+    // baut daraus das Set-Cookie-Header, der Service kennt keine HTTP-Response.
+    public record AuthResult(AuthResponse authResponse, String refreshToken) {
+    }
 
     @Value("${app.frontend.url}")
     private String frontendUrl;
@@ -61,7 +70,8 @@ public class AuthService {
             NotificationSettingsRepository notificationSettingsRepository,
             VerificationTokenRepository verificationTokenRepository,
             PasswordResetTokenRepository passwordResetTokenRepository,
-            PasswordEncoder passwordEncoder, JwtService jwtService, EmailService emailService) {
+            PasswordEncoder passwordEncoder, JwtService jwtService, RefreshTokenService refreshTokenService,
+            EmailService emailService) {
         this.userRepository = userRepository;
         this.privacySettingsRepository = privacySettingsRepository;
         this.notificationSettingsRepository = notificationSettingsRepository;
@@ -69,6 +79,7 @@ public class AuthService {
         this.passwordResetTokenRepository = passwordResetTokenRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.refreshTokenService = refreshTokenService;
         this.emailService = emailService;
     }
 
@@ -77,7 +88,7 @@ public class AuthService {
     // Registrierung loggt deshalb wie vor #110 direkt ein statt eine Mail zu
     // verschicken, die niemand je bestätigen könnte. issueVerificationToken
     // bleibt unangetastet für die Reaktivierung nach der Domain-Migration.
-    public AuthResponse register(RegisterRequest request) {
+    public AuthResult register(RegisterRequest request, HttpServletRequest httpRequest) {
         if (userRepository.existsByEmail(request.email())) {
             throw new EmailAlreadyExistsException(request.email());
         }
@@ -93,11 +104,10 @@ public class AuthService {
 
         userRepository.save(user);
 
-        String token = jwtService.generateToken(user);
-        return new AuthResponse(token, UserResponse.from(user));
+        return authResult(user, httpRequest);
     }
 
-    public AuthResponse login(LoginRequest request) {
+    public AuthResult login(LoginRequest request, HttpServletRequest httpRequest) {
         User user = userRepository.findByEmail(request.email())
                 .orElseThrow(InvalidCredentialsException::new);
 
@@ -112,8 +122,21 @@ public class AuthService {
         // oben) - erfasst auch Alt-Konten, die vor dieser Änderung registriert
         // wurden und nie eine Verifizierungs-Mail erhalten konnten.
 
+        return authResult(user, httpRequest);
+    }
+
+    // Rotiert das Refresh-Token (siehe RefreshTokenService#rotate) und stellt
+    // einen frischen Access-Token für denselben User aus.
+    public AuthResult refresh(String refreshToken, HttpServletRequest httpRequest) {
+        RefreshTokenService.RotationResult rotation = refreshTokenService.rotate(refreshToken, httpRequest);
+        String token = jwtService.generateToken(rotation.user());
+        return new AuthResult(new AuthResponse(token, UserResponse.from(rotation.user())), rotation.rawToken());
+    }
+
+    private AuthResult authResult(User user, HttpServletRequest httpRequest) {
         String token = jwtService.generateToken(user);
-        return new AuthResponse(token, UserResponse.from(user));
+        String refreshToken = refreshTokenService.issue(user, httpRequest);
+        return new AuthResult(new AuthResponse(token, UserResponse.from(user)), refreshToken);
     }
 
     public VerificationStatus verifyEmail(String token) {
@@ -296,6 +319,7 @@ public class AuthService {
                 .ifPresent(notificationSettingsRepository::delete);
         verificationTokenRepository.deleteByUserId(user.getId());
         passwordResetTokenRepository.deleteByUserId(user.getId());
+        refreshTokenService.deleteAllForUser(user.getId());
 
         userRepository.delete(user);
     }
