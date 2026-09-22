@@ -29,8 +29,11 @@ import ch.noseryoung.domain.recur.dto.ResetPasswordRequest;
 import ch.noseryoung.domain.recur.dto.UserResponse;
 import ch.noseryoung.domain.recur.enums.VerificationStatus;
 import ch.noseryoung.domain.recur.exceptions.InvalidCredentialsException;
+import ch.noseryoung.domain.recur.exceptions.InvalidRefreshTokenException;
 import ch.noseryoung.domain.recur.security.OAuth2AuthenticationSuccessHandler;
+import ch.noseryoung.domain.recur.security.RefreshTokenService;
 import ch.noseryoung.domain.recur.services.AuthService;
+import ch.noseryoung.domain.recur.services.AuthService.AuthResult;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
@@ -49,22 +52,65 @@ public class AuthController {
             "Dein Passwort wurde erfolgreich zurückgesetzt.");
 
     private final AuthService authService;
+    private final RefreshTokenService refreshTokenService;
 
     @Value("${app.frontend.url}")
     private String frontendUrl;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, RefreshTokenService refreshTokenService) {
         this.authService = authService;
+        this.refreshTokenService = refreshTokenService;
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(request));
+    public ResponseEntity<AuthResponse> register(
+            @Valid @RequestBody RegisterRequest request, HttpServletRequest httpRequest) {
+        AuthResult result = authService.register(request, httpRequest);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .header(HttpHeaders.SET_COOKIE, refreshTokenService.buildCookie(result.refreshToken(), httpRequest).toString())
+                .body(result.authResponse());
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
-        return ResponseEntity.ok(authService.login(request));
+    public ResponseEntity<AuthResponse> login(
+            @Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest) {
+        AuthResult result = authService.login(request, httpRequest);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, refreshTokenService.buildCookie(result.refreshToken(), httpRequest).toString())
+                .body(result.authResponse());
+    }
+
+    // Tauscht das Refresh-Token-Cookie gegen einen frischen Access-Token ein
+    // (siehe RefreshTokenService#rotate) und rotiert das Cookie mit. Wird vom
+    // Frontend-Response-Interceptor bei einem 401 wegen abgelaufenem
+    // Access-Token aufgerufen (siehe api.ts).
+    @PostMapping("/refresh")
+    public ResponseEntity<AuthResponse> refresh(
+            @CookieValue(name = RefreshTokenService.COOKIE_NAME, required = false) String refreshToken,
+            HttpServletRequest httpRequest) {
+        if (refreshToken == null) {
+            throw new InvalidRefreshTokenException();
+        }
+
+        AuthResult result = authService.refresh(refreshToken, httpRequest);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, refreshTokenService.buildCookie(result.refreshToken(), httpRequest).toString())
+                .body(result.authResponse());
+    }
+
+    // Revoked nur die eine Session, deren Refresh-Token-Cookie mitgeschickt
+    // wird - nicht die anderen Geräte/Sessions des Users (#159).
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(
+            @CookieValue(name = RefreshTokenService.COOKIE_NAME, required = false) String refreshToken,
+            HttpServletRequest httpRequest) {
+        if (refreshToken != null) {
+            refreshTokenService.revoke(refreshToken);
+        }
+
+        return ResponseEntity.noContent()
+                .header(HttpHeaders.SET_COOKIE, refreshTokenService.buildExpiredCookie(httpRequest).toString())
+                .build();
     }
 
     @GetMapping("/verify-email")

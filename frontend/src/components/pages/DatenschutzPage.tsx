@@ -59,7 +59,16 @@ function DatenschutzPage() {
               Technische Daten:
             </span>{" "}
             ein Anmelde-Token (JWT), das lokal in deinem Browser
-            (localStorage) gespeichert wird, um dich eingeloggt zu halten.
+            (localStorage) gespeichert wird, um dich eingeloggt zu halten,
+            sowie ein Sitzungs-Token (Refresh-Token), das in einem für
+            JavaScript nicht zugänglichen Cookie liegt und automatisch einen
+            neuen Anmelde-Token ausstellt, sobald der alte abläuft - so
+            bleibst du bis zu 30 Tage eingeloggt, ohne dich erneut anmelden
+            zu müssen. Zu jeder solchen Sitzung speichern wir zudem die
+            IP-Adresse und den User-Agent (Browser/Gerät) des jeweiligen
+            Geräts; das ermöglicht künftig eine Übersicht deiner aktiven
+            Sitzungen. Meldest du dich ab, wird die zugehörige Sitzung
+            serverseitig ungültig gemacht.
           </li>
           <li>
             <span className="font-medium text-foreground">
@@ -236,6 +245,15 @@ function DatenschutzPage() {
             Abschluss des Logins nicht mehr für die eigentliche Nutzung
             der App benötigt (diese läuft über das Anmelde-Token) und
             verfällt mit dem Ende der Browser-Sitzung.
+          </li>
+          <li>
+            <span className="font-medium text-foreground">
+              refresh_token:
+            </span>{" "}
+            hält dich bis zu 30 Tage eingeloggt, ohne dass du dich erneut
+            anmelden musst (siehe "Technische Daten" oben). Für JavaScript
+            nicht auslesbar (HttpOnly) und nur an unseren Server, nicht an
+            Dritte, übermittelt.
           </li>
         </ul>
       </section>

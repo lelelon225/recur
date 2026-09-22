@@ -29,6 +29,7 @@ public class OAuth2AuthenticationSuccessHandler
     private static final Duration HANDOFF_COOKIE_TTL = Duration.ofSeconds(60);
 
     private final JwtService jwtService;
+    private final RefreshTokenService refreshTokenService;
 
     @Value("${app.oauth2.redirect-path}")
     private String redirectPath;
@@ -64,6 +65,13 @@ public class OAuth2AuthenticationSuccessHandler
                 .sameSite("Lax")
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, handoffCookie.toString());
+
+        // Refresh-Token wird bereits hier ausgestellt (nicht erst in
+        // exchangeOAuth2Token), da Login per Google/Passwort immer gleich
+        // behandelt werden soll (siehe #159).
+        String refreshToken = refreshTokenService.issue(user, request);
+        response.addHeader(HttpHeaders.SET_COOKIE,
+                refreshTokenService.buildCookie(refreshToken, request).toString());
 
         String redirectUrl = UriComponentsBuilder.fromUriString(frontendUrl)
                 .path(redirectPath)
