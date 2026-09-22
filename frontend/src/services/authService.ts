@@ -123,8 +123,7 @@ export function isLoggedIn(): boolean {
 }
 
 export function logout(): void {
-  clearToken();
-  window.location.href = "/login";
+  window.location.href = "/logout";
 }
 
 api.interceptors.request.use(
@@ -164,10 +163,14 @@ export function deleteCurrentUser(): Promise<void> {
 
 /**
  * A 401 from any endpoint other than login/register means our token is
- * missing, expired, or invalid. Clear it and send the user to /login
- * instead of leaving the app in a half-authenticated state.
+ * missing, expired, or invalid. Send the user through /logout, which clears
+ * it and shows why before redirecting to /login - same transitional-page
+ * pattern as OAuthCallbackPage, instead of leaving the app in a
+ * half-authenticated state with no explanation (#145).
  */
 const AUTH_ENDPOINTS = ["/auth/login", "/auth/register", "/auth/me"];
+
+let sessionExpiredHandled = false;
 
 api.interceptors.response.use(
   (response) => response,
@@ -178,10 +181,10 @@ api.interceptors.response.use(
       ? AUTH_ENDPOINTS.some((path) => url.includes(path))
       : false;
 
-    if (status === 401 && !isAuthEndpoint) {
-      clearToken();
-      if (window.location.pathname !== "/login") {
-        window.location.href = "/login";
+    if (status === 401 && !isAuthEndpoint && !sessionExpiredHandled) {
+      sessionExpiredHandled = true;
+      if (!["/login", "/logout"].includes(window.location.pathname)) {
+        window.location.href = "/logout?reason=expired";
       }
     }
 
