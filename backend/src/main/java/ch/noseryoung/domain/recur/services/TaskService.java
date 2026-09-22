@@ -245,6 +245,7 @@ public class TaskService {
                                 .dateUntil(request.dateUntil())
                                 .durationMinutes(request.durationMinutes())
                                 .startTime(request.startTime())
+                                .reminderLeadTime(request.reminderLeadTime())
                                 .build();
 
                 ProjectReference project = request.project();
@@ -315,6 +316,10 @@ public class TaskService {
 
                 if (request.durationMinutes() != null) {
                         existingTask.setDurationMinutes(request.durationMinutes());
+                }
+
+                if (request.reminderLeadTime() != null) {
+                        existingTask.setReminderLeadTime(request.reminderLeadTime());
                 }
 
                 if (request.isFavorite() != null) {

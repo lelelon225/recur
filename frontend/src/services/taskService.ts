@@ -1,5 +1,6 @@
 import axios from "axios";
 import api from "./api";
+import type { ReminderLeadTime } from "@/types/notifications";
 
 export const TaskFrequency = {
   DAILY: "DAILY",
@@ -56,6 +57,8 @@ export interface Task {
   isArchived: boolean;
   durationMinutes?: number | null;
   startTime?: string | null;
+  /** Pro-Task-Override für den Erinnerungs-Vorlauf; null/undefined nutzt die Kontoeinstellung (#102). */
+  reminderLeadTime?: ReminderLeadTime | null;
   /** Gesetzt <=> geteiltes Item eines Gruppen-Projekts statt persönlicher Task. */
   project?: TaskProject | null;
   /** Wer den Task zuletzt als erledigt markiert hat (nur bei Projekt-Tasks relevant). */

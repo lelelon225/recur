@@ -88,7 +88,7 @@ public class TaskReminderScheduler {
             return;
         }
 
-        Duration leadTime = leadTimeOf(recipient);
+        Duration leadTime = leadTimeOf(task, recipient);
         if (now.isBefore(task.getDateUntil().minus(leadTime))) {
             return;
         }
@@ -119,7 +119,13 @@ public class TaskReminderScheduler {
                 .build());
     }
 
-    private Duration leadTimeOf(User recipient) {
+    // Ein pro Task gesetzter Override (#102-Follow-up) hat Vorrang vor der
+    // Kontoeinstellung des Empfängers.
+    private Duration leadTimeOf(Task task, User recipient) {
+        if (task.getReminderLeadTime() != null) {
+            return task.getReminderLeadTime().getLeadTime();
+        }
+
         return notificationSettingsRepository.findByUserId(recipient.getId())
                 .map(NotificationSettings::getReminderLeadTime)
                 .orElse(ReminderLeadTime.TWENTY_FOUR_HOURS)
