@@ -8,6 +8,7 @@ import java.util.Set;
 
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import ch.noseryoung.domain.recur.enums.NotificationType;
 import ch.noseryoung.domain.recur.enums.ReminderLeadTime;
@@ -53,7 +54,12 @@ public class TaskReminderScheduler {
         this.taskReminderOverrideRepository = taskReminderOverrideRepository;
     }
 
+    // Transaktion noetig, weil recipientsOf() ueber lazy
+    // task.getProject().getGroup() geht - ohne offene Session wirft das eine
+    // LazyInitializationException und reisst den ganzen Scheduler-Lauf ab.
+    // Nicht readOnly, da processReminder/processOverdue NotificationLog-Zeilen schreiben.
     @Scheduled(fixedRate = 15 * 60 * 1000)
+    @Transactional
     public void checkDueTasks() {
         Instant now = Instant.now();
 
