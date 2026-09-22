@@ -1,5 +1,4 @@
 import api from "./api";
-import { showInfoToast } from "../lib/toast";
 import {
   type UserResponse,
   type AuthResponse,
@@ -124,8 +123,7 @@ export function isLoggedIn(): boolean {
 }
 
 export function logout(): void {
-  clearToken();
-  window.location.href = "/login";
+  window.location.href = "/logout";
 }
 
 api.interceptors.request.use(
@@ -165,8 +163,10 @@ export function deleteCurrentUser(): Promise<void> {
 
 /**
  * A 401 from any endpoint other than login/register means our token is
- * missing, expired, or invalid. Clear it and send the user to /login
- * instead of leaving the app in a half-authenticated state.
+ * missing, expired, or invalid. Send the user through /logout, which clears
+ * it and shows why before redirecting to /login - same transitional-page
+ * pattern as OAuthCallbackPage, instead of leaving the app in a
+ * half-authenticated state with no explanation (#145).
  */
 const AUTH_ENDPOINTS = ["/auth/login", "/auth/register", "/auth/me"];
 
@@ -183,12 +183,8 @@ api.interceptors.response.use(
 
     if (status === 401 && !isAuthEndpoint && !sessionExpiredHandled) {
       sessionExpiredHandled = true;
-      clearToken();
-      if (window.location.pathname !== "/login") {
-        showInfoToast("Sitzung abgelaufen, du wirst weitergeleitet …");
-        setTimeout(() => {
-          window.location.href = "/login";
-        }, 1500);
+      if (!["/login", "/logout"].includes(window.location.pathname)) {
+        window.location.href = "/logout?reason=expired";
       }
     }
 
