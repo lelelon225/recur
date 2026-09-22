@@ -57,7 +57,13 @@ export interface Task {
   isArchived: boolean;
   durationMinutes?: number | null;
   startTime?: string | null;
-  /** Pro-Task-Override für den Erinnerungs-Vorlauf; null/undefined nutzt die Kontoeinstellung (#102). */
+  /**
+   * Erinnerungs-Vorlauf-Override des aktuellen Users für diesen Task
+   * (#102-Follow-up); null/undefined nutzt die Kontoeinstellung. Wird vom
+   * Server pro Betrachter befüllt (siehe TaskService#maskMembers) und über
+   * einen eigenen Endpoint gesetzt (setTaskReminderLeadTime), nicht über
+   * createTask/patchTask.
+   */
   reminderLeadTime?: ReminderLeadTime | null;
   /** Gesetzt <=> geteiltes Item eines Gruppen-Projekts statt persönlicher Task. */
   project?: TaskProject | null;
@@ -80,7 +86,8 @@ export type ServerOwnedFields =
   | "completedBy"
   | "isArchived"
   | "assignedMembers"
-  | "archivedBy";
+  | "archivedBy"
+  | "reminderLeadTime";
 
 /** Payload shape for creating a new task (no id/dateCreated yet). */
 export type NewTask = Omit<Task, ServerOwnedFields> & { projectId?: string | null };
@@ -228,6 +235,26 @@ function deleteAllTasks(): Promise<void> {
     });
 }
 
+/**
+ * Setzt/löscht den Erinnerungs-Vorlauf-Override des aktuellen Users für
+ * diesen Task (#102-Follow-up) - pro (task, user), daher ein eigener
+ * Endpoint statt Teil von createTask/patchTask (siehe TaskController).
+ * `null` löscht den Override wieder (zurück auf die Kontoeinstellung).
+ */
+function setTaskReminderLeadTime(
+  id: string,
+  reminderLeadTime: ReminderLeadTime | null
+): Promise<Task> {
+  return api
+    .put(`/task/${id}/reminder-lead-time`, { reminderLeadTime })
+    .then((response) => response.data as Task)
+    .catch((err: unknown) => {
+      throw new Error(
+        extractErrorMessage(err, "Fehler beim Setzen des Erinnerungs-Vorlaufs")
+      );
+    });
+}
+
 function assignSelf(id: string): Promise<Task> {
   return api
     .post(`/task/${id}/assign`)
@@ -256,4 +283,5 @@ export {
   unassignSelf,
   addTaskCompletion,
   removeTaskCompletion,
+  setTaskReminderLeadTime,
 };

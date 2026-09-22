@@ -124,12 +124,12 @@ public class Task {
         @Column(name = "start_time")
         private Instant startTime;
 
-        // Überschreibt pro Task den Erinnerungs-Vorlauf aus den
-        // NotificationSettings des Empfängers (#102-Follow-up). Null = kein
-        // Override, TaskReminderScheduler fällt dann auf die Kontoeinstellung
-        // zurück.
-        @Enumerated(EnumType.STRING)
-        @Column(name = "reminder_lead_time")
+        // Transient, nicht die persistierte Task-Zeile: der Erinnerungs-Vorlauf
+        // ist ein Override pro (Task, Empfänger) - siehe TaskReminderOverride -
+        // nicht ein einzelner Wert für den ganzen (bei Projekt-Tasks geteilten)
+        // Task. Wird von TaskService#maskMembers für den jeweiligen Betrachter
+        // befüllt, bevor der Task in einer Response landet.
+        @Transient
         private ReminderLeadTime reminderLeadTime;
 
         // Optionale Zuordnung zu einem Gruppen-Projekt. Gesetzt <=> der Task ist

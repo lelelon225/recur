@@ -14,9 +14,11 @@ import ch.noseryoung.domain.recur.enums.ReminderLeadTime;
 import ch.noseryoung.domain.recur.models.NotificationLog;
 import ch.noseryoung.domain.recur.models.NotificationSettings;
 import ch.noseryoung.domain.recur.models.Task;
+import ch.noseryoung.domain.recur.models.TaskReminderOverride;
 import ch.noseryoung.domain.recur.models.User;
 import ch.noseryoung.domain.recur.repositories.NotificationLogRepository;
 import ch.noseryoung.domain.recur.repositories.NotificationSettingsRepository;
+import ch.noseryoung.domain.recur.repositories.TaskReminderOverrideRepository;
 import ch.noseryoung.domain.recur.repositories.TaskRepository;
 
 // #102: erkennt Tasks, die sich ihrem dateUntil nähern oder es bereits
@@ -36,16 +38,19 @@ public class TaskReminderScheduler {
     private final NotificationSettingsRepository notificationSettingsRepository;
     private final NotificationLogRepository notificationLogRepository;
     private final NotificationDispatchService notificationDispatchService;
+    private final TaskReminderOverrideRepository taskReminderOverrideRepository;
 
     public TaskReminderScheduler(
             TaskRepository taskRepository,
             NotificationSettingsRepository notificationSettingsRepository,
             NotificationLogRepository notificationLogRepository,
-            NotificationDispatchService notificationDispatchService) {
+            NotificationDispatchService notificationDispatchService,
+            TaskReminderOverrideRepository taskReminderOverrideRepository) {
         this.taskRepository = taskRepository;
         this.notificationSettingsRepository = notificationSettingsRepository;
         this.notificationLogRepository = notificationLogRepository;
         this.notificationDispatchService = notificationDispatchService;
+        this.taskReminderOverrideRepository = taskReminderOverrideRepository;
     }
 
     @Scheduled(fixedRate = 15 * 60 * 1000)
@@ -119,15 +124,15 @@ public class TaskReminderScheduler {
                 .build());
     }
 
-    // Ein pro Task gesetzter Override (#102-Follow-up) hat Vorrang vor der
-    // Kontoeinstellung des Empfängers.
+    // Ein vom Empfänger selbst für diesen Task gesetzter Override
+    // (#102-Follow-up, TaskReminderOverride) hat Vorrang vor seiner
+    // Kontoeinstellung. Pro (task, recipient), nicht pro Task, da geteilte
+    // Projekt-Tasks mehrere Empfänger mit je eigenem Vorlauf haben können.
     private Duration leadTimeOf(Task task, User recipient) {
-        if (task.getReminderLeadTime() != null) {
-            return task.getReminderLeadTime().getLeadTime();
-        }
-
-        return notificationSettingsRepository.findByUserId(recipient.getId())
-                .map(NotificationSettings::getReminderLeadTime)
+        return taskReminderOverrideRepository.findByTaskAndUser(task, recipient)
+                .map(TaskReminderOverride::getReminderLeadTime)
+                .or(() -> notificationSettingsRepository.findByUserId(recipient.getId())
+                        .map(NotificationSettings::getReminderLeadTime))
                 .orElse(ReminderLeadTime.TWENTY_FOUR_HOURS)
                 .getLeadTime();
     }
