@@ -32,6 +32,10 @@
 #   DEV_PUBLIC_ORIGIN, PROD_PUBLIC_ORIGIN      - the public hostnames below (Cloudflare Tunnel), e.g. https://dev.recur.example.com
 #   BREVO_API_KEY, MAIL_FROM                   - Brevo transactional-email API key and verified sender address
 #                                                 (one Brevo account shared by dev+prod - not split per environment)
+#   DEV_VAPID_PUBLIC_KEY, DEV_VAPID_PRIVATE_KEY,
+#   PROD_VAPID_PUBLIC_KEY, PROD_VAPID_PRIVATE_KEY - web push VAPID keypairs (generate with
+#                                                 `npx web-push generate-vapid-keys`), one per environment.
+#                                                 Optional - PushNotificationService silently disables push if unset.
 # Generate real values for all of these before running this file for real -
 # the point of ${...} here is that a plain `docker compose up` without that
 # .env file fails loudly (missing required value) instead of silently
@@ -77,6 +81,8 @@ services:
       FRONTEND_URL: ${DEV_PUBLIC_ORIGIN:?DEV_PUBLIC_ORIGIN is required}
       BREVO_API_KEY: ${BREVO_API_KEY:?BREVO_API_KEY is required}
       MAIL_FROM: ${MAIL_FROM:?MAIL_FROM is required}
+      VAPID_PUBLIC_KEY: ${DEV_VAPID_PUBLIC_KEY:-}
+      VAPID_PRIVATE_KEY: ${DEV_VAPID_PRIVATE_KEY:-}
     depends_on:
       - db-dev
 
@@ -120,6 +126,8 @@ services:
       FRONTEND_URL: ${PROD_PUBLIC_ORIGIN:?PROD_PUBLIC_ORIGIN is required}
       BREVO_API_KEY: ${BREVO_API_KEY:?BREVO_API_KEY is required}
       MAIL_FROM: ${MAIL_FROM:?MAIL_FROM is required}
+      VAPID_PUBLIC_KEY: ${PROD_VAPID_PUBLIC_KEY:-}
+      VAPID_PRIVATE_KEY: ${PROD_VAPID_PRIVATE_KEY:-}
     depends_on:
       - db-prod
 
