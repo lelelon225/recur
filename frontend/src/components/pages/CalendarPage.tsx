@@ -1,12 +1,11 @@
 import { useState } from "react";
-import { addWeeks, addMonths, addDays, isSameDay, format } from "date-fns";
-import { de } from "date-fns/locale";
+import { addWeeks, addMonths, addDays, isSameDay } from "date-fns";
 import { ArrowRight, ArrowLeft, Menu, CalendarDays } from "lucide-react";
 import { useTasksContext } from "@/contexts/TasksContext";
 import { useAddTask } from "@/contexts/AddTaskContext";
 import { useBreakpoint } from "@/hooks/useBreakpoint";
 import { TaskCategory, type Task, type TaskCategory as TaskCategoryType } from "@/services/taskService";
-import { categoryLabels, frequencyLabels, ALL_CATEGORIES_LABEL } from "@/lib/taskCategoryStyles";
+import { categoryLabels, ALL_CATEGORIES_LABEL } from "@/lib/taskCategoryStyles";
 import {
   getWeekDays,
   getMonthGrid,
@@ -20,9 +19,7 @@ import { cn } from "@/lib/utils";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import ProgressIndicator from "@/components/atoms/ProgressIndicator";
-import DetailDialog from "@/components/molecules/DetailDialog";
-import TaskCardMenu from "@/components/organisms/TaskCardMenu";
+import TaskDetailDialog from "@/components/organisms/TaskDetailDialog";
 import CalendarWeekView from "@/components/organisms/CalendarWeekView";
 import CalendarMonthView from "@/components/organisms/CalendarMonthView";
 import CalendarDayStrip from "@/components/organisms/CalendarDayStrip";
@@ -408,89 +405,17 @@ function CalendarPage() {
         />
       )}
 
-      <DetailDialog
+      <TaskDetailDialog
+        task={selectedTask}
         open={selectedTask !== null}
         onClose={() => setSelectedTaskId(null)}
-        title={selectedTask?.name}
-      >
-        {selectedTask && (
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                <span className={`size-2 rounded-full ${categoryDot[selectedTask.category]}`} />
-                {categoryLabels[selectedTask.category]}
-              </div>
-              <TaskCardMenu
-                task={selectedTask}
-                onToggleMenu={() => {}}
-                onToggleEdit={() => {}}
-                onToggleArchive={() => handleToggleArchive(selectedTask.id)}
-                onResetProgress={() => handleResetProgress(selectedTask.id)}
-                onDelete={() => handleDelete(selectedTask.id)}
-                onTaskUpdated={handleUpdateTask}
-                isArchived={selectedTask.isArchived ?? false}
-              />
-            </div>
-
-            <div className="flex flex-col gap-2 text-sm">
-              {selectedTask.description && (
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-xs text-muted-foreground">Beschreibung</span>
-                  <span style={{ wordWrap: "break-word" }}>{selectedTask.description}</span>
-                </div>
-              )}
-              <div className="flex flex-col gap-0.5">
-                <span className="text-xs text-muted-foreground">Wiederholung</span>
-                <span>{frequencyLabels[selectedTask.frequency]}</span>
-              </div>
-              {selectedTask.startTime && (
-                <div className="flex gap-6">
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-xs text-muted-foreground">Datum</span>
-                    <span>
-                      {format(new Date(selectedTask.startTime), "dd.MM.yyyy", { locale: de })}
-                    </span>
-                  </div>
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-xs text-muted-foreground">Uhrzeit</span>
-                    <span>
-                      {format(new Date(selectedTask.startTime), "HH:mm", { locale: de })}
-                    </span>
-                  </div>
-                  {selectedTask.durationMinutes && (
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-xs text-muted-foreground">Dauer</span>
-                      <span>{selectedTask.durationMinutes} Min.</span>
-                    </div>
-                  )}
-                </div>
-              )}
-              {selectedTask.dateUntil && (
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-xs text-muted-foreground">Fällig bis</span>
-                  <span>
-                    {format(new Date(selectedTask.dateUntil), "dd.MM.yyyy", { locale: de })}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            <div className="flex items-center justify-between gap-4 border-t border-border pt-3">
-              <div className="flex items-center gap-3">
-                <ProgressIndicator value={selectedTask.progress} size={40} strokeWidth={4} />
-                <span className="text-xs text-muted-foreground">Fortschritt</span>
-              </div>
-              <Button
-                size="sm"
-                disabled={selectedTask.progress >= 100}
-                onClick={() => handleToggleDone(selectedTask.id)}
-              >
-                {selectedTask.progress >= 100 ? "Erledigt" : "Als erledigt markieren"}
-              </Button>
-            </div>
-          </div>
-        )}
-      </DetailDialog>
+        onToggleArchive={() => selectedTask && handleToggleArchive(selectedTask.id)}
+        onResetProgress={() => selectedTask && handleResetProgress(selectedTask.id)}
+        onDelete={() => selectedTask && handleDelete(selectedTask.id)}
+        onToggleDone={() => selectedTask && handleToggleDone(selectedTask.id)}
+        onTaskUpdated={handleUpdateTask}
+        isArchived={selectedTask?.isArchived ?? false}
+      />
       </div>
     </div>
   );

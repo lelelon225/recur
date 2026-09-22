@@ -1,6 +1,7 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
 import {
   Avatar,
   AvatarBadge,
@@ -16,6 +17,7 @@ import TaskDescription from "@/components/atoms/TaskDescription";
 import TaskTimeFrame from "@/components/atoms/TaskTimeFrame";
 import TaskTitle from "@/components/atoms/TaskTitle";
 import ProgressIndicator from "@/components/atoms/ProgressIndicator";
+import TaskDetailDialog from "@/components/organisms/TaskDetailDialog";
 import useTaskCard from "@/hooks/useTaskCard";
 import { categoryLabels } from "@/lib/taskCategoryStyles";
 import { categoryDot } from "@/utils/calendarGrid";
@@ -81,6 +83,7 @@ function TaskCard({
 
   const {
     clampedProgress,
+    doneForCurrentPeriod,
     handleDone,
     handleToggleFavorite,
     handleToggleEdit,
@@ -90,6 +93,8 @@ function TaskCard({
     handleResetProgress,
   } = useTaskCard({
     progress: task.progress,
+    frequency: task.frequency,
+    lastAmountDidAt: task.lastAmountDidAt,
     onToggleFavorite,
     onToggleEdit,
     onToggleMenu,
@@ -99,14 +104,17 @@ function TaskCard({
     onToggleDone,
   });
 
-  // Im Auswahlmodus wählt ein Klick auf die Card das Habit aus/ab,
-  // statt wie sonst handleDone (Fortschritt erhöhen) auszulösen.
+  const [detailOpen, setDetailOpen] = useState(false);
+
+  // Im Auswahlmodus wählt ein Klick auf die Card das Habit aus/ab. Sonst
+  // öffnet die restliche Card-Fläche die Detailansicht - der Fortschritt
+  // wird nur noch über den dedizierten Abhaken-Button geändert (#136).
   const handleCardClick = () => {
     if (selectMode) {
       onToggleSelect?.();
       return;
     }
-    handleDone();
+    setDetailOpen(true);
   };
 
   return (
@@ -124,14 +132,14 @@ function TaskCard({
           ? selected
             ? `${task.name} abwählen`
             : `${task.name} auswählen`
-          : `${task.name}, Fortschritt erhöhen`
+          : `${task.name}, Details anzeigen`
       }
       onKeyDown={(e) => {
         // Nur reagieren, wenn die Card selbst (nicht ein verschachteltes
-        // Steuerelement wie TaskCardMenu/TaskFavorite oder ein daraus
-        // geöffneter Dialog) das Ziel des Events ist. Sonst bubbelt z.B. ein
-        // Leerzeichen beim Tippen im Bearbeiten-Dialog hierher hoch und
-        // erhöht ungewollt den Fortschritt, während es im Eingabefeld
+        // Steuerelement wie TaskCardMenu/TaskFavorite/Abhaken-Button oder ein
+        // daraus geöffneter Dialog) das Ziel des Events ist. Sonst bubbelt
+        // z.B. ein Leerzeichen beim Tippen im Bearbeiten-Dialog hierher hoch
+        // und öffnet ungewollt die Detailansicht, während es im Eingabefeld
         // verschluckt wird.
         if (e.target !== e.currentTarget) return;
         if (e.key === "Enter" || e.key === " ") {
@@ -145,24 +153,31 @@ function TaskCard({
         onClick={(e) => e.stopPropagation()}
       >
         <ProgressIndicator value={clampedProgress} />
-        {selectMode ? (
-          <Checkbox
-            checked={selected}
-            onCheckedChange={() => onToggleSelect?.()}
-            aria-label={selected ? "Aufgabe abwählen" : "Aufgabe auswählen"}
-          />
-        ) : (
-          <TaskCardMenu
-            task={task}
-            onToggleMenu={handleToggleMenu}
-            onToggleEdit={handleToggleEdit}
-            onToggleArchive={handleToggleArchive}
-            onDelete={handleDelete}
-            onResetProgress={handleResetProgress}
-            onTaskUpdated={onTaskUpdated}
-            isArchived={isArchivedForCurrentUser(task)}
-          />
-        )}
+        <div className="flex items-center gap-2">
+          {!selectMode && (
+            <Button size="sm" disabled={doneForCurrentPeriod} onClick={handleDone}>
+              {doneForCurrentPeriod ? "Erledigt" : "Abhaken"}
+            </Button>
+          )}
+          {selectMode ? (
+            <Checkbox
+              checked={selected}
+              onCheckedChange={() => onToggleSelect?.()}
+              aria-label={selected ? "Aufgabe abwählen" : "Aufgabe auswählen"}
+            />
+          ) : (
+            <TaskCardMenu
+              task={task}
+              onToggleMenu={handleToggleMenu}
+              onToggleEdit={handleToggleEdit}
+              onToggleArchive={handleToggleArchive}
+              onDelete={handleDelete}
+              onResetProgress={handleResetProgress}
+              onTaskUpdated={onTaskUpdated}
+              isArchived={isArchivedForCurrentUser(task)}
+            />
+          )}
+        </div>
       </CardHeader>
       <CardContent className="flex flex-1 flex-col gap-2">
         <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
@@ -249,6 +264,23 @@ function TaskCard({
           </div>
         </div>
       </CardContent>
+
+      {/* stopPropagation: Klicks im Dialog bubbeln sonst über den React-Tree
+          (Radix rendert per Portal, das DOM-Nesting schützt hier nicht) zum
+          Card-onClick hoch und würden ungewollt handleCardClick auslösen. */}
+      <div onClick={(e) => e.stopPropagation()}>
+        <TaskDetailDialog
+          task={task}
+          open={detailOpen}
+          onClose={() => setDetailOpen(false)}
+          onToggleArchive={handleToggleArchive}
+          onResetProgress={handleResetProgress}
+          onDelete={handleDelete}
+          onToggleDone={handleDone}
+          onTaskUpdated={onTaskUpdated}
+          isArchived={isArchivedForCurrentUser(task)}
+        />
+      </div>
     </Card>
   );
 }

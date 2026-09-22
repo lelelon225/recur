@@ -82,6 +82,13 @@ public class Task {
         @Column(name = "amount_did")
         private Integer amountDid;
 
+        // Zeitpunkt des letzten Fortschritts-Increments (Abhaken-Button /
+        // "Als erledigt markieren") - Basis für die Rolling-Window-Sperre des
+        // Abhaken-Buttons pro Frequenz-Intervall (#136). Wird bei resetProgress
+        // wieder auf null gesetzt.
+        @Column(name = "last_amount_did_at")
+        private Instant lastAmountDidAt;
+
         @Builder.Default
         @Column(name = "is_favorite", nullable = false, columnDefinition = "boolean default false")
         private Boolean isFavorite = false;

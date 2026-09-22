@@ -206,15 +206,25 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     if (!task) return;
     const previousAmountDid = task.amountDid;
     const previousProgress = task.progress;
+    const previousLastAmountDidAt = task.lastAmountDidAt;
 
     setTasks((prev) =>
-      prev.map((t) => (t.id === taskId ? { ...t, amountDid: 0, progress: 0 } : t))
+      prev.map((t) =>
+        t.id === taskId ? { ...t, amountDid: 0, progress: 0, lastAmountDidAt: null } : t
+      )
     );
 
     await patchTask(taskId, { resetProgress: true, amountDid: 0 }).catch((err) => {
       setTasks((prev) =>
         prev.map((t) =>
-          t.id === taskId ? { ...t, amountDid: previousAmountDid, progress: previousProgress } : t
+          t.id === taskId
+            ? {
+                ...t,
+                amountDid: previousAmountDid,
+                progress: previousProgress,
+                lastAmountDidAt: previousLastAmountDidAt,
+              }
+            : t
         )
       );
       showErrorToast(err instanceof Error ? err.message : "Fehler beim Zurücksetzen des Fortschritts");

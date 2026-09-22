@@ -15,6 +15,7 @@ import ch.noseryoung.domain.recur.repositories.TaskRepository;
 import ch.noseryoung.domain.recur.security.CustomUserDetails;
 import ch.noseryoung.domain.recur.utils.TaskUtil;
 
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -306,12 +307,16 @@ public class TaskService {
                         applyArchivedChange(existingTask, archived, currentUser);
                 }
 
-                if (resetProgress != null && resetProgress) {
+                boolean isResetProgress = resetProgress != null && resetProgress;
+
+                if (isResetProgress) {
                         existingTask.setAmountDid(0);
+                        existingTask.setLastAmountDidAt(null);
                 }
 
-                if (amountDid != null) {
+                if (amountDid != null && !isResetProgress) {
                         existingTask.setAmountDid(amountDid);
+                        existingTask.setLastAmountDidAt(Instant.now());
                 }
 
                 if (request.startTime() != null) {
