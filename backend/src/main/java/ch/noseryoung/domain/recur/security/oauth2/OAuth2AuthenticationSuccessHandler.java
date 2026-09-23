@@ -14,6 +14,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import ch.noseryoung.domain.recur.models.User;
+import ch.noseryoung.domain.recur.security.jwt.JwtService;
+import ch.noseryoung.domain.recur.security.jwt.RefreshTokenService;
 import lombok.RequiredArgsConstructor;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

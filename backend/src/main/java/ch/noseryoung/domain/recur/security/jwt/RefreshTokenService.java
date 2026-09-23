@@ -13,7 +13,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import ch.noseryoung.domain.recur.exceptions.InvalidRefreshTokenException;
+import ch.noseryoung.domain.recur.exceptions.auth.InvalidRefreshTokenException;
 import ch.noseryoung.domain.recur.models.RefreshToken;
 import ch.noseryoung.domain.recur.models.User;
 import ch.noseryoung.domain.recur.repositories.RefreshTokenRepository;

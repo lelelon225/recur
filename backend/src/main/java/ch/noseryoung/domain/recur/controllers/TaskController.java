@@ -1,8 +1,8 @@
 package ch.noseryoung.domain.recur.controllers;
 
-import ch.noseryoung.domain.recur.dto.CreateTaskRequest;
-import ch.noseryoung.domain.recur.dto.PatchTaskRequest;
-import ch.noseryoung.domain.recur.dto.ReminderLeadTimeRequest;
+import ch.noseryoung.domain.recur.dto.task.CreateTaskRequest;
+import ch.noseryoung.domain.recur.dto.task.PatchTaskRequest;
+import ch.noseryoung.domain.recur.dto.task.ReminderLeadTimeRequest;
 import ch.noseryoung.domain.recur.models.Task;
 import ch.noseryoung.domain.recur.services.TaskService;
 

@@ -6,7 +6,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import ch.noseryoung.domain.recur.dto.PushSubscriptionRequest;
+import ch.noseryoung.domain.recur.dto.notification.PushSubscriptionRequest;
 import ch.noseryoung.domain.recur.models.PushSubscription;
 import ch.noseryoung.domain.recur.models.User;
 import ch.noseryoung.domain.recur.repositories.PushSubscriptionRepository;

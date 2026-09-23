@@ -1,15 +1,15 @@
 package ch.noseryoung.domain.recur.services;
 
-import ch.noseryoung.domain.recur.dto.CreateTaskRequest;
-import ch.noseryoung.domain.recur.dto.PatchTaskRequest;
-import ch.noseryoung.domain.recur.dto.ProjectReference;
+import ch.noseryoung.domain.recur.dto.task.CreateTaskRequest;
+import ch.noseryoung.domain.recur.dto.task.PatchTaskRequest;
+import ch.noseryoung.domain.recur.dto.task.ProjectReference;
 import ch.noseryoung.domain.recur.enums.Frequency;
 import ch.noseryoung.domain.recur.enums.ReminderLeadTime;
-import ch.noseryoung.domain.recur.exceptions.InvalidCompletionException;
-import ch.noseryoung.domain.recur.exceptions.NotGroupAdminException;
-import ch.noseryoung.domain.recur.exceptions.NotGroupMemberException;
-import ch.noseryoung.domain.recur.exceptions.ProjectNotFoundException;
-import ch.noseryoung.domain.recur.exceptions.TaskNotFoundException;
+import ch.noseryoung.domain.recur.exceptions.task.InvalidCompletionException;
+import ch.noseryoung.domain.recur.exceptions.group.NotGroupAdminException;
+import ch.noseryoung.domain.recur.exceptions.group.NotGroupMemberException;
+import ch.noseryoung.domain.recur.exceptions.group.ProjectNotFoundException;
+import ch.noseryoung.domain.recur.exceptions.task.TaskNotFoundException;
 import ch.noseryoung.domain.recur.models.Project;
 import ch.noseryoung.domain.recur.models.Task;
 import ch.noseryoung.domain.recur.models.TaskReminderOverride;

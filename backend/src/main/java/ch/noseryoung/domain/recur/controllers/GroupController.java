@@ -10,8 +10,8 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import ch.noseryoung.domain.recur.dto.CreateGroupRequest;
-import ch.noseryoung.domain.recur.dto.GroupInvitePreview;
+import ch.noseryoung.domain.recur.dto.group.CreateGroupRequest;
+import ch.noseryoung.domain.recur.dto.group.GroupInvitePreview;
 import ch.noseryoung.domain.recur.models.Project;
 import ch.noseryoung.domain.recur.models.TaskGroup;
 import ch.noseryoung.domain.recur.services.GroupService;
