@@ -159,12 +159,19 @@ const REFRESH_EXEMPT_ENDPOINTS = ["/auth/login", "/auth/register", "/auth/refres
 
 let sessionExpiredHandled = false;
 let refreshPromise: Promise<AuthResponse> | null = null;
+let csrfRefreshPromise: Promise<unknown> | null = null;
+
+// GET-Requests sind von Springs CSRF-Prüfung ausgenommen - ein 403 auf einer
+// dieser Methoden kann also nur ein abgelehntes Double-Submit-Token sein, nie
+// eine echte 403-Geschäftslogik-Antwort.
+const CSRF_PROTECTED_METHODS = ["post", "put", "patch", "delete"];
 
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const status = error?.response?.status;
     const url: string | undefined = error?.config?.url;
+    const method: string | undefined = error?.config?.method;
     const originalRequest = error?.config;
     const isAuthEndpoint = url
       ? AUTH_ENDPOINTS.some((path) => url.includes(path))
@@ -193,6 +200,37 @@ api.interceptors.response.use(
       } catch {
         // Refresh fehlgeschlagen (Cookie fehlt/abgelaufen/reused) -> Session
         // ist endgültig weg, fällt durch zur normalen 401-Behandlung unten.
+      }
+    }
+
+    // Stale/fehlendes XSRF-TOKEN-Cookie: der von Axios gelesene Cookie-Wert
+    // und der, den der Browser beim tatsächlichen Senden mitschickt, können
+    // auseinanderlaufen (z.B. lange im Hintergrund liegender Tab), was
+    // Springs Double-Submit-Check mit 403 statt 401 ablehnt (#160 hat CSRF
+    // erst eingeführt - vorher gab es diesen Fehlerfall gar nicht). Anders
+    // als beim 401-Fall oben reicht hier kein Token-Refresh, sondern ein
+    // frisches GET, damit der CsrfCookieFilter ein aktuelles Cookie
+    // ausstellt, bevor der Original-Request einmal wiederholt wird.
+    if (
+      status === 403 &&
+      method &&
+      CSRF_PROTECTED_METHODS.includes(method) &&
+      !isRefreshExempt &&
+      originalRequest &&
+      !originalRequest._retry
+    ) {
+      originalRequest._retry = true;
+      try {
+        if (!csrfRefreshPromise) {
+          csrfRefreshPromise = api.get("/auth/me").finally(() => {
+            csrfRefreshPromise = null;
+          });
+        }
+        await csrfRefreshPromise;
+        return api(originalRequest);
+      } catch {
+        // Cookie liess sich nicht auffrischen -> fällt durch zur normalen
+        // Fehlerbehandlung, der Original-Fehler wird unten weitergereicht.
       }
     }
 
