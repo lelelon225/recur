@@ -36,27 +36,14 @@ public class TaskUtil {
         }
     }
 
-    /**
-     * Berechnet den Progress basierend auf der Gesamt-Zeitspanne (daysInSpan)
-     * und der Frequenz, NICHT auf verstrichener Zeit.
-     * progress = amountDid / (daysInSpan / intervalDays) * 100
-     *
-     * Jeder Klick auf "abhaken" steigert den Progress um einen fixen Betrag
-     * (bei 10 Tagen daily z.B. immer +10%), unabhängig davon an welchem Tag
-     * der Task-Laufzeit man sich befindet.
-     */
+    /** Berechnet den Progress als amountDid / erwartete Wiederholungen (daysInSpan / intervalDays) * 100, NICHT auf Basis verstrichener Zeit - jeder Klick auf "abhaken" steigert den Progress um einen fixen Betrag, unabhängig vom aktuellen Tag der Task-Laufzeit. */
     public void calculateProgress(Task task) {
         if (task.getAmountDid() == null || task.getFrequency() == null) {
             task.setProgress(0.0);
             return;
         }
 
-        // Einmalige Termine haben keine Wiederholungs-Intervalltage (nicht in
-        // `frequencies` enthalten) und lassen sich daher nicht als Bruchteil
-        // erwarteter Wiederholungen berechnen: hier zählt nur erledigt/nicht.
-        // Unabhängig von daysInSpan, da ein ONCE-Task (z.B. Start- und
-        // Fälligkeitsdatum am selben Tag) sonst durch die daysInSpan<=0-Guard
-        // faelschlicherweise auf 0% zurückfaellt.
+        // ONCE ist nicht in `frequencies` enthalten und daher nicht als Bruchteil erwarteter Wiederholungen berechenbar (nur erledigt/nicht) - unabhängig von daysInSpan, sonst fiele z.B. ein Task mit Start = Fälligkeitsdatum faelschlicherweise durch die daysInSpan<=0-Guard auf 0%.
         if (task.getFrequency() == Frequency.ONCE) {
             task.setProgress(task.getAmountDid() > 0 ? 100.0 : 0.0);
             return;
@@ -79,17 +66,7 @@ public class TaskUtil {
         task.setProgress(progress);
     }
 
-    /**
-     * Bestandstasks von vor #152 kennen nur den alten amountDid-Zähler, kein
-     * Completion-Set. Übersetzt diesen einmalig lazy in synthetische, je 1
-     * Intervall auseinanderliegende Completions, damit ihr Fortschritt beim
-     * ersten Aufruf nicht auf 0 zurückfällt. No-op sobald das Set mindestens
-     * eine echte Completion enthält - MUSS daher vor jeder Mutation des Sets
-     * aufgerufen werden (nicht danach: sonst hielte ein zwischenzeitlich auf
-     * 0 geleertes Set das alte, noch nicht nachgezogene amountDid für "zu
-     * migrierende Historie" und würde eine gerade entfernte Completion sofort
-     * wieder zurückschreiben).
-     */
+    /** Migriert den alten amountDid-Zähler von Bestandstasks (vor #152) einmalig lazy in synthetische Completions, damit ihr Fortschritt nicht auf 0 zurückfällt; no-op sobald das Set eine echte Completion enthält - MUSS daher vor jeder Mutation des Sets aufgerufen werden, sonst würde ein zwischenzeitlich geleertes Set eine gerade entfernte Completion sofort wieder zurückschreiben. */
     public void backfillLegacyCompletionsIfNeeded(Task task) {
         if (!task.getCompletions().isEmpty()) {
             return;
@@ -138,12 +115,7 @@ public class TaskUtil {
         }
     }
 
-    /**
-     * Welches Frequenz-Intervall (gezählt seit dateCreated) ein Datum
-     * abdeckt - Basis für die Regel "max. 1 Completion pro Intervall" (#152).
-     * null bei ONCE oder fehlender Frequenz/dateCreated (kein Intervall-
-     * Konzept dort).
-     */
+    /** Welches Frequenz-Intervall (gezählt seit dateCreated) ein Datum abdeckt - Basis für die Regel "max. 1 Completion pro Intervall" (#152); null bei ONCE oder fehlender Frequenz/dateCreated. */
     public Long intervalIndexOf(Task task, LocalDate date) {
         Integer intervalDays = getFrequencyNumber(task.getFrequency());
         if (intervalDays == null || task.getDateCreated() == null) {

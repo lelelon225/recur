@@ -27,9 +27,7 @@ type TaskDetailDialogProps = {
   canEdit?: boolean;
 };
 
-/** Verlauf vergangener Frequenz-Intervalle mit Nachtrag/Rückgängig pro Tag
- * (#152) - nur für persönliche, wiederkehrende Tasks (ONCE hat kein
- * Intervall-Konzept, Projekt-Tasks liegen ausserhalb des Feature-Scopes). */
+/** Verlauf vergangener Frequenz-Intervalle mit Nachtrag/Rückgängig pro Tag (#152) - nur für persönliche, wiederkehrende Tasks (ONCE hat kein Intervall-Konzept, Projekt-Tasks liegen ausserhalb des Feature-Scopes). */
 function CompletionHistoryList({ task }: { task: Task }) {
   const { handleAddCompletion, handleRemoveCompletion } = useTasksContext();
   const intervals = pastIntervals(task);
@@ -61,10 +59,7 @@ function CompletionHistoryList({ task }: { task: Task }) {
   );
 }
 
-/** Read-only Task-Detailansicht (Name, Kategorie, Beschreibung, Zeitrahmen,
- * Fortschritt) mit Zugriff auf das ⋮-Menü. Ursprünglich im Kalender gebaut
- * (CalendarPage), für die Habit-Card-Detailansicht (#136) hierher extrahiert,
- * damit beide Stellen exakt dasselbe zeigen statt zu drifted. */
+/** Read-only Task-Detailansicht (Name, Kategorie, Beschreibung, Zeitrahmen, Fortschritt) mit Zugriff auf das ⋮-Menü. Ursprünglich im Kalender gebaut, für die Habit-Card-Detailansicht (#136) hierher extrahiert, damit beide Stellen exakt dasselbe zeigen statt zu drifted. */
 function TaskDetailDialog({
   task,
   open,
