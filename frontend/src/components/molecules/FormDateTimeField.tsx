@@ -14,12 +14,7 @@ type FormDateTimeFieldProps = {
   label: string;
 };
 
-/**
- * Kombiniert startDate + startTimeOfDay in einer einzigen Kontrolle statt
- * zwei separaten Feldern - wer eines der beiden setzt, bekommt für das
- * andere automatisch einen sinnvollen Wert (heute / 09:00), statt eine
- * "beides oder nichts"-Fehlermeldung zu sehen.
- */
+/** Kombiniert startDate + startTimeOfDay in einer Kontrolle - wer eines setzt, bekommt für das andere automatisch einen sinnvollen Default (heute / 09:00) statt einer "beides oder nichts"-Fehlermeldung. */
 function FormDateTimeField({ label }: FormDateTimeFieldProps) {
   const [dateField, dateMeta, dateHelpers] = useField<string>("startDate");
   const [timeField, timeMeta, timeHelpers] = useField<string>("startTimeOfDay");

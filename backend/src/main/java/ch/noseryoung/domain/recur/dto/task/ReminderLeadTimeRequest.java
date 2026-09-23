@@ -1,0 +1,8 @@
+package ch.noseryoung.domain.recur.dto.task;
+
+import ch.noseryoung.domain.recur.enums.notification.ReminderLeadTime;
+
+// null = Override für diesen User/Task wieder löschen (zurück auf die
+// Kontoeinstellung), siehe TaskService.setReminderLeadTime.
+public record ReminderLeadTimeRequest(ReminderLeadTime reminderLeadTime) {
+}

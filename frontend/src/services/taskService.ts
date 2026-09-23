@@ -13,11 +13,7 @@ function extractErrorMessage(err: unknown, fallback: string): string {
   return fallback;
 }
 
-/**
- * Normalizes a date-only string (e.g. "2222-02-21") or a full ISO string
- * into a full ISO-8601 instant string that java.time.Instant can parse.
- * Passes through null/undefined unchanged.
- */
+/** Normalizes a date-only string (e.g. "2222-02-21") or a full ISO string into a full ISO-8601 instant string that java.time.Instant can parse; passes through null/undefined unchanged. */
 function toInstantString(date: string | null | undefined): string | null {
   if (date === null || date === undefined || date === "") return null;
   const parsed = new Date(date);
@@ -34,11 +30,7 @@ function normalizeTaskDates<T extends { dateUntil?: string | null }>(
   return { ...task, dateUntil: toInstantString(task.dateUntil) };
 }
 
-/**
- * Wandelt das frontend-freundliche `projectId` in die verschachtelte
- * `project: { id }`-Referenz um, die das Backend (Task.project) erwartet.
- * `projectId` bleibt dabei nicht Teil des gesendeten Bodys.
- */
+/** Wandelt das frontend-freundliche `projectId` in die verschachtelte `project: { id }`-Referenz um, die das Backend (Task.project) erwartet; `projectId` bleibt dabei nicht Teil des gesendeten Bodys. */
 function withProjectReference<T extends { projectId?: string | null }>(
   payload: T
 ): Omit<T, "projectId"> & { project?: { id: string } } {
@@ -113,13 +105,7 @@ function removeTaskCompletion(id: string, date: string): Promise<Task> {
     });
 }
 
-/**
- * Löscht einen persönlichen Task oder (als Ersteller) einen Projekt-Task
- * endgültig für alle - der Server antwortet dann mit leerem Body (null).
- * Blendet ein anderes Gruppenmitglied den Task nur für sich aus, liefert der
- * Server stattdessen den aktualisierten Task zurück, damit das Frontend
- * einen Undo-Toast (patchTask({ hidden: false })) anbieten kann.
- */
+/** Löscht einen persönlichen Task oder (als Ersteller) einen Projekt-Task endgültig für alle - Server antwortet mit leerem Body (null). Blendet ein Gruppenmitglied den Task nur für sich aus, liefert der Server stattdessen den aktualisierten Task für einen Undo-Toast (patchTask({ hidden: false })). */
 function deleteTask(id: string): Promise<Task | null> {
   return api
     .delete(`/task/${id}`)
@@ -142,12 +128,7 @@ function deleteAllTasks(): Promise<void> {
     });
 }
 
-/**
- * Setzt/löscht den Erinnerungs-Vorlauf-Override des aktuellen Users für
- * diesen Task (#102-Follow-up) - pro (task, user), daher ein eigener
- * Endpoint statt Teil von createTask/patchTask (siehe TaskController).
- * `null` löscht den Override wieder (zurück auf die Kontoeinstellung).
- */
+/** Setzt/löscht den Erinnerungs-Vorlauf-Override des aktuellen Users für diesen Task (#102-Follow-up) - pro (task, user), daher ein eigener Endpoint statt Teil von createTask/patchTask; `null` löscht den Override wieder (zurück auf die Kontoeinstellung). */
 function setTaskReminderLeadTime(
   id: string,
   reminderLeadTime: ReminderLeadTime | null

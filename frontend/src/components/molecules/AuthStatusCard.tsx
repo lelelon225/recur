@@ -10,10 +10,7 @@ type AuthStatusCardProps = {
     action?: { label: string; onClick: () => void };
 };
 
-/**
- * Full-page loading/error card shown while the app transitions the auth
- * state (OAuth callback, logout, session expiry) before redirecting.
- */
+/** Full-page loading/error card shown while the app transitions the auth state (OAuth callback, logout, session expiry) before redirecting. */
 function AuthStatusCard({ status, title, description, action }: AuthStatusCardProps) {
     return (
         <div className="flex min-h-svh w-full flex-col items-center justify-center gap-6 bg-background px-4 py-8">

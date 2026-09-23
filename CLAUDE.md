@@ -32,6 +32,8 @@ Auth is hybrid: stateless JWT (`jjwt`) for normal API calls via `JwtAuthenticati
 
 **Frontend** routing lives in `src/app/` (Next.js App Router — folder structure is the URL structure, `page.tsx` files mark routable segments), but those `page.tsx` files are thin wrappers: actual page logic lives in `src/components/pages/`, which follows atomic design under `src/components/`: `atoms/ molecules/ organisms/ pages/ templates/`, plus `ui/` (shadcn primitives) and `error/`. Path alias `@/` → `src/`. State is plain React Context (`TasksContext`, `AddTaskContext`, `AuthContext`) — no Redux/Zustand. Forms use **Formik + Yup** (not react-hook-form/zod, despite the `schemas/` folder name). Domain types (`Task`, `TaskCategory`, `TaskFrequency`, etc.) live in `types/task.ts`, imported separately from the `taskService.ts` functions that use them (see `types/auth.ts`/`authService.ts` for the same split). All API calls go through the shared axios instance in `services/api.ts`; service functions normalize errors via `extractErrorMessage` and convert dates to ISO instants before sending (backend fields are Java `Instant`).
 
+For which folder a given piece of code (frontend or backend) belongs in, see the "Where things go" section in [`docs/architecture.md`](docs/architecture.md) — don't duplicate that table here.
+
 ## Environment
 
 Postgres runs on host port **5436** (not 5432) — see `docker-compose.yml` and `application.properties`. Required env vars: backend `.env` needs `JWT_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`; frontend `.env` needs `NEXT_PUBLIC_API_URL`.

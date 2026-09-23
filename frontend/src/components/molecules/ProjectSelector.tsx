@@ -18,10 +18,7 @@ type ProjectSelectorProps = {
   disabled?: boolean;
 };
 
-/**
- * Lässt einen Task optional einem Gruppen-Projekt zuordnen (Opt-in, Default
- * bleibt "persönlich"). Nur nicht-archivierte Projekte sind wählbar.
- */
+/** Lässt einen Task optional einem Gruppen-Projekt zuordnen (Opt-in, Default "persönlich"); nur nicht-archivierte Projekte sind wählbar. */
 function ProjectSelector({ className, disabled }: ProjectSelectorProps) {
   const uid = useId();
   const fieldId = `project-${uid}`;
