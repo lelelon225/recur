@@ -19,6 +19,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.session.NullAuthenticatedSessionStrategy;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfToken;
@@ -100,7 +101,31 @@ public class SecurityConfig {
                                 .csrf(csrf -> csrf
                                                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                                                 .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
-                                                .ignoringRequestMatchers(PUBLIC_PATHS))
+                                                .ignoringRequestMatchers(PUBLIC_PATHS)
+                                                // Ohne das wired CsrfConfigurer intern eine
+                                                // CsrfAuthenticationStrategy in
+                                                // SessionManagementConfigurer ein, die "beim
+                                                // Einloggen" das CSRF-Cookie killt und neu
+                                                // ausstellen lässt (Schutz gegen Session-
+                                                // Fixation). SessionManagementFilter hält aber bei
+                                                // uns (STATELESS, kein HttpSession-Backing)
+                                                // JEDEN Request mit gültigem JWT für eine frische
+                                                // Authentifizierung - die Strategie feuert also bei
+                                                // jedem einzelnen authentifizierten Request statt
+                                                // nur beim echten Login, killt das Cookie also
+                                                // dauerhaft. Das - nicht das Frontend - war die
+                                                // Ursache des 403-Loops beim Abhaken/Task-Erstellen
+                                                // (Cookie da -> gelöscht -> nächster Request ohne
+                                                // Cookie -> 403), siehe #176/#177/#179. Kein
+                                                // Schutz-Verlust: Double-Submit prüft nur
+                                                // "Cookie == Header desselben Requests", nicht
+                                                // Token-Frische. Wichtig: das muss hier auf dem
+                                                // CsrfConfigurer selbst gesetzt werden, nicht via
+                                                // .sessionManagement(...).sessionAuthenticationStrategy(...)
+                                                // - letzteres landet nur zusätzlich in derselben
+                                                // Composite-Liste statt die CsrfAuthenticationStrategy
+                                                // zu ersetzen.
+                                                .sessionAuthenticationStrategy(new NullAuthenticatedSessionStrategy()))
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                                 .authorizeHttpRequests(auth -> auth
@@ -149,16 +174,7 @@ public class SecurityConfig {
                                 FilterChain filterChain) throws IOException, ServletException {
                         CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
                         if (csrfToken != null) {
-                                // Auch als Response-Header ausgeben, nicht nur als Cookie: das
-                                // Frontend liest den Header statt document.cookie, damit der
-                                // X-XSRF-TOKEN-Header immer exakt zum Cookie passt, das der
-                                // Browser gerade tatsächlich mitgeschickt hat - ein zwischen
-                                // Axios' Cookie-Read und dem tatsächlich gesendeten Cookie
-                                // auseinanderlaufender Wert (z.B. durch ein zweites Cookie mit
-                                // anderem Path/Domain) führte sonst zu einem 403-Double-Submit-
-                                // Mismatch, den kein Retry beheben konnte, weil der Server ja
-                                // bereits ein gültiges Cookie hatte und keins neu ausstellt.
-                                response.setHeader(csrfToken.getHeaderName(), csrfToken.getToken());
+                                csrfToken.getToken();
                         }
                         filterChain.doFilter(request, response);
                 }
@@ -186,10 +202,6 @@ public class SecurityConfig {
                 configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
                 configuration.setAllowedHeaders(List.of("*"));
                 configuration.setAllowCredentials(true);
-                // Frontend liest den CSRF-Token jetzt aus dem Response-Header statt aus
-                // document.cookie (siehe CsrfCookieFilter) - ohne Expose bleibt der Header
-                // für Cross-Origin-Requests (lokal: :3000 -> :8080) für JS unsichtbar.
-                configuration.setExposedHeaders(List.of("X-XSRF-TOKEN"));
 
                 UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
                 source.registerCorsConfiguration("/**", configuration);
