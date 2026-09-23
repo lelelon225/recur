@@ -14,15 +14,11 @@ import SidebarBrand from "@/components/molecules/sidebar/SidebarBrand";
 import SidebarLegalGroup from "@/components/organisms/sidebar/SidebarLegalGroup";
 import SidebarGithubLink from "@/components/organisms/sidebar/SidebarGithubLink";
 import {
-  Bell,
-  Palette,
-  ShieldCheck,
   ClipboardPaste,
   ListChecks,
   Calendar,
   Users,
 } from "lucide-react";
-import SidebarSettingsGroup from "./SidebarSettingsGroup";
 import { useAuth } from "@/contexts/AuthContext";
 import { useImportQuartalsplan } from "@/contexts/ImportQuartalsplanContext";
 
@@ -85,30 +81,6 @@ function AppSidebar({ destinations, ...props }: AppSidebarProps) {
   const { activeValue, handleNavigation } = useNavigationBar(navDestinations);
   const navGroups = buildNavGroups(navDestinations);
 
-  const settingsItems = [
-    {
-      label: "Benachrichtigungen",
-      Icon: Bell,
-      onClick: () => {
-        router.push("/setting/notifications");
-      },
-    },
-    {
-      label: "Erscheinungsbild",
-      Icon: Palette,
-      onClick: () => {
-        router.push("/setting/appearance");
-      },
-    },
-    {
-      label: "Privatsphäre",
-      Icon: ShieldCheck,
-      onClick: () => {
-        router.push("/setting/privacy");
-      },
-    },
-  ];
-
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarBrand onClick={() => router.push("/")} />
@@ -118,7 +90,6 @@ function AppSidebar({ destinations, ...props }: AppSidebarProps) {
           handleNavigation={handleNavigation}
           activeValue={activeValue}
         />
-        <SidebarSettingsGroup SettingsItem={settingsItems} />
       </SidebarContent>
       <SidebarFooter>
         <SidebarLegalGroup />

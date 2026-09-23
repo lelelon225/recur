@@ -16,7 +16,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 
-function AppearancePage() {
+function AppearanceSection() {
   const { isDark, toggleDark } = useDarkMode();
 
   return (
@@ -62,4 +62,4 @@ function AppearancePage() {
   );
 }
 
-export default AppearancePage;
+export default AppearanceSection;

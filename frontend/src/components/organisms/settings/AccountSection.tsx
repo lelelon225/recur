@@ -1,136 +1,89 @@
 import { Formik } from "formik";
+import type { FormikHelpers } from "formik";
 import { useState } from "react";
 import * as yup from "yup";
-import type { UserResponse as User } from "../../types/auth";
-import { patchUser } from "../../services/authService";
-import { Button } from "@/components/ui/button";
-import LoadingButton from "@/components/atoms/loading/LoadingButton";
-import AccountForm from "../organisms/settings/AccountForm";
-import { useRouter } from "next/navigation";
+import type { UserResponse as User } from "@/types/auth";
+import { patchUser } from "@/services/authService";
+import { Skeleton } from "@/components/ui/skeleton";
+import AccountForm from "./AccountForm";
 import { useAuth } from "@/contexts/AuthContext";
-import { Spinner } from "../ui/spinner";
-
-
-type AccountPageProps = {
-  firstName: string;
-  lastName: string;
-  email: string;
-  avatarUrl?: string;
-  onClose: () => void;
-};
 
 const validationSchema = yup.object().shape({
   firstName: yup.string().required("Vorname ist erforderlich"),
   lastName: yup.string().required("Nachname ist erforderlich"),
-  email: yup
-    .string()
-    .email("Ungültige E-Mail-Adresse")
-    .required("E-Mail ist erforderlich"),
   avatarUrl: yup.string().url("Ungültige URL").nullable().notRequired(),
 });
 
-function AccountPage({
-  firstName,
-  lastName,
-  email,
-  avatarUrl,
-  onClose,
-}: AccountPageProps) {
-  const [loading, setLoading] = useState(false);
+function AccountSection() {
+  const { user, updateUser } = useAuth();
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (values: Partial<User>) => {
-    setLoading(true);
+  if (!user) {
+    return <Skeleton className="h-40 w-full" />;
+  }
+
+  const handleSubmit = async (
+    values: Partial<User>,
+    { resetForm }: FormikHelpers<Partial<User>>
+  ) => {
     setError(null);
+    setSaving(true);
     try {
-      await patchUser({
+      const saved = await patchUser({
         firstName: values.firstName,
         lastName: values.lastName,
-        email: values.email,
         avatarUrl: values.avatarUrl,
       } as User);
-      window.location.reload();
-    } catch (error) {
+      updateUser(saved);
+      resetForm({ values: saved });
+    } catch (err) {
+      resetForm({ values: user });
       setError(
-        error instanceof Error
-          ? error.message
+        err instanceof Error
+          ? err.message
           : "Unbekannter Fehler beim Bearbeiten des Accounts"
       );
-      setLoading(false);
+    } finally {
+      setSaving(false);
     }
   };
 
   return (
-    <div className="mx-auto max-w-xl px-4 py-6">
-      <Formik<Partial<User>>
-        initialValues={{
-          firstName: firstName,
-          lastName: lastName,
-          email: email,
-          avatarUrl: avatarUrl,
-        }}
-        onSubmit={handleSubmit}
-        validationSchema={validationSchema}
-      >
-        {({
-          values,
-          errors,
-          touched,
-          handleChange,
-          handleBlur,
-          handleSubmit,
-        }) => (
-          <>
-            <AccountForm
-              onSubmit={handleSubmit}
-              values={values}
-              errors={errors}
-              touched={touched}
-              handleChange={handleChange}
-              handleBlur={handleBlur}
-              className="flex flex-col gap-2"
-            />
-            {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
-            <div className="mt-4 flex gap-2">
-              <Button type="button" variant="outline" onClick={onClose}>
-                Zurück
-              </Button>
-              <LoadingButton
-                type="submit"
-                onClick={() => handleSubmit()}
-                loading={loading}
-              >
-                Speichern
-              </LoadingButton>
-            </div>
-          </>
-        )}
-      </Formik>
-    </div>
+    <Formik<Partial<User>>
+      initialValues={user}
+      onSubmit={handleSubmit}
+      validationSchema={validationSchema}
+    >
+      {({
+        values,
+        errors,
+        touched,
+        dirty,
+        handleChange,
+        handleBlur,
+        handleSubmit,
+        submitForm,
+      }) => (
+        <>
+          <AccountForm
+            onSubmit={handleSubmit}
+            values={values}
+            errors={errors}
+            touched={touched}
+            handleChange={handleChange}
+            handleBlur={(event) => {
+              handleBlur(event);
+              if (dirty) submitForm();
+            }}
+            disabled={saving}
+            className="flex flex-col gap-2"
+          />
+          {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
+        </>
+      )}
+    </Formik>
   );
 }
 
-function AccountPageWrapper() {
-  const { user } = useAuth();
-  const router = useRouter();
-
-  if (!user) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <Spinner className="size-8 text-primary" />
-      </div>
-    );
-  }
-
-  return (
-    <AccountPage
-      firstName={user.firstName}
-      lastName={user.lastName}
-      email={user.email}
-      avatarUrl={user.avatarUrl}
-      onClose={() => router.back()}
-    />
-  );
-}
-
-export default AccountPageWrapper;
+export default AccountSection;

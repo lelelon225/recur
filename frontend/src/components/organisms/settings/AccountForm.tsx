@@ -10,6 +10,7 @@ type AccountFormProps = {
   errors: FormikErrors<Partial<User>>;
   touched: FormikTouched<Partial<User>>;
   className?: string;
+  disabled?: boolean;
   handleChange: (
     event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => void;
@@ -26,6 +27,7 @@ function AccountForm({
   errors,
   touched,
   className,
+  disabled,
 }: AccountFormProps) {
   return (
     <FormikForm onSubmit={onSubmit} className={className}>
@@ -37,6 +39,7 @@ function AccountForm({
         onBlur={handleBlur}
         error={!!touched.firstName && !!errors.firstName}
         helperText={touched.firstName ? errors.firstName : undefined}
+        disabled={disabled}
       />
       <FormTextField
         name="lastName"
@@ -46,16 +49,16 @@ function AccountForm({
         onBlur={handleBlur}
         error={!!touched.lastName && !!errors.lastName}
         helperText={touched.lastName ? errors.lastName : undefined}
+        disabled={disabled}
       />
       <FormTextField
         name="email"
         label="E-Mail"
         type="email"
         value={values.email ?? ""}
-        onChange={handleChange}
-        onBlur={handleBlur}
         error={!!touched.email && !!errors.email}
         helperText={touched.email ? errors.email : undefined}
+        disabled
       />
       <FormTextField
         name="avatarUrl"
@@ -65,6 +68,7 @@ function AccountForm({
         onBlur={handleBlur}
         error={!!touched.avatarUrl && !!errors.avatarUrl}
         helperText={touched.avatarUrl ? errors.avatarUrl : undefined}
+        disabled={disabled}
       />
     </FormikForm>
   );
