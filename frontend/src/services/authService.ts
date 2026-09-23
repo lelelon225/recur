@@ -203,14 +203,13 @@ api.interceptors.response.use(
       }
     }
 
-    // Verbliebener Sicherheitsnetz-Fall für Springs CSRF-Double-Submit-Check
-    // (#160 hat CSRF eingeführt): api.ts übernimmt den X-XSRF-TOKEN mittlerweile
-    // direkt aus dem Response-Header statt aus document.cookie, wodurch der
-    // frühere Cookie/Header-Mismatch (z.B. langer Hintergrund-Tab, zweites
-    // Cookie mit anderem Path/Domain) praktisch nicht mehr vorkommen sollte.
-    // Für den unwahrscheinlichen Rest (z.B. noch kein Header gesehen, erster
-    // Request der Session) hier trotzdem ein frisches GET, das den aktuellen
-    // Token im Header liefert, bevor der Original-Request wiederholt wird.
+    // Sicherheitsnetz für Springs CSRF-Double-Submit-Check (#160 hat CSRF
+    // eingeführt): api.ts liest den XSRF-TOKEN-Cookie zwar live bei jedem
+    // Request (kein Caching, siehe api.ts), aber falls im Browser noch gar
+    // kein Cookie existiert (z.B. allererster mutierender Request der
+    // Session), gibt es nichts zu lesen. Ein frisches GET stellt eins aus,
+    // bevor der Original-Request einmal wiederholt wird - der dann live das
+    // frisch gesetzte Cookie aufgreift.
     if (
       status === 403 &&
       method &&
