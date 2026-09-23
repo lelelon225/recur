@@ -246,16 +246,22 @@ public class TaskService {
         }
 
         private void recalculateAll(Collection<Task> tasks) {
-                tasks.forEach(task -> {
-                        TaskUtil.calculateDaysInSpan(task);
-                        // Completion-Historie (#152) ist nur für persönliche Tasks im
-                        // Scope - geteilte Projekt-Tasks behalten ihre bestehende
-                        // amountDid-Logik (PATCH?amountDid=..) unverändert.
-                        if (task.getOwner() != null) {
-                                taskUtil.syncCompletions(task);
-                        }
-                        taskUtil.calculateProgress(task);
-                });
+                tasks.forEach(this::recalculate);
+        }
+
+        // #161: amountDid/progress/lastAmountDidAt sind für persönliche Tasks
+        // vollständig aus completions abgeleitet (3NF) - der gespeicherte
+        // Spaltenwert ist daher nie vertrauenswürdig und wird vor JEDER Response
+        // frisch berechnet, statt sich auf einen zuvor korrekt geschriebenen
+        // Stand zu verlassen. Geteilte Projekt-Tasks kennen keine completions und
+        // behalten ihre bestehende, direkt gesetzte amountDid-Logik (PATCH
+        // ?amountDid=..) unverändert.
+        private void recalculate(Task task) {
+                TaskUtil.calculateDaysInSpan(task);
+                if (task.getOwner() != null) {
+                        taskUtil.syncCompletions(task);
+                }
+                taskUtil.calculateProgress(task);
         }
 
         public ResponseEntity<Task> getTask(UUID id) {
@@ -263,6 +269,8 @@ public class TaskService {
                 Task task = taskRepository.findById(id)
                                 .filter(t -> hasAccess(t, user))
                                 .orElseThrow(() -> new TaskNotFoundException(id));
+
+                recalculate(task);
 
                 return ResponseEntity.ok(maskMembers(task, user));
         }
@@ -487,22 +495,6 @@ public class TaskService {
                 }
 
                 return ResponseEntity.ok(maskMembers(task, currentUser));
-        }
-
-        public ResponseEntity<Task> resetTask(UUID id) {
-
-                User owner = getCurrentUser();
-                Task existingTask = taskRepository.findByIdAndOwner(id, owner)
-                                .orElseThrow(() -> new TaskNotFoundException(id));
-
-                existingTask.setAmountDid(0);
-
-                TaskUtil.calculateDaysInSpan(existingTask);
-                taskUtil.calculateProgress(existingTask);
-
-                taskRepository.save(existingTask);
-
-                return ResponseEntity.ok(existingTask);
         }
 
         // COMPLETION METHODS (#152) - nachträgliches Abhaken/Rückgängig einzelner
