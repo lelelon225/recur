@@ -8,7 +8,7 @@ import FormDateTimeField from "@/components/molecules/form/FormDateTimeField";
 import FormDurationField from "@/components/molecules/form/FormDurationField";
 import FormSelector from "@/components/molecules/form/FormSelector";
 import FormReminderLeadTimeField from "@/components/molecules/form/FormReminderLeadTimeField";
-import ProjectSelector from "@/components/molecules/ProjectSelector";
+import ProjectSelector from "@/components/molecules/form/ProjectSelector";
 import { toDateOnlyString } from "@/utils/formatDate";
 import { roundUpToQuarterHour } from "@/utils/taskFormDefaults";
 import type { ReminderLeadTime } from "@/types/notifications";

@@ -4,7 +4,7 @@ import * as yup from "yup";
 import type { UserResponse as User } from "../../types/auth";
 import { patchUser } from "../../services/authService";
 import { Button } from "@/components/ui/button";
-import LoadingButton from "@/components/atoms/LoadingButton";
+import LoadingButton from "@/components/atoms/loading/LoadingButton";
 import AccountForm from "../organisms/settings/AccountForm";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";

@@ -11,7 +11,7 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import GoogleLoginButton from "../../atoms/GoogleLoginButton";
-import LoadingButton from "../../atoms/LoadingButton";
+import LoadingButton from "../../atoms/loading/LoadingButton";
 import FormTextField from "../../molecules/form/FormTextField";
 import FormPasswordField from "../../molecules/form/FormPasswordField";
 import {

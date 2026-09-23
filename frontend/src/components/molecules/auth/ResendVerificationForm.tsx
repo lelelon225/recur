@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
-import LoadingButton from "@/components/atoms/LoadingButton";
+import LoadingButton from "@/components/atoms/loading/LoadingButton";
 import { resendVerification } from "@/services/authService";
 
 type ResendVerificationFormProps = {
