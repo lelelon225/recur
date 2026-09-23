@@ -203,14 +203,14 @@ api.interceptors.response.use(
       }
     }
 
-    // Stale/fehlendes XSRF-TOKEN-Cookie: der von Axios gelesene Cookie-Wert
-    // und der, den der Browser beim tatsächlichen Senden mitschickt, können
-    // auseinanderlaufen (z.B. lange im Hintergrund liegender Tab), was
-    // Springs Double-Submit-Check mit 403 statt 401 ablehnt (#160 hat CSRF
-    // erst eingeführt - vorher gab es diesen Fehlerfall gar nicht). Anders
-    // als beim 401-Fall oben reicht hier kein Token-Refresh, sondern ein
-    // frisches GET, damit der CsrfCookieFilter ein aktuelles Cookie
-    // ausstellt, bevor der Original-Request einmal wiederholt wird.
+    // Verbliebener Sicherheitsnetz-Fall für Springs CSRF-Double-Submit-Check
+    // (#160 hat CSRF eingeführt): api.ts übernimmt den X-XSRF-TOKEN mittlerweile
+    // direkt aus dem Response-Header statt aus document.cookie, wodurch der
+    // frühere Cookie/Header-Mismatch (z.B. langer Hintergrund-Tab, zweites
+    // Cookie mit anderem Path/Domain) praktisch nicht mehr vorkommen sollte.
+    // Für den unwahrscheinlichen Rest (z.B. noch kein Header gesehen, erster
+    // Request der Session) hier trotzdem ein frisches GET, das den aktuellen
+    // Token im Header liefert, bevor der Original-Request wiederholt wird.
     if (
       status === 403 &&
       method &&
