@@ -1,6 +1,7 @@
 package ch.noseryoung.domain.recur.services;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -22,8 +23,10 @@ import ch.noseryoung.domain.recur.exceptions.InvalidPasswordResetTokenException;
 import ch.noseryoung.domain.recur.models.PasswordResetToken;
 import ch.noseryoung.domain.recur.models.User;
 import ch.noseryoung.domain.recur.models.VerificationToken;
+import ch.noseryoung.domain.recur.models.Task;
 import ch.noseryoung.domain.recur.repositories.NotificationSettingsRepository;
 import ch.noseryoung.domain.recur.repositories.PasswordResetTokenRepository;
+import ch.noseryoung.domain.recur.repositories.TaskRepository;
 import ch.noseryoung.domain.recur.repositories.UserPrivacySettingsRepository;
 import ch.noseryoung.domain.recur.repositories.UserRepository;
 import ch.noseryoung.domain.recur.repositories.VerificationTokenRepository;
@@ -40,6 +43,7 @@ public class AuthService {
     private final NotificationSettingsRepository notificationSettingsRepository;
     private final VerificationTokenRepository verificationTokenRepository;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final TaskRepository taskRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
@@ -71,6 +75,7 @@ public class AuthService {
             NotificationSettingsRepository notificationSettingsRepository,
             VerificationTokenRepository verificationTokenRepository,
             PasswordResetTokenRepository passwordResetTokenRepository,
+            TaskRepository taskRepository,
             PasswordEncoder passwordEncoder, JwtService jwtService, RefreshTokenService refreshTokenService,
             EmailService emailService) {
         this.userRepository = userRepository;
@@ -78,6 +83,7 @@ public class AuthService {
         this.notificationSettingsRepository = notificationSettingsRepository;
         this.verificationTokenRepository = verificationTokenRepository;
         this.passwordResetTokenRepository = passwordResetTokenRepository;
+        this.taskRepository = taskRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.refreshTokenService = refreshTokenService;
@@ -325,6 +331,17 @@ public class AuthService {
         verificationTokenRepository.deleteByUserId(user.getId());
         passwordResetTokenRepository.deleteByUserId(user.getId());
         refreshTokenService.deleteAllForUser(user.getId());
+
+        // Projekt-Tasks, die der User erstellt oder für sich ausgeblendet hat
+        // (siehe TaskService#deleteTask), referenzieren ihn per FK -
+        // taskRepository.delete(user) allein würde sonst an genau dieser
+        // Constraint scheitern. Der Task selbst bleibt für die übrigen
+        // Mitglieder bestehen (createdBy=null -> Fallback auf den
+        // Gruppen-Admin, siehe TaskService#isTaskCreator).
+        taskRepository.clearCreatedBy(user);
+        List<Task> hiddenTasks = taskRepository.findByHiddenForContaining(user);
+        hiddenTasks.forEach(task -> task.getHiddenFor().remove(user));
+        taskRepository.saveAll(hiddenTasks);
 
         userRepository.delete(user);
     }

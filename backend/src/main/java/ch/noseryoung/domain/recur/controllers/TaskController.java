@@ -55,8 +55,9 @@ public class TaskController {
                         @RequestParam(required = false) Boolean favorite,
                         @RequestParam(required = false) Boolean archived,
                         @RequestParam(required = false) @Min(0) @Max(1_000_000) Integer amountDid,
-                        @RequestParam(required = false) Boolean unassignProject) {
-                return taskService.patchTask(id, request, resetProgress, favorite, archived, amountDid, unassignProject);
+                        @RequestParam(required = false) Boolean unassignProject,
+                        @RequestParam(required = false) Boolean hidden) {
+                return taskService.patchTask(id, request, resetProgress, favorite, archived, amountDid, unassignProject, hidden);
         }
 
         // Nachträgliches Abhaken/Rückgängig eines einzelnen Tages für persönliche
