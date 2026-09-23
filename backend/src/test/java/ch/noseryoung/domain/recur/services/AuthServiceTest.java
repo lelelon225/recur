@@ -18,7 +18,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import ch.noseryoung.domain.recur.dto.AuthResponse;
 import ch.noseryoung.domain.recur.dto.LoginRequest;
 import ch.noseryoung.domain.recur.dto.RegisterRequest;
 import ch.noseryoung.domain.recur.enums.AuthProvider;
@@ -29,10 +28,13 @@ import ch.noseryoung.domain.recur.models.PasswordResetToken;
 import ch.noseryoung.domain.recur.models.User;
 import ch.noseryoung.domain.recur.repositories.NotificationSettingsRepository;
 import ch.noseryoung.domain.recur.repositories.PasswordResetTokenRepository;
+import ch.noseryoung.domain.recur.repositories.TaskRepository;
 import ch.noseryoung.domain.recur.repositories.UserPrivacySettingsRepository;
 import ch.noseryoung.domain.recur.repositories.UserRepository;
 import ch.noseryoung.domain.recur.repositories.VerificationTokenRepository;
 import ch.noseryoung.domain.recur.security.JwtService;
+import ch.noseryoung.domain.recur.security.RefreshTokenService;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Deckt Registrierung und Login ab - die sicherheitskritischen Einstiegspunkte
@@ -59,21 +61,30 @@ class AuthServiceTest {
     private PasswordResetTokenRepository passwordResetTokenRepository;
 
     @Mock
+    private TaskRepository taskRepository;
+
+    @Mock
     private PasswordEncoder passwordEncoder;
 
     @Mock
     private JwtService jwtService;
 
     @Mock
+    private RefreshTokenService refreshTokenService;
+
+    @Mock
     private EmailService emailService;
+
+    @Mock
+    private HttpServletRequest httpRequest;
 
     private AuthService authService;
 
     @org.junit.jupiter.api.BeforeEach
     void setUp() {
         authService = new AuthService(userRepository, privacySettingsRepository, notificationSettingsRepository,
-                verificationTokenRepository, passwordResetTokenRepository, passwordEncoder, jwtService,
-                emailService);
+                verificationTokenRepository, passwordResetTokenRepository, taskRepository, passwordEncoder,
+                jwtService, refreshTokenService, emailService);
         ReflectionTestUtils.setField(authService, "frontendUrl", "http://localhost:3000");
         ReflectionTestUtils.setField(authService, "verificationExpiryHours", 24L);
         ReflectionTestUtils.setField(authService, "resendCooldownSeconds", 60L);
@@ -86,7 +97,7 @@ class AuthServiceTest {
         when(userRepository.existsByEmail("taken@example.com")).thenReturn(true);
         RegisterRequest request = new RegisterRequest("taken@example.com", "password123", "Ada", "Lovelace");
 
-        assertThatThrownBy(() -> authService.register(request))
+        assertThatThrownBy(() -> authService.register(request, httpRequest))
                 .isInstanceOf(EmailAlreadyExistsException.class);
 
         verify(userRepository, never()).save(any());
@@ -104,9 +115,9 @@ class AuthServiceTest {
         var userCaptor = org.mockito.ArgumentCaptor.forClass(User.class);
         when(jwtService.generateToken(any())).thenReturn("jwt-token");
 
-        AuthResponse response = authService.register(request);
+        AuthService.AuthResult result = authService.register(request, httpRequest);
 
-        assertThat(response.token()).isEqualTo("jwt-token");
+        assertThat(result.accessToken()).isEqualTo("jwt-token");
 
         verify(userRepository).save(userCaptor.capture());
         User savedUser = userCaptor.getValue();
@@ -133,9 +144,9 @@ class AuthServiceTest {
         when(jwtService.generateToken(user)).thenReturn("jwt-token");
         LoginRequest request = new LoginRequest("unverified@example.com", "correct");
 
-        AuthResponse response = authService.login(request);
+        AuthService.AuthResult result = authService.login(request, httpRequest);
 
-        assertThat(response.token()).isEqualTo("jwt-token");
+        assertThat(result.accessToken()).isEqualTo("jwt-token");
     }
 
     @Test
@@ -143,7 +154,7 @@ class AuthServiceTest {
         when(userRepository.findByEmail("ghost@example.com")).thenReturn(java.util.Optional.empty());
         LoginRequest request = new LoginRequest("ghost@example.com", "whatever");
 
-        assertThatThrownBy(() -> authService.login(request))
+        assertThatThrownBy(() -> authService.login(request, httpRequest))
                 .isInstanceOf(InvalidCredentialsException.class);
     }
 
@@ -157,7 +168,7 @@ class AuthServiceTest {
         when(userRepository.findByEmail("google@example.com")).thenReturn(java.util.Optional.of(googleUser));
         LoginRequest request = new LoginRequest("google@example.com", "anyPassword");
 
-        assertThatThrownBy(() -> authService.login(request))
+        assertThatThrownBy(() -> authService.login(request, httpRequest))
                 .isInstanceOf(InvalidCredentialsException.class);
 
         verify(passwordEncoder, never()).matches(anyString(), anyString());
@@ -170,7 +181,7 @@ class AuthServiceTest {
         when(passwordEncoder.matches("wrong", "hashed")).thenReturn(false);
         LoginRequest request = new LoginRequest("user@example.com", "wrong");
 
-        assertThatThrownBy(() -> authService.login(request))
+        assertThatThrownBy(() -> authService.login(request, httpRequest))
                 .isInstanceOf(InvalidCredentialsException.class);
     }
 
@@ -182,10 +193,10 @@ class AuthServiceTest {
         when(jwtService.generateToken(user)).thenReturn("jwt-token");
         LoginRequest request = new LoginRequest("user@example.com", "correct");
 
-        AuthResponse response = authService.login(request);
+        AuthService.AuthResult result = authService.login(request, httpRequest);
 
-        assertThat(response.token()).isEqualTo("jwt-token");
-        assertThat(response.user().email()).isEqualTo("user@example.com");
+        assertThat(result.accessToken()).isEqualTo("jwt-token");
+        assertThat(result.authResponse().user().email()).isEqualTo("user@example.com");
     }
 
     @Test
