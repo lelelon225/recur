@@ -8,12 +8,12 @@ import {
 } from "@/components/ui/field";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
-import FormTextField from "../molecules/FormTextField";
-import LoadingButton from "../atoms/LoadingButton";
-import GoogleLoginButton from "../atoms/GoogleLoginButton";
+import FormTextField from "../../molecules/form/FormTextField";
+import LoadingButton from "../../atoms/LoadingButton";
+import GoogleLoginButton from "../../atoms/GoogleLoginButton";
 import type { LoginRequest } from "@/types/auth";
 import type { FormEvent, ChangeEvent, FocusEvent } from "react";
-import FormPasswordField from "../molecules/FormPasswordField";
+import FormPasswordField from "../../molecules/form/FormPasswordField";
 
 type LoginFormProps = {
   navigate: () => void;

@@ -8,11 +8,11 @@ import type { NavigationDestination } from "@/hooks/useNavigationBar";
 import { useNavigationBar } from "@/hooks/useNavigationBar";
 import type { SidebarNavGroup } from "@/hooks/useSidebarNavGroups";
 import { useRouter } from "next/navigation";
-import AppSidebarUser from "@/components/organisms/AppSidebarUser";
-import SidebarNavigation from "@/components/molecules/SidebarNavigation";
-import SidebarBrand from "@/components/molecules/SidebarBrand";
-import SidebarLegalGroup from "@/components/organisms/SidebarLegalGroup";
-import SidebarGithubLink from "@/components/organisms/SidebarGithubLink";
+import AppSidebarUser from "@/components/organisms/sidebar/AppSidebarUser";
+import SidebarNavigation from "@/components/molecules/sidebar/SidebarNavigation";
+import SidebarBrand from "@/components/molecules/sidebar/SidebarBrand";
+import SidebarLegalGroup from "@/components/organisms/sidebar/SidebarLegalGroup";
+import SidebarGithubLink from "@/components/organisms/sidebar/SidebarGithubLink";
 import {
   Bell,
   Palette,

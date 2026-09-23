@@ -8,7 +8,7 @@ import {
   type Task,
 } from "@/services/taskService";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
-import type { FormValues } from "@/components/organisms/Form";
+import type { FormValues } from "@/components/organisms/task/Form";
 import {
   resolveDateUntil,
   resolveDescription,

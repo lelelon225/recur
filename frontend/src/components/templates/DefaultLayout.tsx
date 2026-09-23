@@ -7,7 +7,7 @@ import { ImportQuartalsplanProvider } from "@/contexts/ImportQuartalsplanContext
 import Fab from "@/components/atoms/FloatingActionButton";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "../ui/sidebar";
 import { Separator } from "../ui/separator";
-import AppSidebar from "../organisms/AppSidebar";
+import AppSidebar from "../organisms/sidebar/AppSidebar";
 
 type DefaultLayoutProps = {
   children: ReactNode;

@@ -10,10 +10,10 @@ import {
 } from "@/components/ui/field";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
-import GoogleLoginButton from "../atoms/GoogleLoginButton";
-import LoadingButton from "../atoms/LoadingButton";
-import FormTextField from "../molecules/FormTextField";
-import FormPasswordField from "../molecules/FormPasswordField";
+import GoogleLoginButton from "../../atoms/GoogleLoginButton";
+import LoadingButton from "../../atoms/LoadingButton";
+import FormTextField from "../../molecules/form/FormTextField";
+import FormPasswordField from "../../molecules/form/FormPasswordField";
 import {
   Form as FormikForm,
   type FormikTouched,
