@@ -1,5 +1,7 @@
 package ch.noseryoung.domain.recur.models.task;
 
+import ch.noseryoung.domain.recur.models.User;
+
 import java.util.UUID;
 
 import ch.noseryoung.domain.recur.enums.notification.ReminderLeadTime;

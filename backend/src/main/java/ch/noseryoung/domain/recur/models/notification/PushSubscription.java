@@ -1,5 +1,7 @@
 package ch.noseryoung.domain.recur.models.notification;
 
+import ch.noseryoung.domain.recur.models.User;
+
 import java.time.Instant;
 import java.util.UUID;
 

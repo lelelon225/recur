@@ -1,5 +1,7 @@
 package ch.noseryoung.domain.recur.models.group;
 
+import ch.noseryoung.domain.recur.models.User;
+
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;

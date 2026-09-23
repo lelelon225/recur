@@ -1,5 +1,9 @@
 package ch.noseryoung.domain.recur.models.task;
 
+import ch.noseryoung.domain.recur.models.User;
+import ch.noseryoung.domain.recur.models.group.Project;
+import ch.noseryoung.domain.recur.models.notification.NotificationLog;
+
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
