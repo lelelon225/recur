@@ -61,6 +61,89 @@ Yup. All API calls go through the shared axios instance in
 `src/services/api.ts`; domain types (`Task`, `TaskCategory`, ...) live
 colocated in `src/services/taskService.ts`, not under `types/`.
 
+## Where things go
+
+One placement rule per folder, for new code. Known existing deviations are
+called out as such rather than silently ignored.
+
+### Frontend (`frontend/src/`)
+
+| Folder | What belongs there |
+| --- | --- |
+| `types/` | Standalone type declarations with no logic that don't belong to a specific service (`auth.ts`, `notifications.ts`, `privacy.ts`). |
+| `services/` | Axios calls against the backend API, plus that area's domain types/DTOs/enums (e.g. `Task`, `TaskCategory` in `taskService.ts`) — **known deviation**: domain types intentionally sit next to their service instead of in `types/`, tracked in #191. |
+| `hooks/` | Reusable React hooks with state/effect logic shared by more than one component. |
+| `schemas/` | Formik + Yup validation schemas for forms. |
+| `constants/` | Static, unchanging values/option lists with no logic (dropdown options, links). |
+| `lib/` | Thin wrappers around third-party libraries/UI conventions (shadcn's `cn()`, the toast wrapper, category styling maps). |
+| `utils/` | Pure, stateless helper functions with no React or library dependency (date formatting, sorting, parsing). |
+| `contexts/` | React Context providers for global client state (auth, tasks, groups, ...) — no Redux/Zustand. |
+| `components/atoms/` | Smallest single-purpose UI building blocks with no business logic of their own. |
+| `components/molecules/` | A handful of atoms composed into a reusable unit (form fields, dialogs, card building blocks). |
+| `components/organisms/` | Larger self-contained sections combining several molecules/atoms, usually the ones that load data. |
+| `components/templates/` | Page-level layout/grid only, no real data. |
+| `components/pages/` | The actual page implementation rendered by the matching `page.tsx`. |
+| `components/ui/` | shadcn/ui primitives — kept as generated, not hand-extended. |
+
+### Backend (`backend/.../domain/recur/`)
+
+| Folder | What belongs there |
+| --- | --- |
+| `controllers/` | REST endpoints: accept and validate the request, delegate to a service — no business logic. |
+| `services/` | Business logic and transaction boundaries. |
+| `repositories/` | Spring Data JPA interfaces, no implementation. |
+| `models/` | JPA entities. |
+| `enums/` | Domain enums shared across multiple models/DTOs. |
+| `dto/` | Request/response objects that cross the API boundary — never used directly as an entity. |
+| `security/` | Auth/OAuth2/JWT infrastructure (filters, `UserDetails` implementations, OAuth2 handlers). |
+| `exceptions/` | Custom exceptions plus their matching error-response types. |
+| `utils/` | Stateless static helpers that don't clearly belong to one model/service. |
+
+### Domain subpackages (backend)
+
+Within `dto/`, `exceptions/`, `security/`, `controllers/`, `services/`,
+`repositories/`, `models/`, and `enums/`, classes are grouped one level
+deeper by the business domain they belong to, not by their technical role:
+
+- `auth` — login/registration/password-reset/refresh-token flows.
+- `task` — task CRUD, completions, reminders.
+- `group` — groups and their projects (`Project` is a group sub-concept,
+  not a standalone domain).
+- `notification` — email/push notifications, notification settings, the
+  reminder scheduler.
+- `oauth2` / `jwt` — inside `security/` only, split by auth mechanism
+  instead of business domain (OAuth2/OIDC login vs. JWT issuing/refresh).
+
+A class used across domains (`SecurityConfig`, `CustomUserDetails`,
+`CustomUserDetailsService`, `EmailService`, `User`, `UserRepository`,
+`ErrorResponse`, `GlobalExceptionHandler`) or the only one of its kind in a
+package (e.g. `PrivacySettingsResponse`, `UserPrivacySettingsRepository`,
+`UserPrivacySettings`, `ProfileVisibility`, `AuthController`,
+`PrivacySettingsController`, `TaskController`, `AuthService`,
+`PrivacySettingsService`, `TaskService`) stays flat at the package root
+instead of getting a single-file subpackage.
+
+### Component subfolders (frontend)
+
+Within `components/atoms/`, `components/molecules/`, and
+`components/organisms/`, files are grouped one level deeper by theme,
+without changing the atomic-design level itself:
+
+- `form` (molecules only) — Formik-bound form fields.
+- `dialog` / `dialogs` — modal dialogs (`molecules/dialog/` holds generic
+  dialog primitives; `organisms/dialogs/` holds concrete feature dialogs).
+- `sidebar` — sidebar navigation pieces.
+- `task` — task-card/task-form building blocks.
+- `auth` — login/signup (`organisms/auth/`) or auth-status/verification UI
+  (`molecules/auth/`).
+- `settings` (organisms only) — account/notification/privacy settings
+  forms.
+- `calendar` (organisms only) — calendar views.
+- `loading` (atoms only) — loading-state indicators.
+
+A component with no natural sibling (e.g. `AppBar`, `Empty`, `Pagination`)
+stays flat at the folder root instead of getting a single-file subfolder.
+
 ## Auth flow
 
 1. **Password login**: client posts credentials, backend verifies and
