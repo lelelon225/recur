@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
-import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import ProtectedRoute from "@/components/organisms/ProtectedRoute";
 import DefaultLayout from "@/components/templates/DefaultLayout";
 
 function getPageTitle(pathname: string): string {

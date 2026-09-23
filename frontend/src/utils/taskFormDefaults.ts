@@ -1,4 +1,4 @@
-import { TaskFrequency, type TaskFrequency as TaskFrequencyType } from "@/services/taskService";
+import { TaskFrequency, type TaskFrequency as TaskFrequencyType } from "@/types/task";
 import { toDateOnlyString } from "@/utils/formatDate";
 
 const QUARTER_HOUR_MS = 15 * 60 * 1000;

@@ -4,7 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
-import { createTask, TaskCategory, TaskFrequency } from "@/services/taskService";
+import { createTask } from "@/services/taskService";
+import { TaskCategory, TaskFrequency } from "@/types/task";
 import { useTasksContext } from "@/contexts/TasksContext";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import {

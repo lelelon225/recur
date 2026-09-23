@@ -18,7 +18,7 @@ import {
   removeTaskCompletion,
   unassignSelf,
 } from "@/services/taskService";
-import type { Task } from "@/services/taskService";
+import type { Task } from "@/types/task";
 import { showErrorToast, showSuccessToast, showUndoToast } from "@/lib/toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { currentPeriodCompletion, today } from "@/utils/taskCompletions";

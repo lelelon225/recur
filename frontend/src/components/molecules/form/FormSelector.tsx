@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { TaskCategory, TaskFrequency } from "@/services/taskService";
+import type { TaskCategory, TaskFrequency } from "@/types/task";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { CATEGORY_OPTIONS, FREQUENCY_OPTIONS } from "@/constants/taskOptions";
 

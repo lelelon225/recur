@@ -10,7 +10,7 @@ import {
   AvatarImage,
 } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-import { type Task } from "@/services/taskService";
+import { type Task } from "@/types/task";
 import TaskFavorite from "@/components/atoms/task/TaskFavorite";
 import TaskCardMenu from "./TaskCardMenu";
 import TaskDescription from "@/components/atoms/task/TaskDescription";
