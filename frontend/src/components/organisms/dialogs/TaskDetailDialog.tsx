@@ -27,8 +27,8 @@ type TaskDetailDialogProps = {
   canEdit?: boolean;
 };
 
-/** Verlauf vergangener Frequenz-Intervalle mit Nachtrag/Rückgängig pro Tag (#152) - nur für persönliche, wiederkehrende Tasks (ONCE hat kein Intervall-Konzept, Projekt-Tasks liegen ausserhalb des Feature-Scopes). */
-function CompletionHistoryList({ task }: { task: Task }) {
+/** Verlauf vergangener Frequenz-Intervalle mit Nachtrag/Rückgängig pro Tag (#152) - nur für persönliche, wiederkehrende Tasks (ONCE hat kein Intervall-Konzept, Projekt-Tasks liegen ausserhalb des Feature-Scopes). Bei einem archivierten Habit read-only (#155), das Backend lehnt die Requests ohnehin ab. */
+function CompletionHistoryList({ task, isArchived }: { task: Task; isArchived: boolean }) {
   const { handleAddCompletion, handleRemoveCompletion } = useTasksContext();
   const intervals = pastIntervals(task);
 
@@ -45,6 +45,7 @@ function CompletionHistoryList({ task }: { task: Task }) {
           >
             <Checkbox
               checked={interval.completedOn !== null}
+              disabled={isArchived}
               onCheckedChange={() =>
                 interval.completedOn
                   ? handleRemoveCompletion(task.id, interval.completedOn)
@@ -155,7 +156,7 @@ function TaskDetailDialog({
           </div>
 
           {!task.project && task.frequency !== TaskFrequency.ONCE && (
-            <CompletionHistoryList task={task} />
+            <CompletionHistoryList task={task} isArchived={isArchived} />
           )}
         </div>
       )}

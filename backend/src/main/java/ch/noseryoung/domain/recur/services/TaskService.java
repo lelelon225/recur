@@ -203,6 +203,16 @@ public class TaskService {
                 task.setCompletedBy(isDone ? actingUser : null);
         }
 
+        // #155: ein archiviertes Habit ist read-only - weder Abhaken noch
+        // nachträgliches Ändern des Verlaufs. Gilt für persönliche Tasks
+        // (addCompletion/removeCompletion) wie für geteilte Projekt-Tasks
+        // (patchTask amountDid/resetProgress).
+        private void assertNotArchived(Task task, User actingUser) {
+                if (isArchivedForCurrentUser(task, actingUser)) {
+                        throw new InvalidCompletionException("Archivierte Aufgaben können nicht mehr bearbeitet werden");
+                }
+        }
+
         // Liest den eingeloggten User aus dem SecurityContext. Funktioniert für
         // JWT-authentifizierte Requests, da JwtAuthenticationFilter ein
         // CustomUserDetails als Principal setzt (siehe JwtAuthenticationFilter).
@@ -401,6 +411,10 @@ public class TaskService {
 
                 boolean isResetProgress = resetProgress != null && resetProgress;
 
+                if ((isResetProgress || amountDid != null) && isArchivedForCurrentUser(existingTask, currentUser)) {
+                        throw new InvalidCompletionException("Archivierte Aufgaben können nicht mehr bearbeitet werden");
+                }
+
                 if (isResetProgress) {
                         existingTask.getCompletions().clear();
                         existingTask.setAmountDid(0);
@@ -508,6 +522,7 @@ public class TaskService {
                 Task task = taskRepository.findByIdAndOwner(id, owner)
                                 .orElseThrow(() -> new TaskNotFoundException(id));
 
+                assertNotArchived(task, owner);
                 validateCompletionDate(task, date);
                 // Erst bestehenden amountDid-Zähler (Bestandstasks vor #152) in echte
                 // Completions zurückübersetzen, sonst würde die Intervall-Prüfung
@@ -532,6 +547,7 @@ public class TaskService {
                 Task task = taskRepository.findByIdAndOwner(id, owner)
                                 .orElseThrow(() -> new TaskNotFoundException(id));
 
+                assertNotArchived(task, owner);
                 // Backfill zuerst, damit "Rückgängig" bei einem Bestandstask (noch
                 // keine echten Completions, nur der alte amountDid-Zähler) überhaupt
                 // ein konkretes Datum zum Entfernen hat.
