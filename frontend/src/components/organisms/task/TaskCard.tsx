@@ -11,13 +11,13 @@ import {
 } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { type Task } from "@/types/task";
-import TaskFavorite from "@/components/atoms/TaskFavorite";
+import TaskFavorite from "@/components/atoms/task/TaskFavorite";
 import TaskCardMenu from "./TaskCardMenu";
-import TaskDescription from "@/components/atoms/TaskDescription";
-import TaskTimeFrame from "@/components/atoms/TaskTimeFrame";
-import TaskTitle from "@/components/atoms/TaskTitle";
+import TaskDescription from "@/components/atoms/task/TaskDescription";
+import TaskTimeFrame from "@/components/atoms/task/TaskTimeFrame";
+import TaskTitle from "@/components/atoms/task/TaskTitle";
 import ProgressIndicator from "@/components/atoms/ProgressIndicator";
-import TaskDetailDialog from "@/components/organisms/TaskDetailDialog";
+import TaskDetailDialog from "@/components/organisms/dialogs/TaskDetailDialog";
 import useTaskCard from "@/hooks/useTaskCard";
 import { categoryLabels } from "@/lib/taskCategoryStyles";
 import { categoryDot } from "@/utils/calendarGrid";

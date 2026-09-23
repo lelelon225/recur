@@ -1,7 +1,7 @@
 import { ChevronRight } from "lucide-react";
 import { Formik } from "formik";
 import type { Task, TaskCategory, TaskFrequency } from "@/types/task";
-import AppDialog from "@/components/molecules/AppDialog";
+import AppDialog from "@/components/molecules/dialog/AppDialog";
 import { Button } from "@/components/ui/button";
 import {
   Collapsible,
@@ -12,7 +12,7 @@ import { editTaskValidationSchema } from "@/schemas/taskSchema";
 import {
   TaskBasicsFields,
   TaskDetailFields,
-} from "@/components/organisms/Form";
+} from "@/components/organisms/task/Form";
 import useEditTaskForm, {
   type EditableTaskFields,
 } from "@/hooks/useEditTaskForm";

@@ -6,8 +6,8 @@ import { categoryDot } from "@/utils/calendarGrid";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import ProgressIndicator from "@/components/atoms/ProgressIndicator";
-import DetailDialog from "@/components/molecules/DetailDialog";
-import TaskCardMenu from "@/components/organisms/TaskCardMenu";
+import DetailDialog from "@/components/molecules/dialog/DetailDialog";
+import TaskCardMenu from "@/components/organisms/task/TaskCardMenu";
 import { pastIntervals, parseDateOnly } from "@/utils/taskCompletions";
 import { useTasksContext } from "@/contexts/TasksContext";
 

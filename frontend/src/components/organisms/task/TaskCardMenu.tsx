@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import EditTaskForm from "./EditTaskForm";
 import type { Task } from "@/types/task";
-import ConfirmDialog from "@/components/molecules/ConfirmDialog";
+import ConfirmDialog from "@/components/molecules/dialog/ConfirmDialog";
 import useTaskCardMenu from "@/hooks/useTaskCardMenu";
 import { useTasksContext } from "@/contexts/TasksContext";
 import { useAuth } from "@/contexts/AuthContext";

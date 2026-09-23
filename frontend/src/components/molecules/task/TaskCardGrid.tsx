@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import TaskCard from "@/components/organisms/TaskCard";
+import TaskCard from "@/components/organisms/task/TaskCard";
 import ReactErrorBoundary from "@/components/error/ReactErrorBoundary";
 import Pagination from "@/components/atoms/Pagination";
 import { type Task } from "@/types/task";

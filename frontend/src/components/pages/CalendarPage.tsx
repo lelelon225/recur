@@ -22,10 +22,10 @@ import { cn } from "@/lib/utils";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import TaskDetailDialog from "@/components/organisms/TaskDetailDialog";
-import CalendarWeekView from "@/components/organisms/CalendarWeekView";
-import CalendarMonthView from "@/components/organisms/CalendarMonthView";
-import CalendarDayStrip from "@/components/organisms/CalendarDayStrip";
+import TaskDetailDialog from "@/components/organisms/dialogs/TaskDetailDialog";
+import CalendarWeekView from "@/components/organisms/calendar/CalendarWeekView";
+import CalendarMonthView from "@/components/organisms/calendar/CalendarMonthView";
+import CalendarDayStrip from "@/components/organisms/calendar/CalendarDayStrip";
 
 type ViewMode = "month" | "week";
 

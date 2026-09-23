@@ -11,7 +11,7 @@ import {
   type CalendarWeek,
 } from "@/utils/calendarGrid";
 import { cn } from "@/lib/utils";
-import DetailDialog from "@/components/molecules/DetailDialog";
+import DetailDialog from "@/components/molecules/dialog/DetailDialog";
 
 const WEEKDAY_LABELS = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
 const MAX_VISIBLE_TASKS = 3;

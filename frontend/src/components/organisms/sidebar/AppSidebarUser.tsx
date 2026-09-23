@@ -11,7 +11,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import AppSidebarUserMenu from "../molecules/AppSidebarUserMenu";
+import AppSidebarUserMenu from "../../molecules/sidebar/AppSidebarUserMenu";
 
 
 type AppSidebarUserProps = {
