@@ -1,19 +1,15 @@
 import { buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import ReactErrorBoundary from "@/components/error/ReactErrorBoundary";
-import AccountSection from "@/components/organisms/settings/AccountSection";
 import AppearanceSection from "@/components/organisms/settings/AppearanceSection";
 import NotificationsSection from "@/components/organisms/settings/NotificationsSection";
 import PrivacySection from "@/components/organisms/settings/PrivacySection";
 import { cn } from "@/lib/utils";
 
+// ponytail: Anchor-Tabs scrollen zur Section statt echte Tab-Panels zu
+// tauschen - einfacher, aber bei mehr/längeren Sections irgendwann
+// unübersichtlich. Bei Bedarf auf echtes Tab-System (z.B. ui/tabs) umstellen.
 const SECTIONS = [
-  {
-    id: "account",
-    label: "Account",
-    errorMessage: "Dein Account konnte nicht angezeigt werden.",
-    Component: AccountSection,
-  },
   {
     id: "notifications",
     label: "Benachrichtigungen",

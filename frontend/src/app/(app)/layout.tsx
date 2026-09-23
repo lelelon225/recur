@@ -14,6 +14,7 @@ function getPageTitle(pathname: string): string {
   if (pathname.startsWith("/groups/join/")) return "Gruppe beitreten";
   if (pathname.startsWith("/groups/")) return "Gruppendetails";
   if (pathname === "/settings") return "Einstellungen";
+  if (pathname === "/account") return "Account";
   return "";
 }
 

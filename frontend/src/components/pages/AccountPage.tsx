@@ -5,7 +5,7 @@ import * as yup from "yup";
 import type { UserResponse as User } from "@/types/auth";
 import { patchUser } from "@/services/authService";
 import { Skeleton } from "@/components/ui/skeleton";
-import AccountForm from "./AccountForm";
+import AccountForm from "@/components/organisms/settings/AccountForm";
 import { useAuth } from "@/contexts/AuthContext";
 
 const validationSchema = yup.object().shape({
@@ -14,13 +14,17 @@ const validationSchema = yup.object().shape({
   avatarUrl: yup.string().url("Ungültige URL").nullable().notRequired(),
 });
 
-function AccountSection() {
+function AccountPage() {
   const { user, updateUser } = useAuth();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   if (!user) {
-    return <Skeleton className="h-40 w-full" />;
+    return (
+      <div className="mx-auto max-w-xl px-4 py-6">
+        <Skeleton className="h-40 w-full" />
+      </div>
+    );
   }
 
   const handleSubmit = async (
@@ -50,40 +54,42 @@ function AccountSection() {
   };
 
   return (
-    <Formik<Partial<User>>
-      initialValues={user}
-      onSubmit={handleSubmit}
-      validationSchema={validationSchema}
-    >
-      {({
-        values,
-        errors,
-        touched,
-        dirty,
-        handleChange,
-        handleBlur,
-        handleSubmit,
-        submitForm,
-      }) => (
-        <>
-          <AccountForm
-            onSubmit={handleSubmit}
-            values={values}
-            errors={errors}
-            touched={touched}
-            handleChange={handleChange}
-            handleBlur={(event) => {
-              handleBlur(event);
-              if (dirty) submitForm();
-            }}
-            disabled={saving}
-            className="flex flex-col gap-2"
-          />
-          {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
-        </>
-      )}
-    </Formik>
+    <div className="mx-auto max-w-xl px-4 py-6">
+      <Formik<Partial<User>>
+        initialValues={user}
+        onSubmit={handleSubmit}
+        validationSchema={validationSchema}
+      >
+        {({
+          values,
+          errors,
+          touched,
+          dirty,
+          handleChange,
+          handleBlur,
+          handleSubmit,
+          submitForm,
+        }) => (
+          <>
+            <AccountForm
+              onSubmit={handleSubmit}
+              values={values}
+              errors={errors}
+              touched={touched}
+              handleChange={handleChange}
+              handleBlur={(event) => {
+                handleBlur(event);
+                if (dirty) submitForm();
+              }}
+              disabled={saving}
+              className="flex flex-col gap-2"
+            />
+            {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
+          </>
+        )}
+      </Formik>
+    </div>
   );
 }
 
-export default AccountSection;
+export default AccountPage;
