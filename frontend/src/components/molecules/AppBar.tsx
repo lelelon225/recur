@@ -11,7 +11,7 @@ function AppBar({ title }: AppBarProps) {
       <SidebarTrigger className="-ml-1" />
       <Separator
         orientation="vertical"
-        className="mr-2 data-vertical:h-4"
+        className="mr-2 h-4 self-center!"
       />
       <h1 className="text-xl font-semibold text-foreground">{title}</h1>
     </header>
