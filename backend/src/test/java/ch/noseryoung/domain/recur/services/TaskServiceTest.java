@@ -116,6 +116,33 @@ class TaskServiceTest {
     }
 
     @Test
+    void getTask_recomputesAmountDidAndProgressFromCompletionsInsteadOfTrustingStaleColumn() {
+        // #161: amountDid/progress sind aus completions abgeleitet - ein
+        // Stand aus der Spalte, der nicht mehr zum Completion-Set passt (z.B.
+        // durch einen Schreibpfad, der das Ableiten vergessen hat), darf nicht
+        // unverändert an den Client zurückgehen.
+        LocalDate created = LocalDate.of(2024, 1, 1);
+        Task task = Task.builder()
+                .id(UUID.randomUUID())
+                .category(Category.WORK)
+                .frequency(Frequency.DAILY)
+                .owner(owner)
+                .dateCreated(created.atStartOfDay(java.time.ZoneOffset.UTC).toInstant())
+                .dateUntil(created.plusDays(10).atStartOfDay(java.time.ZoneOffset.UTC).toInstant())
+                .completions(new java.util.HashSet<>(List.of(created)))
+                .amountDid(99)
+                .progress(12.3)
+                .build();
+
+        when(taskRepository.findById(task.getId())).thenReturn(Optional.of(task));
+
+        ResponseEntity<Task> response = taskService.getTask(task.getId());
+
+        assertThat(response.getBody().getAmountDid()).isEqualTo(1);
+        assertThat(response.getBody().getProgress()).isEqualTo(10.0);
+    }
+
+    @Test
     void createTask_assignsCurrentUserAsOwner() {
         CreateTaskRequest request = new CreateTaskRequest(
                 "Neu", Category.WORK, Frequency.DAILY, "Beschreibung", Instant.now(), null, null, null);
