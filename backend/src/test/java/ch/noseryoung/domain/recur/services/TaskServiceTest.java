@@ -36,6 +36,7 @@ import ch.noseryoung.domain.recur.models.Task;
 import ch.noseryoung.domain.recur.models.User;
 import ch.noseryoung.domain.recur.repositories.ProjectRepository;
 import ch.noseryoung.domain.recur.repositories.TaskRepository;
+import ch.noseryoung.domain.recur.repositories.TaskReminderOverrideRepository;
 import ch.noseryoung.domain.recur.security.CustomUserDetails;
 import ch.noseryoung.domain.recur.utils.TaskUtil;
 
@@ -59,12 +60,19 @@ class TaskServiceTest {
     @Mock
     private GroupMemberVisibilityService visibilityService;
 
+    @Mock
+    private NotificationDispatchService notificationDispatchService;
+
+    @Mock
+    private TaskReminderOverrideRepository taskReminderOverrideRepository;
+
     private TaskService taskService;
     private User owner;
 
     @BeforeEach
     void setUp() {
-        taskService = new TaskService(taskRepository, projectRepository, new TaskUtil(), visibilityService);
+        taskService = new TaskService(taskRepository, projectRepository, new TaskUtil(), visibilityService,
+                notificationDispatchService, taskReminderOverrideRepository);
 
         owner = User.builder().id(UUID.randomUUID()).email("owner@example.com").build();
         CustomUserDetails principal = new CustomUserDetails(owner);
@@ -128,7 +136,7 @@ class TaskServiceTest {
 
         PatchTaskRequest patch = blankPatch("Neuer Name", null);
 
-        taskService.patchTask(existing.getId(), patch, null, null, null, null, null);
+        taskService.patchTask(existing.getId(), patch, null, null, null, null, null, null);
 
         assertThat(existing.getName()).isEqualTo("Neuer Name");
         assertThat(existing.getDescription()).isEqualTo("Alte Beschreibung");
@@ -141,7 +149,7 @@ class TaskServiceTest {
         existing.setAmountDid(7);
         when(taskRepository.findById(existing.getId())).thenReturn(Optional.of(existing));
 
-        taskService.patchTask(existing.getId(), blankPatch(null, null), true, null, null, null, null);
+        taskService.patchTask(existing.getId(), blankPatch(null, null), true, null, null, null, null, null);
 
         assertThat(existing.getCompletions()).isEmpty();
         assertThat(existing.getAmountDid()).isEqualTo(0);
@@ -153,7 +161,7 @@ class TaskServiceTest {
         Task existing = existingTask();
         when(taskRepository.findById(existing.getId())).thenReturn(Optional.of(existing));
 
-        taskService.patchTask(existing.getId(), blankPatch(null, null), null, true, true, null, null);
+        taskService.patchTask(existing.getId(), blankPatch(null, null), null, true, true, null, null, null);
 
         assertThat(existing.getIsFavorite()).isTrue();
         assertThat(existing.getIsArchived()).isTrue();
@@ -165,7 +173,7 @@ class TaskServiceTest {
         UUID id = UUID.randomUUID();
         when(taskRepository.findById(id)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> taskService.patchTask(id, blankPatch(null, null), null, null, null, null, null))
+        assertThatThrownBy(() -> taskService.patchTask(id, blankPatch(null, null), null, null, null, null, null, null))
                 .isInstanceOf(TaskNotFoundException.class);
     }
 
@@ -178,7 +186,7 @@ class TaskServiceTest {
         Task existing = existingTask();
         when(taskRepository.findById(existing.getId())).thenReturn(Optional.of(existing));
 
-        taskService.patchTask(existing.getId(), blankPatch(null, null), null, null, null, 3, null);
+        taskService.patchTask(existing.getId(), blankPatch(null, null), null, null, null, 3, null, null);
 
         assertThat(existing.getAmountDid()).isEqualTo(3);
         assertThat(existing.getCompletions()).isEmpty();
