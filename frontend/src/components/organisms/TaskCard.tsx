@@ -81,6 +81,11 @@ function TaskCard({
   const visibleGroupMembers = groupMembers.slice(0, 3);
   const overflowMemberCount = groupMembers.length - visibleGroupMembers.length;
 
+  // Nur der Gruppen-Admin darf einen geteilten Projekt-Task bearbeiten
+  // (siehe TaskService#isGroupAdmin im Backend) - persönliche Tasks bleiben
+  // unbeschränkt.
+  const canEditTask = !projectGroup || projectGroup.createdBy?.id === user?.id;
+
   const {
     clampedProgress,
     doneForCurrentPeriod,
@@ -187,6 +192,7 @@ function TaskCard({
               onResetProgress={handleResetProgress}
               onTaskUpdated={onTaskUpdated}
               isArchived={isArchivedForCurrentUser(task)}
+              canEdit={canEditTask}
             />
           )}
         </div>
@@ -292,6 +298,7 @@ function TaskCard({
           onTaskUpdated={onTaskUpdated}
           isArchived={isArchivedForCurrentUser(task)}
           doneForCurrentPeriod={doneForCurrentPeriod}
+          canEdit={canEditTask}
         />
       </div>
     </Card>

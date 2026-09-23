@@ -3,6 +3,8 @@ import { addWeeks, addMonths, addDays, isSameDay } from "date-fns";
 import { ArrowRight, ArrowLeft, Menu, CalendarDays } from "lucide-react";
 import { useTasksContext } from "@/contexts/TasksContext";
 import { useAddTask } from "@/contexts/AddTaskContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useGroupsContext } from "@/contexts/GroupsContext";
 import { useBreakpoint } from "@/hooks/useBreakpoint";
 import { TaskCategory, type Task, type TaskCategory as TaskCategoryType } from "@/services/taskService";
 import { categoryLabels, ALL_CATEGORIES_LABEL } from "@/lib/taskCategoryStyles";
@@ -38,6 +40,8 @@ function CalendarPage() {
     handleUpdateTask,
   } = useTasksContext();
   const { openAddTaskForm } = useAddTask();
+  const { user } = useAuth();
+  const { groups, projectsByGroupId } = useGroupsContext();
   const breakpoint = useBreakpoint();
   // Sidebar mit permanentem Mini-Kalender nur auf Desktop - auf Tablet/Mobile
   // reicht die Breite sonst nicht für eine benutzbare Wochenansicht (#141).
@@ -71,6 +75,18 @@ function CalendarPage() {
   const selectedTask: Task | null = selectedTaskId
     ? tasks.find((task) => task.id === selectedTaskId) ?? null
     : null;
+
+  // Nur der Gruppen-Admin darf einen geteilten Projekt-Task bearbeiten
+  // (siehe TaskService#isGroupAdmin im Backend) - persönliche Tasks bleiben
+  // unbeschränkt.
+  const canEditSelectedTask = (() => {
+    if (!selectedTask?.project) return true;
+    const groupId = Object.entries(projectsByGroupId).find(([, projects]) =>
+      projects.some((p) => p.id === selectedTask.project!.id)
+    )?.[0];
+    const group = groups.find((g) => g.id === groupId);
+    return !group || group.createdBy?.id === user?.id;
+  })();
 
   const categories = Object.values(TaskCategory);
   const visibleTasks =
@@ -417,6 +433,7 @@ function CalendarPage() {
         onTaskUpdated={handleUpdateTask}
         isArchived={selectedTask?.isArchived ?? false}
         doneForCurrentPeriod={selectedTask ? isDoneForCurrentPeriod(selectedTask) : false}
+        canEdit={canEditSelectedTask}
       />
       </div>
     </div>

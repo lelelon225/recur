@@ -23,6 +23,8 @@ type TaskDetailDialogProps = {
   isArchived: boolean;
   /** Ob das aktuelle Frequenz-Intervall bereits erledigt ist - von TaskCard/useTaskCard übernommen, damit beide Stellen exakt dieselbe (Projekt- vs. persönliche Task-)Logik verwenden (#152). */
   doneForCurrentPeriod: boolean;
+  /** Bei Gruppen-Tasks nur true für den Gruppen-Admin - persönliche Tasks immer true. */
+  canEdit?: boolean;
 };
 
 /** Verlauf vergangener Frequenz-Intervalle mit Nachtrag/Rückgängig pro Tag
@@ -74,6 +76,7 @@ function TaskDetailDialog({
   onTaskUpdated,
   isArchived,
   doneForCurrentPeriod,
+  canEdit = true,
 }: TaskDetailDialogProps) {
   return (
     <DetailDialog open={open} onClose={onClose} title={task?.name}>
@@ -93,6 +96,7 @@ function TaskDetailDialog({
               onDelete={onDelete}
               onTaskUpdated={onTaskUpdated}
               isArchived={isArchived}
+              canEdit={canEdit}
             />
           </div>
 
