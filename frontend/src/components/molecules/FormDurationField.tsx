@@ -5,12 +5,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { DURATION_OPTIONS } from "@/constants/taskOptions";
 
-/**
- * Dauer-Auswahl über anklickbare Presets statt manueller Zahleneingabe -
- * der häufige Fall (15/30/45/60/90 min) braucht so nur einen Klick. "Eigene"
- * schaltet auf ein Zahlenfeld für abweichende Werte um. Bleibt wie bisher
- * optional: erneutes Klicken des aktiven Chips setzt den Wert zurück auf null.
- */
+/** Dauer-Auswahl über anklickbare Presets (15/30/45/60/90 min) statt Zahleneingabe; "Eigene" schaltet auf ein Zahlenfeld um, erneutes Klicken des aktiven Chips setzt den Wert zurück auf null. */
 function FormDurationField() {
   const [field, meta, helpers] = useField<number | null>("durationMinutes");
   const { setValue, setTouched } = helpers;

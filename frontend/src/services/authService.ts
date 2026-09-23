@@ -69,12 +69,7 @@ export async function resetPassword(
     });
 }
 
-/**
- * Tauscht das kurzlebige HttpOnly-Handoff-Cookie (gesetzt vom OAuth2-Redirect)
- * gegen den echten Access-Token ein, den der Server als HttpOnly-Cookie setzt
- * (#160), statt ihn aus der Redirect-URL zu lesen. `withCredentials`, damit
- * das Handoff-Cookie cross-origin mitgeschickt wird.
- */
+/** Tauscht das kurzlebige HttpOnly-Handoff-Cookie (gesetzt vom OAuth2-Redirect) gegen den echten Access-Token ein, den der Server als HttpOnly-Cookie setzt (#160), statt ihn aus der Redirect-URL zu lesen; `withCredentials`, damit das Handoff-Cookie cross-origin mitgeschickt wird. */
 export async function exchangeOAuth2Token(): Promise<AuthResponse> {
   return await api
     .get("/auth/oauth2/token", { withCredentials: true })
@@ -86,22 +81,14 @@ export async function exchangeOAuth2Token(): Promise<AuthResponse> {
     });
 }
 
-/**
- * Tauscht das HttpOnly refresh_token-Cookie gegen einen frischen Access-Token
- * ein und rotiert das Cookie mit (Server setzt ein neues via Set-Cookie).
- */
+/** Tauscht das HttpOnly refresh_token-Cookie gegen einen frischen Access-Token ein und rotiert das Cookie mit (Server setzt ein neues via Set-Cookie). */
 export async function refreshAccessToken(): Promise<AuthResponse> {
   return await api
     .post("/auth/refresh", {})
     .then((response) => response.data as AuthResponse);
 }
 
-/**
- * Best-effort: revoked die Server-Session zum aktuellen refresh_token-Cookie
- * und löscht dabei serverseitig auch das access_token-Cookie (#160). Schlägt
- * nie sichtbar fehl - ein bereits abgelaufenes/fehlendes Cookie ist kein
- * Fehlerfall.
- */
+/** Best-effort: revoked die Server-Session zum aktuellen refresh_token-Cookie und löscht dabei serverseitig auch das access_token-Cookie (#160); schlägt nie sichtbar fehl - ein bereits abgelaufenes/fehlendes Cookie ist kein Fehlerfall. */
 export async function revokeRefreshToken(): Promise<void> {
   await api.post("/auth/logout", {}).catch(() => undefined);
 }
@@ -143,13 +130,7 @@ export function deleteCurrentUser(): Promise<void> {
     });
 }
 
-/**
- * A 401 from any endpoint other than login/register means our token is
- * missing, expired, or invalid. Send the user through /logout, which clears
- * it and shows why before redirecting to /login - same transitional-page
- * pattern as OAuthCallbackPage, instead of leaving the app in a
- * half-authenticated state with no explanation (#145).
- */
+/** A 401 from any endpoint other than login/register means our token is missing, expired, or invalid - send the user through /logout (same transitional-page pattern as OAuthCallbackPage) instead of leaving the app half-authenticated with no explanation (#145). */
 const AUTH_ENDPOINTS = ["/auth/login", "/auth/register", "/auth/me"];
 
 // Endpunkte, für die ein 401 nie einen Silent-Refresh auslösen soll -
