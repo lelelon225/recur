@@ -1,15 +1,15 @@
 "use client";
 
 import ReactErrorBoundary from "@/components/error/ReactErrorBoundary";
-import PrivacyPage from "@/components/pages/PrivacyPage";
+import SettingsPage from "@/components/pages/SettingsPage";
 
 export default function Page() {
   return (
     <ReactErrorBoundary
-      errorMessage="Die Privatsphäre-Einstellungen konnten nicht angezeigt werden."
+      errorMessage="Die Einstellungen konnten nicht angezeigt werden."
       fullScreen={false}
     >
-      <PrivacyPage />
+      <SettingsPage />
     </ReactErrorBoundary>
   );
 }

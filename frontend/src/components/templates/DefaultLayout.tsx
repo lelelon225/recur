@@ -5,9 +5,9 @@ import { Toaster } from "@/components/ui/sonner";
 import { AddTaskProvider } from "@/contexts/AddTaskContext";
 import { ImportQuartalsplanProvider } from "@/contexts/ImportQuartalsplanContext";
 import Fab from "@/components/atoms/FloatingActionButton";
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "../ui/sidebar";
-import { Separator } from "../ui/separator";
+import { SidebarInset, SidebarProvider } from "../ui/sidebar";
 import AppSidebar from "../organisms/sidebar/AppSidebar";
+import AppBar from "../molecules/AppBar";
 
 type DefaultLayoutProps = {
   children: ReactNode;
@@ -39,23 +39,10 @@ function DefaultLayout({ children, pageTitle }: DefaultLayoutProps) {
           <AppSidebar destinations={destinations} />
 
           <SidebarInset>
+            <AppBar title={pageTitle} />
+
             <div className="flex mx-auto w-full max-w-6xl px-4 py-6 pb-24">
-              <div className="mb-6 flex w-full flex-col gap-4">
-                <div className="flex items-center gap-2">
-                  <SidebarTrigger className="-ml-1" />
-
-                  <Separator
-                    orientation="vertical"
-                    className="mr-2 data-[orientation=vertical]:h-4"
-                  />
-
-                  <h1 className="text-xl font-semibold text-foreground">
-                    {pageTitle}
-                  </h1>
-                </div>
-
-                <main>{children}</main>
-              </div>
+              <main className="w-full">{children}</main>
             </div>
 
             <Toaster position="bottom-left" />

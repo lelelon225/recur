@@ -4,16 +4,16 @@ import { updatePrivacySettings } from "@/services/privacyService";
 import { deleteCurrentUser, logout } from "@/services/authService";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Spinner } from "@/components/ui/spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import ConfirmDialog from "@/components/molecules/dialog/ConfirmDialog";
-import PrivacyForm from "../organisms/settings/PrivacyForm";
+import PrivacyForm from "./PrivacyForm";
 import usePrivacySettings from "@/hooks/usePrivacySettings";
 
-type PrivacyPageProps = {
+type PrivacySectionProps = {
   initialSettings: PrivacySettings;
 };
 
-function PrivacyPage({ initialSettings }: PrivacyPageProps) {
+function PrivacySection({ initialSettings }: PrivacySectionProps) {
   const [settings, setSettings] = useState(initialSettings);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,7 +58,7 @@ function PrivacyPage({ initialSettings }: PrivacyPageProps) {
   };
 
   return (
-    <div className="mx-auto max-w-xl px-4 py-6">
+    <>
       <PrivacyForm
         values={settings}
         disabled={saving}
@@ -92,22 +92,18 @@ function PrivacyPage({ initialSettings }: PrivacyPageProps) {
           <p className="mt-2 text-sm text-destructive">{deleteError}</p>
         )}
       </div>
-    </div>
+    </>
   );
 }
 
-function PrivacyPageWrapper() {
+function PrivacySectionWrapper() {
   const { settings } = usePrivacySettings();
 
   if (!settings) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <Spinner className="size-8 text-primary" />
-      </div>
-    );
+    return <Skeleton className="h-40 w-full" />;
   }
 
-  return <PrivacyPage initialSettings={settings} />;
+  return <PrivacySection initialSettings={settings} />;
 }
 
-export default PrivacyPageWrapper;
+export default PrivacySectionWrapper;

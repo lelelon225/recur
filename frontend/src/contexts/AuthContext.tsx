@@ -23,6 +23,7 @@ type AuthContextValue = {
     register: (request: RegisterRequest) => Promise<void>;
     completeOAuthLogin: () => Promise<void>;
     logout: () => void;
+    updateUser: (user: UserResponse) => void;
 };
 
 
@@ -101,6 +102,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         logoutService();
     }, []);
 
+    const updateUser = useCallback((updated: UserResponse) => {
+        setUser(updated);
+    }, []);
+
     const value: AuthContextValue = {
         user,
         isAuthenticated: !!user,
@@ -110,6 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         register,
         completeOAuthLogin,
         logout,
+        updateUser,
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

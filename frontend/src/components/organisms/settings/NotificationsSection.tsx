@@ -2,15 +2,15 @@ import { useState } from "react";
 import type { NotificationSettings } from "@/types/notifications";
 import { updateNotificationSettings } from "@/services/notificationService";
 import { disablePushNotifications, enablePushNotifications } from "@/services/pushService";
-import { Spinner } from "@/components/ui/spinner";
-import NotificationForm from "../organisms/settings/NotificationForm";
+import { Skeleton } from "@/components/ui/skeleton";
+import NotificationForm from "./NotificationForm";
 import useNotificationSettings from "@/hooks/useNotificationSettings";
 
-type NotificationsPageProps = {
+type NotificationsSectionProps = {
   initialSettings: NotificationSettings;
 };
 
-function NotificationsPage({ initialSettings }: NotificationsPageProps) {
+function NotificationsSection({ initialSettings }: NotificationsSectionProps) {
   const [settings, setSettings] = useState(initialSettings);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,29 +45,25 @@ function NotificationsPage({ initialSettings }: NotificationsPageProps) {
   };
 
   return (
-    <div className="mx-auto max-w-xl px-4 py-6">
+    <>
       <NotificationForm
         values={settings}
         disabled={saving}
         onFieldChange={handleFieldChange}
       />
       {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
-    </div>
+    </>
   );
 }
 
-function NotificationsPageWrapper() {
+function NotificationsSectionWrapper() {
   const { settings } = useNotificationSettings();
 
   if (!settings) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <Spinner className="size-8 text-primary" />
-      </div>
-    );
+    return <Skeleton className="h-40 w-full" />;
   }
 
-  return <NotificationsPage initialSettings={settings} />;
+  return <NotificationsSection initialSettings={settings} />;
 }
 
-export default NotificationsPageWrapper;
+export default NotificationsSectionWrapper;
