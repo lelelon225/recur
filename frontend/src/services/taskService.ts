@@ -102,6 +102,8 @@ export type PatchTaskOptions = {
   amountDid?: number;
   /** Setzt den Task explizit zurück auf persönlich (kein Projekt mehr). */
   unassignProject?: boolean;
+  /** Undo für deleteTask bei einem für dich ausgeblendeten Projekt-Task - macht nur mit `false` Sinn, siehe deleteTask. */
+  hidden?: boolean;
 };
 
 function extractErrorMessage(err: unknown, fallback: string): string {
@@ -180,10 +182,11 @@ function patchTask(id: string, options: PatchTaskOptions = {}): Promise<Task> {
     archived,
     amountDid,
     unassignProject,
+    hidden,
   } = options;
   return api
     .patch(`/task/${id}`, withProjectReference(normalizeTaskDates(task)), {
-      params: { resetProgress, favorite, archived, amountDid, unassignProject },
+      params: { resetProgress, favorite, archived, amountDid, unassignProject, hidden },
     })
     .then((response) => response.data as Task)
     .catch((err: unknown) => {
@@ -213,10 +216,17 @@ function removeTaskCompletion(id: string, date: string): Promise<Task> {
     });
 }
 
-function deleteTask(id: string): Promise<void> {
+/**
+ * Löscht einen persönlichen Task oder (als Ersteller) einen Projekt-Task
+ * endgültig für alle - der Server antwortet dann mit leerem Body (null).
+ * Blendet ein anderes Gruppenmitglied den Task nur für sich aus, liefert der
+ * Server stattdessen den aktualisierten Task zurück, damit das Frontend
+ * einen Undo-Toast (patchTask({ hidden: false })) anbieten kann.
+ */
+function deleteTask(id: string): Promise<Task | null> {
   return api
     .delete(`/task/${id}`)
-    .then(() => {})
+    .then((response) => (response.data as Task | "") || null)
     .catch((err: unknown) => {
       throw new Error(
         extractErrorMessage(err, "Fehler beim Löschen der Aufgabe")

@@ -19,7 +19,7 @@ import {
   unassignSelf,
 } from "@/services/taskService";
 import type { Task } from "@/services/taskService";
-import { showErrorToast } from "@/lib/toast";
+import { showErrorToast, showUndoToast } from "@/lib/toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { currentPeriodCompletion, today } from "@/utils/taskCompletions";
 
@@ -248,14 +248,32 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  // Bei einem Gruppen-Task, den nicht ich erstellt habe, "löscht" der Server
+  // ihn nur für mich (hiddenFor) und gibt den aktualisierten Task zurück -
+  // dafür gibt es einen Undo-Toast statt der sonstigen Fehler-Rollback-
+  // Logik. Beim endgültigen Löschen (eigener/persönlicher Task oder als
+  // Ersteller) kommt kein Body zurück, es bleibt beim einfachen Entfernen.
   const handleDelete = useCallback(async (taskId: string) => {
     const previousTasks = tasksRef.current;
     setTasks((prev) => prev.filter((task) => task.id !== taskId));
 
-    await deleteTask(taskId).catch((err) => {
-      setTasks(previousTasks);
-      showErrorToast(err instanceof Error ? err.message : "Fehler beim Löschen der Aufgabe");
-    });
+    await deleteTask(taskId)
+      .then((hiddenTask) => {
+        if (!hiddenTask) return;
+        showUndoToast("Aufgabe für dich entfernt", () => {
+          patchTask(taskId, { hidden: false })
+            .then((restoredTask) => {
+              setTasks((prev) => [...prev, restoredTask]);
+            })
+            .catch((err) => {
+              showErrorToast(err instanceof Error ? err.message : "Fehler beim Wiederherstellen der Aufgabe");
+            });
+        });
+      })
+      .catch((err) => {
+        setTasks(previousTasks);
+        showErrorToast(err instanceof Error ? err.message : "Fehler beim Löschen der Aufgabe");
+      });
   }, []);
 
   // Nachträgliches Abhaken/Rückgängig eines einzelnen Tages (#152), z.B. aus

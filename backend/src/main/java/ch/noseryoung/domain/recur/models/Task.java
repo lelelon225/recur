@@ -7,6 +7,8 @@ import java.util.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import ch.noseryoung.domain.recur.enums.Category;
 import ch.noseryoung.domain.recur.enums.Frequency;
 import ch.noseryoung.domain.recur.enums.ReminderLeadTime;
@@ -163,4 +165,26 @@ public class Task {
         @ManyToMany(fetch = FetchType.LAZY)
         @JoinTable(name = "task_archived_by", joinColumns = @JoinColumn(name = "task_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
         private Set<User> archivedBy = new HashSet<>();
+
+        // Ersteller des Tasks - bei persönlichen Tasks identisch zu owner, bei
+        // Projekt-Tasks der einzige, der ihn (nach dem Archivieren) für ALLE
+        // Mitglieder endgültig löschen darf (siehe TaskService#deleteTask).
+        // Bestandstasks von vor diesem Feld haben hier null - dort greift ein
+        // Fallback auf den Gruppen-Admin (TaskService#isTaskCreator). Rein
+        // serverseitig relevant, daher @JsonIgnore statt über maskMembers
+        // anonymisiert zu werden wie assignedMembers/archivedBy.
+        @JsonIgnore
+        @ManyToOne(fetch = FetchType.LAZY)
+        @JoinColumn(name = "created_by_id")
+        private User createdBy;
+
+        // Pro-Mitglied-Ausblenden für Projekt-Tasks: ein Nicht-Ersteller kann
+        // einen archivierten Gruppen-Task im Archiv "löschen", ohne ihn für die
+        // anderen zugewiesenen Mitglieder zu entfernen (TaskService#deleteTask).
+        // Rückgängig machbar über PATCH ?hidden=false (Undo-Toast im Frontend).
+        @JsonIgnore
+        @Builder.Default
+        @ManyToMany(fetch = FetchType.LAZY)
+        @JoinTable(name = "task_hidden_for", joinColumns = @JoinColumn(name = "task_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
+        private Set<User> hiddenFor = new HashSet<>();
 }

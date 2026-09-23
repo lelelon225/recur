@@ -134,6 +134,24 @@ public class TaskService {
                                 && task.getProject().getGroup().getCreatedBy().equals(user);
         }
 
+        // Wer einen Projekt-Task nach dem Archivieren für ALLE Mitglieder
+        // endgültig löschen darf (TaskService#deleteTask) - normalerweise sein
+        // Ersteller. Bestandstasks von vor diesem Feld haben createdBy=null,
+        // dort greift ersatzweise der Gruppen-Admin.
+        private boolean isTaskCreator(Task task, User user) {
+                return task.getCreatedBy() != null ? task.getCreatedBy().equals(user) : isGroupAdmin(task, user);
+        }
+
+        // Spiegelt TasksContext#isArchivedForCurrentUser im Frontend: bei einem
+        // geteilten Projekt-Task zählt sowohl der globale isArchived-Flag als
+        // auch ein individueller Eintrag in archivedBy.
+        private boolean isArchivedForCurrentUser(Task task, User user) {
+                if (Boolean.TRUE.equals(task.getIsArchived())) {
+                        return true;
+                }
+                return task.getProject() != null && task.getArchivedBy().contains(user);
+        }
+
         // Archivieren eines geteilten Projekt-Tasks ist pro Mitglied: wer fertig
         // ist, archiviert nur für sich (archivedBy), der Task bleibt für die
         // anderen zugewiesenen Mitglieder aktiv. Erst wenn alle zugewiesenen
@@ -262,6 +280,7 @@ public class TaskService {
                                 .dateUntil(request.dateUntil())
                                 .durationMinutes(request.durationMinutes())
                                 .startTime(request.startTime())
+                                .createdBy(currentUser)
                                 .build();
 
                 ProjectReference project = request.project();
@@ -303,7 +322,8 @@ public class TaskService {
                         Boolean favorite,
                         Boolean archived,
                         Integer amountDid,
-                        Boolean unassignProject) {
+                        Boolean unassignProject,
+                        Boolean hidden) {
 
                 User currentUser = getCurrentUser();
                 Task existingTask = taskRepository.findById(id)
@@ -359,6 +379,13 @@ public class TaskService {
 
                 if (archived != null) {
                         applyArchivedChange(existingTask, archived, currentUser);
+                }
+
+                // Undo für ein per DELETE ausgeblendetes Mitglied (TaskService#deleteTask,
+                // siehe hiddenFor) - "wieder einblenden" ist der einzige unterstützte
+                // Fall, hidden=true gibt es nicht (das läuft über DELETE).
+                if (Boolean.FALSE.equals(hidden)) {
+                        existingTask.getHiddenFor().remove(currentUser);
                 }
 
                 boolean isResetProgress = resetProgress != null && resetProgress;
@@ -561,6 +588,13 @@ public class TaskService {
         }
 
         // DELETE METHODS
+        //
+        // Persönliche Tasks und der Ersteller eines Projekt-Tasks löschen
+        // endgültig für alle (200, kein Body, wie bisher). Ein anderes Gruppenmitglied kann
+        // einen archivierten Projekt-Task nur für sich ausblenden (hiddenFor) -
+        // die anderen zugewiesenen Mitglieder behalten ihn. Rückgängig machbar
+        // über PATCH ?hidden=false, daher hier 200 mit dem aktualisierten Task
+        // als Body, damit das Frontend einen Undo-Toast anbieten kann.
         public ResponseEntity<Task> deleteTask(UUID id) {
 
                 User user = getCurrentUser();
@@ -568,13 +602,19 @@ public class TaskService {
                                 .filter(t -> hasAccess(t, user))
                                 .orElseThrow(() -> new TaskNotFoundException(id));
 
-                if (!Boolean.TRUE.equals(task.getIsArchived())) {
+                if (!isArchivedForCurrentUser(task, user)) {
                         return ResponseEntity.status(403).build();
                 }
 
-                taskRepository.deleteById(id);
+                if (task.getProject() == null || isTaskCreator(task, user)) {
+                        taskRepository.deleteById(id);
+                        return ResponseEntity.ok().build();
+                }
 
-                return ResponseEntity.ok().build();
+                task.getHiddenFor().add(user);
+                taskRepository.save(task);
+
+                return ResponseEntity.ok(maskMembers(task, user));
         }
 
         public ResponseEntity<Task> deleteAllTasks() {
