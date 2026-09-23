@@ -19,16 +19,45 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import ch.noseryoung.domain.recur.exceptions.ErrorResponse;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+        // Endpunkte, die weder Authentifizierung noch CSRF-Schutz brauchen: sie
+        // liegen entweder vor jedem Cookie (login/register) oder sind selbst
+        // Cookie-Ausstellung/-Widerruf ohne bereits authentifizierten Zustand,
+        // der zu schützen wäre (#160).
+        private static final String[] PUBLIC_PATHS = {
+                        "/api/auth/register",
+                        "/api/auth/login",
+                        "/api/auth/oauth2/token",
+                        "/api/auth/refresh",
+                        "/api/auth/logout",
+                        "/api/auth/verify-email",
+                        "/api/auth/resend-verification",
+                        "/api/auth/forgot-password",
+                        "/api/auth/reset-password",
+                        "/oauth2/**",
+                        "/login/**",
+                        "/swagger-ui/**",
+                        "/v3/api-docs/**",
+                        "/error/**"
+        };
 
         @Value("${app.cors.allowed-origin}")
         private String allowedOrigins;
@@ -59,25 +88,23 @@ public class SecurityConfig {
         public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
                 http
                                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                                .csrf(csrf -> csrf.disable())
+                                // Access-Token liegt jetzt in einem HttpOnly-Cookie statt im
+                                // Authorization-Header (#160), das der Browser automatisch auf
+                                // jeden Request mitschickt - macht die API CSRF-anfällig ohne
+                                // eigenen Schutz. CookieCsrfTokenRepository statt der
+                                // session-basierten Default-Variante, da die App komplett
+                                // stateless ist (siehe sessionManagement unten). Handler ohne
+                                // XOR-Maskierung, weil das Frontend den rohen Cookie-Wert per JS
+                                // liest und ungemaskt im X-XSRF-TOKEN-Header zurückschickt (Axios
+                                // macht das automatisch, siehe api.ts).
+                                .csrf(csrf -> csrf
+                                                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                                                .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
+                                                .ignoringRequestMatchers(PUBLIC_PATHS))
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                                 .authorizeHttpRequests(auth -> auth
-                                                .requestMatchers(
-                                                                "/api/auth/register",
-                                                                "/api/auth/login",
-                                                                "/api/auth/oauth2/token",
-                                                                "/api/auth/refresh",
-                                                                "/api/auth/logout",
-                                                                "/api/auth/verify-email",
-                                                                "/api/auth/resend-verification",
-                                                                "/api/auth/forgot-password",
-                                                                "/api/auth/reset-password",
-                                                                "/oauth2/**",
-                                                                "/login/**",
-                                                                "/swagger-ui/**",
-                                                                "/v3/api-docs/**",
-                                                                "/error/**")
+                                                .requestMatchers(PUBLIC_PATHS)
                                                 .permitAll()
                                                 // /api/auth/me (GET/PATCH/DELETE) intentionally NOT
                                                 // permitAll - the "/api/auth/**" wildcard used to
@@ -104,9 +131,28 @@ public class SecurityConfig {
                                                                 .oidcUserService(customOidcUserService))
                                                 .successHandler(oAuth2AuthenticationSuccessHandler)
                                                 .failureHandler(oAuth2AuthenticationFailureHandler))
-                                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                                // CsrfFilter lädt den Token nur lazy (Supplier) - ohne diesen
+                                // Filter würde das XSRF-TOKEN-Cookie nie tatsächlich geschrieben,
+                                // weil ihn nie jemand liest. Offizielles Spring-Security-Rezept
+                                // für SPA + Cookie-basiertes CSRF.
+                                .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class);
 
                 return http.build();
+        }
+
+        private static final class CsrfCookieFilter extends OncePerRequestFilter {
+                @Override
+                protected void doFilterInternal(
+                                HttpServletRequest request,
+                                HttpServletResponse response,
+                                FilterChain filterChain) throws IOException, ServletException {
+                        CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
+                        if (csrfToken != null) {
+                                csrfToken.getToken();
+                        }
+                        filterChain.doFilter(request, response);
+                }
         }
 
         private void writeJsonError(

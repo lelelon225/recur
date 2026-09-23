@@ -1,13 +1,14 @@
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { clearToken, revokeRefreshToken } from "@/services/authService";
+import { revokeRefreshToken } from "@/services/authService";
 
 const REDIRECT_DELAY_MS = 1200;
 
 /**
- * Clears the token and holds on this page briefly so the user actually
+ * Revokes the session and holds on this page briefly so the user actually
  * sees why they're being sent to /login, instead of an instant, silent
- * redirect (see #145).
+ * redirect (see #145). Access/refresh-token cookies are cleared server-side
+ * by /auth/logout itself (#160).
  */
 export function useLogoutRedirect() {
     const router = useRouter();
@@ -16,7 +17,6 @@ export function useLogoutRedirect() {
 
     useEffect(() => {
         revokeRefreshToken();
-        clearToken();
         const timer = setTimeout(() => router.replace("/login"), REDIRECT_DELAY_MS);
         return () => clearTimeout(timer);
     }, [router]);

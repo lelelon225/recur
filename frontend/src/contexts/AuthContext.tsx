@@ -10,9 +10,6 @@ import {
     register as registerService,
     login as loginService,
     getCurrentUser,
-    setToken,
-    clearToken,
-    isLoggedIn,
     logout as logoutService,
 } from "../services/authService";
 import type { UserResponse, RegisterRequest, LoginRequest } from "../types/auth";
@@ -24,7 +21,7 @@ type AuthContextValue = {
     error: string | null;
     login: (request: LoginRequest) => Promise<void>;
     register: (request: RegisterRequest) => Promise<void>;
-    completeOAuthLogin: (token: string) => Promise<void>;
+    completeOAuthLogin: () => Promise<void>;
     logout: () => void;
 };
 
@@ -39,16 +36,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         let cancelled = false;
 
+        // Der Access-Token liegt in einem HttpOnly-Cookie (#160) und ist per JS
+        // nicht lesbar - ob eine Session besteht, kann nur der Server sagen.
         async function bootstrap() {
-            if (!isLoggedIn()) {
-                setIsLoading(false);
-                return;
-            }
             try {
                 const currentUser = await getCurrentUser();
                 if (!cancelled) setUser(currentUser);
             } catch {
-                clearToken();
                 if (!cancelled) setUser(null);
             } finally {
                 if (!cancelled) setIsLoading(false);
@@ -65,7 +59,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setError(null);
         try {
             const response = await loginService(request);
-            setToken(response.token);
             setUser(response.user);
         } catch (err) {
             const message = err instanceof Error ? err.message : "Login failed";
@@ -81,7 +74,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setError(null);
         try {
             const response = await registerService(request);
-            setToken(response.token);
             setUser(response.user);
         } catch (err) {
             const message = err instanceof Error ? err.message : "Registration failed";
@@ -90,14 +82,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     }, []);
 
-    const completeOAuthLogin = useCallback(async (token: string) => {
+    // Access-Token wurde bereits von exchangeOAuth2Token als HttpOnly-Cookie
+    // gesetzt (#160) - hier nur noch den User nachladen.
+    const completeOAuthLogin = useCallback(async () => {
         setError(null);
         try {
-            setToken(token);
             const currentUser = await getCurrentUser();
             setUser(currentUser);
         } catch (err) {
-            clearToken();
             const message = err instanceof Error ? err.message : "Google-Login fehlgeschlagen";
             setError(message);
             throw err;

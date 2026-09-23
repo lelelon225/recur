@@ -58,13 +58,12 @@ function DatenschutzPage() {
             <span className="font-medium text-foreground">
               Technische Daten:
             </span>{" "}
-            ein Anmelde-Token (JWT), das lokal in deinem Browser
-            (localStorage) gespeichert wird, um dich eingeloggt zu halten,
-            sowie ein Sitzungs-Token (Refresh-Token), das in einem für
-            JavaScript nicht zugänglichen Cookie liegt und automatisch einen
-            neuen Anmelde-Token ausstellt, sobald der alte abläuft - so
-            bleibst du bis zu 30 Tage eingeloggt, ohne dich erneut anmelden
-            zu müssen. Zu jeder solchen Sitzung speichern wir zudem die
+            ein Anmelde-Token (JWT) und ein Sitzungs-Token (Refresh-Token),
+            die beide in für JavaScript nicht zugänglichen Cookies liegen;
+            das Sitzungs-Token stellt automatisch ein neues Anmelde-Token
+            aus, sobald das alte abläuft - so bleibst du bis zu 30 Tage
+            eingeloggt, ohne dich erneut anmelden zu müssen. Zu jeder
+            solchen Sitzung speichern wir zudem die
             IP-Adresse und den User-Agent (Browser/Gerät) des jeweiligen
             Geräts; das ermöglicht künftig eine Übersicht deiner aktiven
             Sitzungen. Meldest du dich ab, wird die zugehörige Sitzung
@@ -211,17 +210,6 @@ function DatenschutzPage() {
 
       <section className="flex flex-col gap-2">
         <h2 className="text-base font-semibold text-foreground">
-          Lokale Speicherung (localStorage)
-        </h2>
-        <p>
-          Recur verwendet den localStorage deines Browsers, um dein
-          Anmelde-Token zu speichern. Dies ist technisch notwendig, damit
-          du zwischen Seitenaufrufen eingeloggt bleibst.
-        </p>
-      </section>
-
-      <section className="flex flex-col gap-2">
-        <h2 className="text-base font-semibold text-foreground">
           Cookies
         </h2>
         <p>
@@ -248,12 +236,30 @@ function DatenschutzPage() {
           </li>
           <li>
             <span className="font-medium text-foreground">
+              access_token:
+            </span>{" "}
+            hält dein Anmelde-Token für die Dauer deiner Sitzung (30 Minuten,
+            wird bei Aktivität automatisch erneuert, siehe "Technische Daten"
+            oben). Für JavaScript nicht auslesbar (HttpOnly) und nur an
+            unseren Server, nicht an Dritte, übermittelt.
+          </li>
+          <li>
+            <span className="font-medium text-foreground">
               refresh_token:
             </span>{" "}
             hält dich bis zu 30 Tage eingeloggt, ohne dass du dich erneut
             anmelden musst (siehe "Technische Daten" oben). Für JavaScript
             nicht auslesbar (HttpOnly) und nur an unseren Server, nicht an
             Dritte, übermittelt.
+          </li>
+          <li>
+            <span className="font-medium text-foreground">
+              XSRF-TOKEN:
+            </span>{" "}
+            ein zufälliger Sicherheits-Wert, der Angriffe verhindert, bei
+            denen eine andere Website in deinem Namen Aktionen in Recur
+            auslösen würde (CSRF-Schutz). Enthält keine personenbezogenen
+            Daten und wird nur an unseren Server übermittelt.
           </li>
         </ul>
       </section>
