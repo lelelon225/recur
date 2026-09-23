@@ -45,10 +45,11 @@ public class AuthService {
     private final RefreshTokenService refreshTokenService;
     private final EmailService emailService;
 
-    // Bündelt den Access-Token (AuthResponse, geht in den Response-Body) mit
-    // dem rohen Refresh-Token (geht als HttpOnly-Cookie raus) - der Controller
-    // baut daraus das Set-Cookie-Header, der Service kennt keine HTTP-Response.
-    public record AuthResult(AuthResponse authResponse, String refreshToken) {
+    // Bündelt die AuthResponse (User, geht in den Response-Body) mit dem rohen
+    // Access- und Refresh-Token (beide gehen als HttpOnly-Cookies raus, #160) -
+    // der Controller baut daraus die Set-Cookie-Header, der Service kennt keine
+    // HTTP-Response.
+    public record AuthResult(AuthResponse authResponse, String accessToken, String refreshToken) {
     }
 
     @Value("${app.frontend.url}")
@@ -130,13 +131,13 @@ public class AuthService {
     public AuthResult refresh(String refreshToken, HttpServletRequest httpRequest) {
         RefreshTokenService.RotationResult rotation = refreshTokenService.rotate(refreshToken, httpRequest);
         String token = jwtService.generateToken(rotation.user());
-        return new AuthResult(new AuthResponse(token, UserResponse.from(rotation.user())), rotation.rawToken());
+        return new AuthResult(new AuthResponse(UserResponse.from(rotation.user())), token, rotation.rawToken());
     }
 
     private AuthResult authResult(User user, HttpServletRequest httpRequest) {
         String token = jwtService.generateToken(user);
         String refreshToken = refreshTokenService.issue(user, httpRequest);
-        return new AuthResult(new AuthResponse(token, UserResponse.from(user)), refreshToken);
+        return new AuthResult(new AuthResponse(UserResponse.from(user)), token, refreshToken);
     }
 
     public VerificationStatus verifyEmail(String token) {
@@ -258,8 +259,12 @@ public class AuthService {
     // Tauscht das kurzlebige HttpOnly-Handoff-Cookie (siehe
     // OAuth2AuthenticationSuccessHandler) gegen die gleiche AuthResponse-Form
     // wie beim normalen Login - der Token selbst wird dabei nicht neu
-    // ausgestellt, nur validiert und an den Client zurückgegeben.
-    public AuthResponse exchangeOAuth2Token(String token) {
+    // ausgestellt, nur validiert; der Controller setzt ihn als Access-Token-
+    // Cookie (#160).
+    public record TokenExchangeResult(AuthResponse authResponse, String accessToken) {
+    }
+
+    public TokenExchangeResult exchangeOAuth2Token(String token) {
         String email;
         try {
             email = jwtService.extractEmail(token);
@@ -274,7 +279,7 @@ public class AuthService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(InvalidCredentialsException::new);
 
-        return new AuthResponse(token, UserResponse.from(user));
+        return new TokenExchangeResult(new AuthResponse(UserResponse.from(user)), token);
     }
 
     public UserResponse getCurrentUser() {

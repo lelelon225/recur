@@ -15,7 +15,6 @@ export type UserResponse = {
 };
 
 export type AuthResponse = {
-    token: string;
     user: UserResponse;
 };
 

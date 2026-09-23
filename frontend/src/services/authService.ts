@@ -71,8 +71,9 @@ export async function resetPassword(
 
 /**
  * Tauscht das kurzlebige HttpOnly-Handoff-Cookie (gesetzt vom OAuth2-Redirect)
- * gegen den echten Token im Response-Body ein, statt ihn aus der Redirect-URL
- * zu lesen. `withCredentials`, damit das Cookie cross-origin mitgeschickt wird.
+ * gegen den echten Access-Token ein, den der Server als HttpOnly-Cookie setzt
+ * (#160), statt ihn aus der Redirect-URL zu lesen. `withCredentials`, damit
+ * das Handoff-Cookie cross-origin mitgeschickt wird.
  */
 export async function exchangeOAuth2Token(): Promise<AuthResponse> {
   return await api
@@ -96,9 +97,10 @@ export async function refreshAccessToken(): Promise<AuthResponse> {
 }
 
 /**
- * Best-effort: revoked die Server-Session zum aktuellen refresh_token-Cookie.
- * Wird vor dem lokalen clearToken() aufgerufen, schlägt aber nie sichtbar
- * fehl - ein bereits abgelaufenes/fehlendes Cookie ist kein Fehlerfall.
+ * Best-effort: revoked die Server-Session zum aktuellen refresh_token-Cookie
+ * und löscht dabei serverseitig auch das access_token-Cookie (#160). Schlägt
+ * nie sichtbar fehl - ein bereits abgelaufenes/fehlendes Cookie ist kein
+ * Fehlerfall.
  */
 export async function revokeRefreshToken(): Promise<void> {
   await api.post("/auth/logout", {}).catch(() => undefined);
@@ -115,48 +117,9 @@ export async function getCurrentUser(): Promise<UserResponse> {
     });
 }
 
-export function setToken(token: string): void {
-  localStorage.setItem("authToken", token);
-}
-
-export function getToken(): string | null {
-  return localStorage.getItem("authToken");
-}
-
-export function clearToken(): void {
-  localStorage.removeItem("authToken");
-}
-
-export function isLoggedIn(): boolean {
-  const token = getToken();
-  try {
-    if (!token) return false;
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    const exp = payload.exp;
-    const currentTime = Math.floor(Date.now() / 1000);
-    return exp > currentTime;
-  } catch (error) {
-    console.error("Error checking login status:", error);
-    return false;
-  }
-}
-
 export function logout(): void {
   window.location.href = "/logout";
 }
-
-api.interceptors.request.use(
-  (config) => {
-    const token = getToken();
-    if (token) {
-      config.headers["Authorization"] = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
 
 export function patchUser(user: Partial<UserResponse>): Promise<UserResponse> {
   return api
@@ -212,8 +175,11 @@ api.interceptors.response.use(
 
     // Abgelaufener Access-Token: einmal versuchen, ihn über das
     // HttpOnly refresh_token-Cookie zu erneuern und den Original-Request
-    // zu wiederholen, statt sofort auszuloggen (#159). Mehrere gleichzeitige
-    // 401s teilen sich denselben Refresh-Aufruf (refreshPromise).
+    // zu wiederholen, statt sofort auszuloggen (#159). Der neue Access-Token
+    // landet als HttpOnly-Cookie (#160) und wird vom Browser automatisch
+    // mitgeschickt - hier muss nichts mehr manuell an den Request gehängt
+    // werden. Mehrere gleichzeitige 401s teilen sich denselben Refresh-Aufruf
+    // (refreshPromise).
     if (status === 401 && !isRefreshExempt && originalRequest && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
@@ -222,10 +188,7 @@ api.interceptors.response.use(
             refreshPromise = null;
           });
         }
-        const { token } = await refreshPromise;
-        setToken(token);
-        originalRequest.headers = originalRequest.headers ?? {};
-        originalRequest.headers["Authorization"] = `Bearer ${token}`;
+        await refreshPromise;
         return api(originalRequest);
       } catch {
         // Refresh fehlgeschlagen (Cookie fehlt/abgelaufen/reused) -> Session

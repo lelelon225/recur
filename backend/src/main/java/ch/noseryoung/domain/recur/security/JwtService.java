@@ -1,11 +1,13 @@
 package ch.noseryoung.domain.recur.security;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Date;
 
 import javax.crypto.SecretKey;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 
 import ch.noseryoung.domain.recur.models.User;
@@ -13,9 +15,16 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Service
 public class JwtService {
+
+    // HttpOnly-Cookie statt Authorization-Header (#160) - liest XSS-exponierten
+    // JWT nicht mehr aus dem localStorage. Pfad /api statt nur /api/auth, da
+    // jeder authentifizierte Endpunkt den Access-Token braucht.
+    public static final String COOKIE_NAME = "access_token";
+    private static final String COOKIE_PATH = "/api";
 
     @Value("${app.jwt.secret}")
     private String secret;
@@ -56,6 +65,26 @@ public class JwtService {
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
+    }
+
+    public ResponseCookie buildCookie(String token, HttpServletRequest request) {
+        return ResponseCookie.from(COOKIE_NAME, token)
+                .httpOnly(true)
+                .secure(request.isSecure())
+                .path(COOKIE_PATH)
+                .maxAge(Duration.ofMillis(expirationMs))
+                .sameSite("Lax")
+                .build();
+    }
+
+    public ResponseCookie buildExpiredCookie(HttpServletRequest request) {
+        return ResponseCookie.from(COOKIE_NAME, "")
+                .httpOnly(true)
+                .secure(request.isSecure())
+                .path(COOKIE_PATH)
+                .maxAge(0)
+                .sameSite("Lax")
+                .build();
     }
 
     private SecretKey getSigningKey() {

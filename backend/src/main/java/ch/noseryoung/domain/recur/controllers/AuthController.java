@@ -30,10 +30,12 @@ import ch.noseryoung.domain.recur.dto.UserResponse;
 import ch.noseryoung.domain.recur.enums.VerificationStatus;
 import ch.noseryoung.domain.recur.exceptions.InvalidCredentialsException;
 import ch.noseryoung.domain.recur.exceptions.InvalidRefreshTokenException;
+import ch.noseryoung.domain.recur.security.JwtService;
 import ch.noseryoung.domain.recur.security.OAuth2AuthenticationSuccessHandler;
 import ch.noseryoung.domain.recur.security.RefreshTokenService;
 import ch.noseryoung.domain.recur.services.AuthService;
 import ch.noseryoung.domain.recur.services.AuthService.AuthResult;
+import ch.noseryoung.domain.recur.services.AuthService.TokenExchangeResult;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
@@ -53,13 +55,15 @@ public class AuthController {
 
     private final AuthService authService;
     private final RefreshTokenService refreshTokenService;
+    private final JwtService jwtService;
 
     @Value("${app.frontend.url}")
     private String frontendUrl;
 
-    public AuthController(AuthService authService, RefreshTokenService refreshTokenService) {
+    public AuthController(AuthService authService, RefreshTokenService refreshTokenService, JwtService jwtService) {
         this.authService = authService;
         this.refreshTokenService = refreshTokenService;
+        this.jwtService = jwtService;
     }
 
     @PostMapping("/register")
@@ -67,6 +71,7 @@ public class AuthController {
             @Valid @RequestBody RegisterRequest request, HttpServletRequest httpRequest) {
         AuthResult result = authService.register(request, httpRequest);
         return ResponseEntity.status(HttpStatus.CREATED)
+                .header(HttpHeaders.SET_COOKIE, jwtService.buildCookie(result.accessToken(), httpRequest).toString())
                 .header(HttpHeaders.SET_COOKIE, refreshTokenService.buildCookie(result.refreshToken(), httpRequest).toString())
                 .body(result.authResponse());
     }
@@ -76,6 +81,7 @@ public class AuthController {
             @Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest) {
         AuthResult result = authService.login(request, httpRequest);
         return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, jwtService.buildCookie(result.accessToken(), httpRequest).toString())
                 .header(HttpHeaders.SET_COOKIE, refreshTokenService.buildCookie(result.refreshToken(), httpRequest).toString())
                 .body(result.authResponse());
     }
@@ -94,6 +100,7 @@ public class AuthController {
 
         AuthResult result = authService.refresh(refreshToken, httpRequest);
         return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, jwtService.buildCookie(result.accessToken(), httpRequest).toString())
                 .header(HttpHeaders.SET_COOKIE, refreshTokenService.buildCookie(result.refreshToken(), httpRequest).toString())
                 .body(result.authResponse());
     }
@@ -109,6 +116,7 @@ public class AuthController {
         }
 
         return ResponseEntity.noContent()
+                .header(HttpHeaders.SET_COOKIE, jwtService.buildExpiredCookie(httpRequest).toString())
                 .header(HttpHeaders.SET_COOKIE, refreshTokenService.buildExpiredCookie(httpRequest).toString())
                 .build();
     }
@@ -159,9 +167,9 @@ public class AuthController {
             throw new InvalidCredentialsException();
         }
 
-        AuthResponse authResponse = authService.exchangeOAuth2Token(handoffToken);
+        TokenExchangeResult result = authService.exchangeOAuth2Token(handoffToken);
 
-        ResponseCookie clearCookie = ResponseCookie
+        ResponseCookie clearHandoffCookie = ResponseCookie
                 .from(OAuth2AuthenticationSuccessHandler.HANDOFF_COOKIE_NAME, "")
                 .httpOnly(true)
                 .secure(request.isSecure())
@@ -171,8 +179,9 @@ public class AuthController {
                 .build();
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, clearCookie.toString())
-                .body(authResponse);
+                .header(HttpHeaders.SET_COOKIE, jwtService.buildCookie(result.accessToken(), request).toString())
+                .header(HttpHeaders.SET_COOKIE, clearHandoffCookie.toString())
+                .body(result.authResponse());
     }
 
     @GetMapping("/me")
