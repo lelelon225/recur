@@ -4,11 +4,7 @@ import LoadingButton from "@/components/atoms/loading/LoadingButton";
 import { resendVerification } from "@/services/authService";
 
 type ResendVerificationFormProps = {
-  /**
-   * Bekannte E-Mail-Adresse (z.B. gerade blockierter Login) - wenn gesetzt,
-   * wird kein Eingabefeld angezeigt, nur der Button. Ohne Adresse (z.B.
-   * abgelaufener Link ohne Kontext) fragt das Formular sie selbst ab.
-   */
+  /** Bekannte E-Mail-Adresse (z.B. gerade blockierter Login) - wenn gesetzt, wird kein Eingabefeld angezeigt, nur der Button; ohne Adresse fragt das Formular sie selbst ab. */
   email?: string;
   className?: string;
 };

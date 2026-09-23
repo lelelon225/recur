@@ -9,13 +9,7 @@ type ProtectedRouteProps = {
   children: ReactNode;
 };
 
-/**
- * Wraps a route that requires authentication.
- * - While the initial auth check is running, shows a loading state
- *   (prevents a flash of the login page for already-logged-in users).
- * - If not authenticated, redirects to /login.
- * - Otherwise renders the protected content.
- */
+/** Wraps a route that requires auth: shows a loading state during the initial check (avoids a login-page flash for already-logged-in users), redirects to /login if unauthenticated, otherwise renders children. */
 function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
