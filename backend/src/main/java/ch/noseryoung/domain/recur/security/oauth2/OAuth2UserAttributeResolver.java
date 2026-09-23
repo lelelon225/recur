@@ -5,7 +5,7 @@ import java.util.Map;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.stereotype.Component;
 
-import ch.noseryoung.domain.recur.enums.AuthProvider;
+import ch.noseryoung.domain.recur.enums.auth.AuthProvider;
 import ch.noseryoung.domain.recur.models.User;
 import ch.noseryoung.domain.recur.repositories.UserRepository;
 import ch.noseryoung.domain.recur.services.EmailService;

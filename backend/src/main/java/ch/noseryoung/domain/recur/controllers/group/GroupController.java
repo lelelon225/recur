@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.*;
 
 import ch.noseryoung.domain.recur.dto.group.CreateGroupRequest;
 import ch.noseryoung.domain.recur.dto.group.GroupInvitePreview;
-import ch.noseryoung.domain.recur.models.Project;
-import ch.noseryoung.domain.recur.models.TaskGroup;
-import ch.noseryoung.domain.recur.services.GroupService;
+import ch.noseryoung.domain.recur.models.group.Project;
+import ch.noseryoung.domain.recur.models.group.TaskGroup;
+import ch.noseryoung.domain.recur.services.group.GroupService;
 
 @RestController
 @RequestMapping("/api/group")

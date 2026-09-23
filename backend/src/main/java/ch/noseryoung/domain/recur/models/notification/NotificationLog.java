@@ -5,7 +5,7 @@ import java.util.UUID;
 
 import org.hibernate.annotations.CreationTimestamp;
 
-import ch.noseryoung.domain.recur.enums.NotificationType;
+import ch.noseryoung.domain.recur.enums.notification.NotificationType;
 import jakarta.persistence.*;
 import lombok.*;
 

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
-import ch.noseryoung.domain.recur.models.Task;
+import ch.noseryoung.domain.recur.models.task.Task;
 import ch.noseryoung.domain.recur.models.User;
 
 @Service

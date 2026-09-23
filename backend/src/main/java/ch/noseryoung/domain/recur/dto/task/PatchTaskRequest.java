@@ -2,8 +2,8 @@ package ch.noseryoung.domain.recur.dto.task;
 
 import java.time.Instant;
 
-import ch.noseryoung.domain.recur.enums.Category;
-import ch.noseryoung.domain.recur.enums.Frequency;
+import ch.noseryoung.domain.recur.enums.task.Category;
+import ch.noseryoung.domain.recur.enums.task.Frequency;
 import jakarta.validation.constraints.Size;
 
 // Alle Felder optional: null bedeutet "nicht ändern", passend zu

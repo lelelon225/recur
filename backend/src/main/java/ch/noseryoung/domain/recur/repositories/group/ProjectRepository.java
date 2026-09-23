@@ -8,8 +8,8 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import ch.noseryoung.domain.recur.models.Project;
-import ch.noseryoung.domain.recur.models.TaskGroup;
+import ch.noseryoung.domain.recur.models.group.Project;
+import ch.noseryoung.domain.recur.models.group.TaskGroup;
 
 @Repository
 public interface ProjectRepository extends JpaRepository<Project, UUID> {

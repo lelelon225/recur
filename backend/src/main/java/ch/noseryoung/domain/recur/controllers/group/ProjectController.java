@@ -9,8 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import ch.noseryoung.domain.recur.dto.group.CreateProjectRequest;
-import ch.noseryoung.domain.recur.models.Project;
-import ch.noseryoung.domain.recur.services.ProjectService;
+import ch.noseryoung.domain.recur.models.group.Project;
+import ch.noseryoung.domain.recur.services.group.ProjectService;
 
 @RestController
 @RequestMapping("/api/group/{groupId}/project")

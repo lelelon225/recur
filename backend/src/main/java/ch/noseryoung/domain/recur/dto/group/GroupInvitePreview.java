@@ -2,7 +2,7 @@ package ch.noseryoung.domain.recur.dto.group;
 
 import java.util.UUID;
 
-import ch.noseryoung.domain.recur.models.TaskGroup;
+import ch.noseryoung.domain.recur.models.group.TaskGroup;
 import ch.noseryoung.domain.recur.models.User;
 
 // Vorschau für die Beitritts-Bestätigung: zeigt Gruppenname und Mitgliederzahl,

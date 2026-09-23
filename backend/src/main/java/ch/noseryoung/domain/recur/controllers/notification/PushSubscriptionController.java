@@ -6,7 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import ch.noseryoung.domain.recur.dto.notification.PushSubscriptionRequest;
-import ch.noseryoung.domain.recur.services.PushSubscriptionService;
+import ch.noseryoung.domain.recur.services.notification.PushSubscriptionService;
 import jakarta.validation.Valid;
 
 @RestController

@@ -12,9 +12,9 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import ch.noseryoung.domain.recur.models.PushSubscription;
+import ch.noseryoung.domain.recur.models.notification.PushSubscription;
 import ch.noseryoung.domain.recur.models.User;
-import ch.noseryoung.domain.recur.repositories.PushSubscriptionRepository;
+import ch.noseryoung.domain.recur.repositories.notification.PushSubscriptionRepository;
 import nl.martijndwars.webpush.Notification;
 import nl.martijndwars.webpush.PushService;
 import nl.martijndwars.webpush.Subscription;

@@ -3,10 +3,10 @@ package ch.noseryoung.domain.recur.services.notification;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import ch.noseryoung.domain.recur.models.NotificationSettings;
-import ch.noseryoung.domain.recur.models.Task;
+import ch.noseryoung.domain.recur.models.notification.NotificationSettings;
+import ch.noseryoung.domain.recur.models.task.Task;
 import ch.noseryoung.domain.recur.models.User;
-import ch.noseryoung.domain.recur.repositories.NotificationSettingsRepository;
+import ch.noseryoung.domain.recur.repositories.notification.NotificationSettingsRepository;
 
 // Bündelt Email-/Push-Versand hinter den beiden Empfänger-Toggles
 // (emailEnabled/pushEnabled) - gemeinsam genutzt vom TaskReminderScheduler

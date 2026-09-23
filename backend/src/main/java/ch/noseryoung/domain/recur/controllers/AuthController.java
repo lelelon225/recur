@@ -27,7 +27,7 @@ import ch.noseryoung.domain.recur.dto.auth.RegisterRequest;
 import ch.noseryoung.domain.recur.dto.auth.ResendVerificationRequest;
 import ch.noseryoung.domain.recur.dto.auth.ResetPasswordRequest;
 import ch.noseryoung.domain.recur.dto.auth.UserResponse;
-import ch.noseryoung.domain.recur.enums.VerificationStatus;
+import ch.noseryoung.domain.recur.enums.auth.VerificationStatus;
 import ch.noseryoung.domain.recur.exceptions.auth.InvalidCredentialsException;
 import ch.noseryoung.domain.recur.exceptions.auth.InvalidRefreshTokenException;
 import ch.noseryoung.domain.recur.security.jwt.JwtService;

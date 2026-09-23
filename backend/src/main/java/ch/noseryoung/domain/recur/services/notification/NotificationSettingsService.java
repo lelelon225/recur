@@ -5,9 +5,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import ch.noseryoung.domain.recur.dto.notification.NotificationSettingsResponse;
-import ch.noseryoung.domain.recur.models.NotificationSettings;
+import ch.noseryoung.domain.recur.models.notification.NotificationSettings;
 import ch.noseryoung.domain.recur.models.User;
-import ch.noseryoung.domain.recur.repositories.NotificationSettingsRepository;
+import ch.noseryoung.domain.recur.repositories.notification.NotificationSettingsRepository;
 import ch.noseryoung.domain.recur.repositories.UserRepository;
 
 @Service

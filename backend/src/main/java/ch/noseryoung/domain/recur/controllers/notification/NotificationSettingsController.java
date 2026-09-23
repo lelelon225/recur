@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import ch.noseryoung.domain.recur.dto.notification.NotificationSettingsResponse;
-import ch.noseryoung.domain.recur.services.NotificationSettingsService;
+import ch.noseryoung.domain.recur.services.notification.NotificationSettingsService;
 
 @RestController
 @RequestMapping("/api/auth/me/notification-settings")

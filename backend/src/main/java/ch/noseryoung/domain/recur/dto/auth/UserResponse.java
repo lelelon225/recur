@@ -2,7 +2,7 @@ package ch.noseryoung.domain.recur.dto.auth;
 
 import java.util.UUID;
 
-import ch.noseryoung.domain.recur.enums.AuthProvider;
+import ch.noseryoung.domain.recur.enums.auth.AuthProvider;
 import ch.noseryoung.domain.recur.models.User;
 
 public record UserResponse(

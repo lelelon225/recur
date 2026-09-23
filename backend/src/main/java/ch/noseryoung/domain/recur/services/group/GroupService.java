@@ -21,12 +21,12 @@ import ch.noseryoung.domain.recur.exceptions.group.GroupNotFoundException;
 import ch.noseryoung.domain.recur.exceptions.group.InvalidSuccessorException;
 import ch.noseryoung.domain.recur.exceptions.group.NotGroupAdminException;
 import ch.noseryoung.domain.recur.exceptions.group.NotGroupMemberException;
-import ch.noseryoung.domain.recur.models.Project;
-import ch.noseryoung.domain.recur.models.TaskGroup;
+import ch.noseryoung.domain.recur.models.group.Project;
+import ch.noseryoung.domain.recur.models.group.TaskGroup;
 import ch.noseryoung.domain.recur.models.User;
-import ch.noseryoung.domain.recur.repositories.ProjectRepository;
-import ch.noseryoung.domain.recur.repositories.TaskGroupRepository;
-import ch.noseryoung.domain.recur.repositories.TaskRepository;
+import ch.noseryoung.domain.recur.repositories.group.ProjectRepository;
+import ch.noseryoung.domain.recur.repositories.group.TaskGroupRepository;
+import ch.noseryoung.domain.recur.repositories.task.TaskRepository;
 import ch.noseryoung.domain.recur.security.CustomUserDetails;
 
 @Service

@@ -6,7 +6,7 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import ch.noseryoung.domain.recur.models.NotificationSettings;
+import ch.noseryoung.domain.recur.models.notification.NotificationSettings;
 
 @Repository
 public interface NotificationSettingsRepository extends JpaRepository<NotificationSettings, UUID> {

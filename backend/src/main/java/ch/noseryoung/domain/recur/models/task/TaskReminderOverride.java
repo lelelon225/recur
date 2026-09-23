@@ -2,7 +2,7 @@ package ch.noseryoung.domain.recur.models.task;
 
 import java.util.UUID;
 
-import ch.noseryoung.domain.recur.enums.ReminderLeadTime;
+import ch.noseryoung.domain.recur.enums.notification.ReminderLeadTime;
 import jakarta.persistence.*;
 import lombok.*;
 

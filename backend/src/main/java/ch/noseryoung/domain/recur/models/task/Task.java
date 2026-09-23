@@ -9,9 +9,9 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import ch.noseryoung.domain.recur.enums.Category;
-import ch.noseryoung.domain.recur.enums.Frequency;
-import ch.noseryoung.domain.recur.enums.ReminderLeadTime;
+import ch.noseryoung.domain.recur.enums.task.Category;
+import ch.noseryoung.domain.recur.enums.task.Frequency;
+import ch.noseryoung.domain.recur.enums.notification.ReminderLeadTime;
 import lombok.*;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
