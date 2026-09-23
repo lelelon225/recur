@@ -149,7 +149,16 @@ public class SecurityConfig {
                                 FilterChain filterChain) throws IOException, ServletException {
                         CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
                         if (csrfToken != null) {
-                                csrfToken.getToken();
+                                // Auch als Response-Header ausgeben, nicht nur als Cookie: das
+                                // Frontend liest den Header statt document.cookie, damit der
+                                // X-XSRF-TOKEN-Header immer exakt zum Cookie passt, das der
+                                // Browser gerade tatsächlich mitgeschickt hat - ein zwischen
+                                // Axios' Cookie-Read und dem tatsächlich gesendeten Cookie
+                                // auseinanderlaufender Wert (z.B. durch ein zweites Cookie mit
+                                // anderem Path/Domain) führte sonst zu einem 403-Double-Submit-
+                                // Mismatch, den kein Retry beheben konnte, weil der Server ja
+                                // bereits ein gültiges Cookie hatte und keins neu ausstellt.
+                                response.setHeader(csrfToken.getHeaderName(), csrfToken.getToken());
                         }
                         filterChain.doFilter(request, response);
                 }
@@ -177,6 +186,10 @@ public class SecurityConfig {
                 configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
                 configuration.setAllowedHeaders(List.of("*"));
                 configuration.setAllowCredentials(true);
+                // Frontend liest den CSRF-Token jetzt aus dem Response-Header statt aus
+                // document.cookie (siehe CsrfCookieFilter) - ohne Expose bleibt der Header
+                // für Cross-Origin-Requests (lokal: :3000 -> :8080) für JS unsichtbar.
+                configuration.setExposedHeaders(List.of("X-XSRF-TOKEN"));
 
                 UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
                 source.registerCorsConfiguration("/**", configuration);
