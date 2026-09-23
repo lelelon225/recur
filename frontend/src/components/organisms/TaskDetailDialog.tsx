@@ -142,19 +142,21 @@ function TaskDetailDialog({
               <ProgressIndicator value={task.progress} size={40} strokeWidth={4} />
               <span className="text-xs text-muted-foreground">Fortschritt</span>
             </div>
-            <Button
-              size="sm"
-              variant={doneForCurrentPeriod ? "outline" : "default"}
-              disabled={Boolean(task.project) && doneForCurrentPeriod}
-              onClick={onToggleDone}
-              title={
-                !task.project && doneForCurrentPeriod
-                  ? "Klicken, um rückgängig zu machen"
-                  : undefined
-              }
-            >
-              {doneForCurrentPeriod ? "Erledigt" : "Als erledigt markieren"}
-            </Button>
+            {!isArchived && (
+              <Button
+                size="sm"
+                variant={doneForCurrentPeriod ? "outline" : "default"}
+                disabled={Boolean(task.project) && doneForCurrentPeriod}
+                onClick={onToggleDone}
+                title={
+                  !task.project && doneForCurrentPeriod
+                    ? "Klicken, um rückgängig zu machen"
+                    : undefined
+                }
+              >
+                {doneForCurrentPeriod ? "Erledigt" : "Als erledigt markieren"}
+              </Button>
+            )}
           </div>
 
           {!task.project && task.frequency !== TaskFrequency.ONCE && (
