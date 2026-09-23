@@ -99,6 +99,51 @@ called out as such rather than silently ignored.
 | `exceptions/` | Custom exceptions plus their matching error-response types. |
 | `utils/` | Stateless static helpers that don't clearly belong to one model/service. |
 
+### Domain subpackages (backend)
+
+Within `dto/`, `exceptions/`, `security/`, `controllers/`, `services/`,
+`repositories/`, `models/`, and `enums/`, classes are grouped one level
+deeper by the business domain they belong to, not by their technical role:
+
+- `auth` — login/registration/password-reset/refresh-token flows.
+- `task` — task CRUD, completions, reminders.
+- `group` — groups and their projects (`Project` is a group sub-concept,
+  not a standalone domain).
+- `notification` — email/push notifications, notification settings, the
+  reminder scheduler.
+- `oauth2` / `jwt` — inside `security/` only, split by auth mechanism
+  instead of business domain (OAuth2/OIDC login vs. JWT issuing/refresh).
+
+A class used across domains (`SecurityConfig`, `CustomUserDetails`,
+`CustomUserDetailsService`, `EmailService`, `User`, `UserRepository`,
+`ErrorResponse`, `GlobalExceptionHandler`) or the only one of its kind in a
+package (e.g. `PrivacySettingsResponse`, `UserPrivacySettingsRepository`,
+`UserPrivacySettings`, `ProfileVisibility`, `AuthController`,
+`PrivacySettingsController`, `TaskController`, `AuthService`,
+`PrivacySettingsService`, `TaskService`) stays flat at the package root
+instead of getting a single-file subpackage.
+
+### Component subfolders (frontend)
+
+Within `components/atoms/`, `components/molecules/`, and
+`components/organisms/`, files are grouped one level deeper by theme,
+without changing the atomic-design level itself:
+
+- `form` (molecules only) — Formik-bound form fields.
+- `dialog` / `dialogs` — modal dialogs (`molecules/dialog/` holds generic
+  dialog primitives; `organisms/dialogs/` holds concrete feature dialogs).
+- `sidebar` — sidebar navigation pieces.
+- `task` — task-card/task-form building blocks.
+- `auth` — login/signup (`organisms/auth/`) or auth-status/verification UI
+  (`molecules/auth/`).
+- `settings` (organisms only) — account/notification/privacy settings
+  forms.
+- `calendar` (organisms only) — calendar views.
+- `loading` (atoms only) — loading-state indicators.
+
+A component with no natural sibling (e.g. `AppBar`, `Empty`, `Pagination`)
+stays flat at the folder root instead of getting a single-file subfolder.
+
 ## Auth flow
 
 1. **Password login**: client posts credentials, backend verifies and
