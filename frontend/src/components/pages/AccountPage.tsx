@@ -5,6 +5,7 @@ import * as yup from "yup";
 import type { UserResponse as User } from "@/types/auth";
 import { patchUser } from "@/services/authService";
 import { Skeleton } from "@/components/ui/skeleton";
+import LoadingButton from "@/components/atoms/loading/LoadingButton";
 import AccountForm from "@/components/organisms/settings/AccountForm";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -68,7 +69,6 @@ function AccountPage() {
           handleChange,
           handleBlur,
           handleSubmit,
-          submitForm,
         }) => (
           <>
             <AccountForm
@@ -77,14 +77,20 @@ function AccountPage() {
               errors={errors}
               touched={touched}
               handleChange={handleChange}
-              handleBlur={(event) => {
-                handleBlur(event);
-                if (dirty) submitForm();
-              }}
+              handleBlur={handleBlur}
               disabled={saving}
               className="flex flex-col gap-2"
             />
             {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
+            <LoadingButton
+              type="button"
+              onClick={() => handleSubmit()}
+              loading={saving}
+              disabled={!dirty}
+              className="mt-4"
+            >
+              Speichern
+            </LoadingButton>
           </>
         )}
       </Formik>
