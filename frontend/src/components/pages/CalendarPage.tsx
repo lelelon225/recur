@@ -6,7 +6,7 @@ import { useAddTask } from "@/contexts/AddTaskContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGroupsContext } from "@/contexts/GroupsContext";
 import { useBreakpoint } from "@/hooks/useBreakpoint";
-import { TaskCategory, type Task, type TaskCategory as TaskCategoryType } from "@/services/taskService";
+import { TaskCategory, type Task, type TaskCategory as TaskCategoryType } from "@/types/task";
 import { categoryLabels, ALL_CATEGORIES_LABEL } from "@/lib/taskCategoryStyles";
 import {
   getWeekDays,

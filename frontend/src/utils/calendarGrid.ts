@@ -10,7 +10,7 @@ import {
   getISOWeek,
 } from "date-fns";
 import { de } from "date-fns/locale";
-import { TaskCategory, type Task, type TaskCategory as TaskCategoryType } from "@/services/taskService";
+import { TaskCategory, type Task, type TaskCategory as TaskCategoryType } from "@/types/task";
 
 /**
  * Canonical per-category accent colors, shared by the calendar's category

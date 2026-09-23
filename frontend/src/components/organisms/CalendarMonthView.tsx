@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-import type { Task } from "@/services/taskService";
+import type { Task } from "@/types/task";
 import {
   occursOn,
   sortByStartTime,

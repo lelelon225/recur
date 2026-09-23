@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-import { TaskFrequency, type Task } from "@/services/taskService";
+import { TaskFrequency, type Task } from "@/types/task";
 import { categoryLabels, frequencyLabels } from "@/lib/taskCategoryStyles";
 import { categoryDot } from "@/utils/calendarGrid";
 import { Button } from "@/components/ui/button";

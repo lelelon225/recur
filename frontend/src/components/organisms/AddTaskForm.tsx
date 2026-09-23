@@ -8,7 +8,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import type { Task, TaskCategory, TaskFrequency } from "@/services/taskService";
+import type { Task, TaskCategory, TaskFrequency } from "@/types/task";
 import useAddTaskForm from "@/hooks/useAddTaskForm";
 import useFormCache from "@/hooks/useFormCache";
 import AppDialog from "@/components/molecules/AppDialog";

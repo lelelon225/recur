@@ -6,7 +6,7 @@ import {
   type ReactNode,
 } from "react";
 import AddTaskForm from "@/components/organisms/AddTaskForm";
-import type { Task } from "@/services/taskService";
+import type { Task } from "@/types/task";
 import { useTasksContext } from "@/contexts/TasksContext";
 
 /** Fields a caller (e.g. a calendar click) can pre-populate on the Add Task form. */

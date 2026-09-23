@@ -1,6 +1,6 @@
 import { ChevronRight } from "lucide-react";
 import { Formik } from "formik";
-import type { Task, TaskCategory, TaskFrequency } from "@/services/taskService";
+import type { Task, TaskCategory, TaskFrequency } from "@/types/task";
 import AppDialog from "@/components/molecules/AppDialog";
 import { Button } from "@/components/ui/button";
 import {

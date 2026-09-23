@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-import type { Task } from "@/services/taskService";
+import type { Task } from "@/types/task";
 import { occursOn, categoryBorder, type CalendarDay } from "@/utils/calendarGrid";
 import { cn } from "@/lib/utils";
 

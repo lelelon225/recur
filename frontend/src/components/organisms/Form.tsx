@@ -1,6 +1,6 @@
 import { useEffect, type ChangeEvent, type FocusEvent } from "react";
 import { useFormikContext, type FormikErrors, type FormikTouched } from "formik";
-import { TaskFrequency, type TaskCategory } from "@/services/taskService";
+import { TaskFrequency, type TaskCategory } from "@/types/task";
 import FormTextField from "@/components/molecules/FormTextField";
 import FormTextAreaField from "@/components/molecules/FormTextAreaField";
 import FormDateField from "@/components/molecules/FormDateField";
