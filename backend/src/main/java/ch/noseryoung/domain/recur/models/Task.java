@@ -187,4 +187,19 @@ public class Task {
         @ManyToMany(fetch = FetchType.LAZY)
         @JoinTable(name = "task_hidden_for", joinColumns = @JoinColumn(name = "task_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
         private Set<User> hiddenFor = new HashSet<>();
+
+        // Nur für den Cascade beim Löschen (#180): notification_log und
+        // task_reminder_override referenzieren task_id per FK (nullable=false),
+        // sonst scheitert jeder Delete-Pfad (deleteById, deleteByOwner,
+        // deleteByProjectIn) an der Constraint, sobald z.B. eine
+        // Überfällig-Benachrichtigung geloggt wurde.
+        @JsonIgnore
+        @Builder.Default
+        @OneToMany(mappedBy = "task", cascade = CascadeType.REMOVE)
+        private List<NotificationLog> notificationLogs = new ArrayList<>();
+
+        @JsonIgnore
+        @Builder.Default
+        @OneToMany(mappedBy = "task", cascade = CascadeType.REMOVE)
+        private List<TaskReminderOverride> reminderOverrides = new ArrayList<>();
 }

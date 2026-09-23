@@ -158,7 +158,7 @@ function TaskCard({
       >
         <ProgressIndicator value={clampedProgress} />
         <div className="flex items-center gap-2">
-          {!selectMode && (
+          {!selectMode && !isArchivedForCurrentUser(task) && (
             <Button
               size="sm"
               variant={doneForCurrentPeriod ? "outline" : "default"}
