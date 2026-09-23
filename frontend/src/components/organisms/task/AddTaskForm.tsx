@@ -11,13 +11,13 @@ import {
 import type { Task, TaskCategory, TaskFrequency } from "@/services/taskService";
 import useAddTaskForm from "@/hooks/useAddTaskForm";
 import useFormCache from "@/hooks/useFormCache";
-import AppDialog from "@/components/molecules/AppDialog";
+import AppDialog from "@/components/molecules/dialog/AppDialog";
 import { taskValidationSchema } from "@/schemas/taskSchema";
 import {
   TaskBasicsFields,
   TaskDetailFields,
   type FormValues,
-} from "@/components/organisms/Form";
+} from "@/components/organisms/task/Form";
 
 import type { AddTaskPrefill } from "@/contexts/AddTaskContext";
 

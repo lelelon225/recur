@@ -7,7 +7,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import LoadingButton from "@/components/atoms/LoadingButton";
+import LoadingButton from "@/components/atoms/loading/LoadingButton";
 
 type AppDialogProps = {
   open: boolean;

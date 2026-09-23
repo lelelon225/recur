@@ -2,11 +2,11 @@ import { useMemo, useState } from "react";
 import { FilePlus2 } from "lucide-react";
 import Empty from "@/components/molecules/Empty";
 import { type SortOptions, sortTasks } from "@/utils/sortTasks";
-import TaskCardGrid from "@/components/molecules/TaskCardGrid";
+import TaskCardGrid from "@/components/molecules/task/TaskCardGrid";
 import Sorter from "@/components/atoms/Sorter";
 import { useAddTask } from "@/contexts/AddTaskContext";
 import { useTasksContext } from "@/contexts/TasksContext";
-import TaskCardGridSkeleton from "../molecules/TaskCardGridSkeleton";
+import TaskCardGridSkeleton from "../molecules/task/TaskCardGridSkeleton";
 
 function HomePage() {
   const {

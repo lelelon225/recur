@@ -1,4 +1,4 @@
-import TaskCardSkeleton from "@/components/organisms/TaskCardSkeleton";
+import TaskCardSkeleton from "@/components/organisms/task/TaskCardSkeleton";
 import { cn } from "@/lib/utils";
 
 type TaskCardSkeletonGridProps = {

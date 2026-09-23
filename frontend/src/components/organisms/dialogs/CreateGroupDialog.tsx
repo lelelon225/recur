@@ -1,7 +1,7 @@
 import { Formik, Form as FormikForm } from "formik";
 import * as yup from "yup";
-import AppDialog from "@/components/molecules/AppDialog";
-import FormTextField from "@/components/molecules/FormTextField";
+import AppDialog from "@/components/molecules/dialog/AppDialog";
+import FormTextField from "@/components/molecules/form/FormTextField";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { useGroupsContext } from "@/contexts/GroupsContext";
 import type { Group } from "@/services/groupService";

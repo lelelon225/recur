@@ -2,7 +2,7 @@ import type { FormEvent, ChangeEvent, FocusEvent } from "react";
 import { Form as FormikForm } from "formik";
 import type { FormikErrors, FormikTouched } from "formik";
 import type { UserResponse as User } from "@/types/auth";
-import FormTextField from "@/components/molecules/FormTextField";
+import FormTextField from "@/components/molecules/form/FormTextField";
 
 type AccountFormProps = {
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;

@@ -4,7 +4,7 @@ import { UsersIcon, PlusIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import Empty from "@/components/molecules/Empty";
-import CreateGroupDialog from "@/components/organisms/CreateGroupDialog";
+import CreateGroupDialog from "@/components/organisms/dialogs/CreateGroupDialog";
 import { useGroupsContext } from "@/contexts/GroupsContext";
 
 function GroupsPage() {

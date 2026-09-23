@@ -1,5 +1,5 @@
 import { useState, type ClipboardEvent } from "react";
-import AppDialog from "@/components/molecules/AppDialog";
+import AppDialog from "@/components/molecules/dialog/AppDialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";

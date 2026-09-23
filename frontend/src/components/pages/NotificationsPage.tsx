@@ -3,7 +3,7 @@ import type { NotificationSettings } from "@/types/notifications";
 import { updateNotificationSettings } from "@/services/notificationService";
 import { disablePushNotifications, enablePushNotifications } from "@/services/pushService";
 import { Spinner } from "@/components/ui/spinner";
-import NotificationForm from "../organisms/NotificationForm";
+import NotificationForm from "../organisms/settings/NotificationForm";
 import useNotificationSettings from "@/hooks/useNotificationSettings";
 
 type NotificationsPageProps = {

@@ -1,6 +1,6 @@
 import { SidebarGroup, SidebarGroupLabel, SidebarMenu } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
-import SidebarSettingsItem from "@/components/molecules/SidebarSettingsItem";
+import SidebarSettingsItem from "@/components/molecules/sidebar/SidebarSettingsItem";
 import type { LucideIcon } from "lucide-react";
 
 type SidebarSettingsGroupProps = {

@@ -5,7 +5,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import AddTaskForm from "@/components/organisms/AddTaskForm";
+import AddTaskForm from "@/components/organisms/task/AddTaskForm";
 import type { Task } from "@/services/taskService";
 import { useTasksContext } from "@/contexts/TasksContext";
 

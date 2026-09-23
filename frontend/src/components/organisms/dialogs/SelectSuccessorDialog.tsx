@@ -1,5 +1,5 @@
 import { useState } from "react";
-import AppDialog from "@/components/molecules/AppDialog";
+import AppDialog from "@/components/molecules/dialog/AppDialog";
 import {
   Select,
   SelectContent,

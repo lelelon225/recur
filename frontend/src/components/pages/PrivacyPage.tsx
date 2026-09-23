@@ -5,8 +5,8 @@ import { deleteCurrentUser, logout } from "@/services/authService";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
-import ConfirmDialog from "@/components/molecules/ConfirmDialog";
-import PrivacyForm from "../organisms/PrivacyForm";
+import ConfirmDialog from "@/components/molecules/dialog/ConfirmDialog";
+import PrivacyForm from "../organisms/settings/PrivacyForm";
 import usePrivacySettings from "@/hooks/usePrivacySettings";
 
 type PrivacyPageProps = {
