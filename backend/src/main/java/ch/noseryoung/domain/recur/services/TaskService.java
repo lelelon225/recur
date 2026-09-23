@@ -6,6 +6,7 @@ import ch.noseryoung.domain.recur.dto.ProjectReference;
 import ch.noseryoung.domain.recur.enums.Frequency;
 import ch.noseryoung.domain.recur.enums.ReminderLeadTime;
 import ch.noseryoung.domain.recur.exceptions.InvalidCompletionException;
+import ch.noseryoung.domain.recur.exceptions.NotGroupAdminException;
 import ch.noseryoung.domain.recur.exceptions.NotGroupMemberException;
 import ch.noseryoung.domain.recur.exceptions.ProjectNotFoundException;
 import ch.noseryoung.domain.recur.exceptions.TaskNotFoundException;
@@ -308,6 +309,17 @@ public class TaskService {
                 Task existingTask = taskRepository.findById(id)
                                 .filter(t -> hasAccess(t, currentUser))
                                 .orElseThrow(() -> new TaskNotFoundException(id));
+
+                boolean editsAdminFields = request.name() != null
+                                || request.category() != null
+                                || request.description() != null
+                                || request.dateUntil() != null
+                                || request.frequency() != null
+                                || request.durationMinutes() != null
+                                || request.startTime() != null;
+                if (editsAdminFields && existingTask.getProject() != null && !isGroupAdmin(existingTask, currentUser)) {
+                        throw new NotGroupAdminException();
+                }
 
                 if (request.name() != null) {
                         existingTask.setName(request.name());

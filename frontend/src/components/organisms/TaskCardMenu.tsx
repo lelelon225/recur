@@ -22,6 +22,8 @@ type TaskCardMenuProps = {
   onDelete: () => void;
   onTaskUpdated?: (task: Task) => void;
   isArchived: boolean;
+  /** Bei Gruppen-Tasks nur true für den Gruppen-Admin - persönliche Tasks immer true. */
+  canEdit?: boolean;
 };
 
 function TaskCardMenu({
@@ -33,6 +35,7 @@ function TaskCardMenu({
   onDelete,
   onTaskUpdated,
   isArchived,
+  canEdit = true,
 }: TaskCardMenuProps) {
   const { handleToggleAssign } = useTasksContext();
   const { user } = useAuth();
@@ -119,7 +122,9 @@ function TaskCardMenu({
             </>
           ) : (
             <>
-              <DropdownMenuItem onClick={handleToggleEdit}>Bearbeiten</DropdownMenuItem>
+              {canEdit && (
+                <DropdownMenuItem onClick={handleToggleEdit}>Bearbeiten</DropdownMenuItem>
+              )}
               {task.project && (
                 <DropdownMenuItem onClick={() => handleToggleAssign(task.id)}>
                   {isAssignedToMe ? "Zuweisung entfernen" : "Mir zuweisen"}
