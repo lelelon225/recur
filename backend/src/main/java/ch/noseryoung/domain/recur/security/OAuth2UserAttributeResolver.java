@@ -75,7 +75,7 @@ public class OAuth2UserAttributeResolver {
             User savedUser = userRepository.save(user);
 
             if (isNewUser) {
-                emailService.sendWelcomeEmail(savedUser);
+                emailService.sendWelcomeEmail(savedUser, providerName);
             }
 
             return savedUser;
@@ -117,7 +117,7 @@ public class OAuth2UserAttributeResolver {
             User savedUser = userRepository.save(user);
 
             if (isNewUser) {
-                emailService.sendWelcomeEmail(savedUser);
+                emailService.sendWelcomeEmail(savedUser, providerName);
             }
 
             return savedUser;

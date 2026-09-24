@@ -60,10 +60,10 @@ public class EmailService {
                         + "- dein Passwort bleibt unverändert.");
     }
 
-    public void sendWelcomeEmail(User user) {
+    public void sendWelcomeEmail(User user, String providerName) {
         trySend(user.getEmail(), "Willkommen bei Recur",
                 "Hallo " + user.getFirstName() + ",\n\n"
-                        + "willkommen bei Recur! Dein Konto wurde erfolgreich über Google erstellt.");
+                        + "Willkommen bei Recur! Dein Konto wurde erfolgreich über " + providerName + " erstellt.");
     }
 
     // #102: Erinnerungs-/Überfällig-/Projekt-Benachrichtigungen. Nutzt
