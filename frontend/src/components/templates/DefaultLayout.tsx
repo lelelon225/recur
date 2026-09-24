@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { History, Heart, Archive, Calendar, Users } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
 import { AddTaskProvider } from "@/contexts/AddTaskContext";
@@ -22,8 +22,13 @@ const NAV_ROUTES = [
   { path: "/groups", label: "Gruppen", icon: Users },
 ] as const;
 
+// "Task hinzufügen" ergibt nur hier Sinn - andere Routen haben ihren eigenen
+// Add-Flow (Kalender: Klick auf Slot, Gruppen/Projekte: eigener Header-Button).
+const FAB_ROUTES = new Set(["/", "/favorites"]);
+
 function DefaultLayout({ children, pageTitle }: DefaultLayoutProps) {
   const router = useRouter();
+  const pathname = usePathname();
 
   const destinations = NAV_ROUTES.map(({ path, label, icon: Icon }) => ({
     path,
@@ -46,7 +51,7 @@ function DefaultLayout({ children, pageTitle }: DefaultLayoutProps) {
             </div>
 
             <Toaster position="bottom-left" />
-            <Fab className="fixed bottom-4 right-4" />
+            {FAB_ROUTES.has(pathname) && <Fab className="fixed bottom-4 right-4" />}
           </SidebarInset>
         </SidebarProvider>
       </ImportQuartalsplanProvider>
