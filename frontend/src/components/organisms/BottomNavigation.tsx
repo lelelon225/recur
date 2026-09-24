@@ -15,6 +15,17 @@ type BottomNavigationProps = {
 const PILL_INSET_REM = 0.25;
 const PILL_INSET = `${PILL_INSET_REM}rem`;
 const REM_IN_PX = 16;
+// Ein reiner Tap darf die Pille nicht per Pointer-Handler bewegen (das
+// überspringt die CSS-Transition und lässt sie hart springen) - erst ab
+// dieser Bewegungsdistanz gilt es als Drag-Geste statt als Tap.
+const DRAG_THRESHOLD_PX = 6;
+// Seitlicher und unterer Basis-Abstand der Nav-Bar zur Bildschirmkante, als
+// eine gemeinsame Konstante (gleiches Prinzip wie PILL_INSET): rounded-full
+// lässt den Eckenabstand optisch grösser wirken als er gemessen ist, darum
+// bewusst kleiner als der frühere 1rem. ponytail: nur am Gerät mit echten
+// abgerundeten Screen-Ecken gegenprüfbar, kein CSS-Zugriff auf deren Radius -
+// hier feinjustieren, falls es in der Ecke noch ungleichmässig wirkt.
+const NAV_EDGE_INSET = "0.75rem";
 
 function BottomNavigation({ destinations, activeValue }: BottomNavigationProps) {
   const activeIndex = destinations.findIndex((d) => d.path === activeValue);
@@ -24,6 +35,7 @@ function BottomNavigation({ destinations, activeValue }: BottomNavigationProps) 
   // Während des Ziehens: exakte Pixel-Position, 1:1 dem Finger/Cursor folgend,
   // ohne Transition (sonst hinkt sie spürbar hinterher).
   const [dragLeftPx, setDragLeftPx] = useState<number | null>(null);
+  const pointerDownXRef = useRef<number | null>(null);
 
   const updateDragPosition = (clientX: number) => {
     const nav = navRef.current;
@@ -48,15 +60,22 @@ function BottomNavigation({ destinations, activeValue }: BottomNavigationProps) 
 
   const handlePointerDown = (event: ReactPointerEvent<HTMLElement>) => {
     event.currentTarget.setPointerCapture(event.pointerId);
-    updateDragPosition(event.clientX);
+    pointerDownXRef.current = event.clientX;
   };
 
   const handlePointerMove = (event: ReactPointerEvent<HTMLElement>) => {
-    if (dragLeftPx === null) return;
+    if (pointerDownXRef.current === null) return;
+    if (dragLeftPx === null && Math.abs(event.clientX - pointerDownXRef.current) < DRAG_THRESHOLD_PX) {
+      return;
+    }
     updateDragPosition(event.clientX);
   };
 
   const handlePointerUp = (event: ReactPointerEvent<HTMLElement>) => {
+    pointerDownXRef.current = null;
+    // Reiner Tap (nie über den Drag-Threshold bewegt): dragLeftPx wurde nie
+    // gesetzt, die Navigation läuft über den onClick des getroffenen Buttons -
+    // die Pille gleitet dann einmal per CSS-Transition zur neuen Position.
     if (dragLeftPx === null) return;
     const index = columnIndexAt(event.clientX);
     setDragLeftPx(null);
@@ -69,7 +88,12 @@ function BottomNavigation({ destinations, activeValue }: BottomNavigationProps) 
   return (
     <nav
       ref={navRef}
-      className="fixed inset-x-4 bottom-[calc(env(safe-area-inset-bottom)+1rem)] z-20 flex touch-none items-stretch rounded-full border bg-sidebar/95 shadow-lg backdrop-blur supports-backdrop-filter:bg-sidebar/80"
+      className="fixed z-20 flex touch-none items-stretch rounded-full border bg-sidebar/95 shadow-lg backdrop-blur supports-backdrop-filter:bg-sidebar/80"
+      style={{
+        left: NAV_EDGE_INSET,
+        right: NAV_EDGE_INSET,
+        bottom: `calc(env(safe-area-inset-bottom) + ${NAV_EDGE_INSET})`,
+      }}
       aria-label="Hauptnavigation"
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
