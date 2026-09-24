@@ -1,13 +1,13 @@
-package ch.noseryoung.domain.recur.services.notification;
+package ch.noseryoung.domain.recur.notification.service;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import ch.noseryoung.domain.recur.dto.notification.NotificationSettingsResponse;
-import ch.noseryoung.domain.recur.models.notification.NotificationSettings;
+import ch.noseryoung.domain.recur.notification.dto.NotificationSettingsResponse;
+import ch.noseryoung.domain.recur.notification.model.NotificationSettings;
 import ch.noseryoung.domain.recur.models.User;
-import ch.noseryoung.domain.recur.repositories.notification.NotificationSettingsRepository;
+import ch.noseryoung.domain.recur.notification.repository.NotificationSettingsRepository;
 import ch.noseryoung.domain.recur.repositories.UserRepository;
 
 @Service

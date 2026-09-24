@@ -1,12 +1,12 @@
-package ch.noseryoung.domain.recur.controllers.notification;
+package ch.noseryoung.domain.recur.notification.controller;
 
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import ch.noseryoung.domain.recur.dto.notification.PushSubscriptionRequest;
-import ch.noseryoung.domain.recur.services.notification.PushSubscriptionService;
+import ch.noseryoung.domain.recur.notification.dto.PushSubscriptionRequest;
+import ch.noseryoung.domain.recur.notification.service.PushSubscriptionService;
 import jakarta.validation.Valid;
 
 @RestController

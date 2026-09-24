@@ -1,4 +1,4 @@
-package ch.noseryoung.domain.recur.services.notification;
+package ch.noseryoung.domain.recur.notification.service;
 
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
@@ -12,9 +12,9 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import ch.noseryoung.domain.recur.models.notification.PushSubscription;
+import ch.noseryoung.domain.recur.notification.model.PushSubscription;
 import ch.noseryoung.domain.recur.models.User;
-import ch.noseryoung.domain.recur.repositories.notification.PushSubscriptionRepository;
+import ch.noseryoung.domain.recur.notification.repository.PushSubscriptionRepository;
 import nl.martijndwars.webpush.Notification;
 import nl.martijndwars.webpush.PushService;
 import nl.martijndwars.webpush.Subscription;

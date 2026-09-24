@@ -1,4 +1,4 @@
-package ch.noseryoung.domain.recur.enums.notification;
+package ch.noseryoung.domain.recur.notification.enums;
 
 // Typ einer über NotificationLog (#102) deduplizierten Task-Benachrichtigung.
 // Das "Neuer Projekt-Task erstellt"-Ereignis läuft bewusst NICHT hierüber,
