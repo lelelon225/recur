@@ -18,6 +18,7 @@ import {
   removeTaskCompletion,
   unassignSelf,
 } from "@/services/taskService";
+import { isUnauthorized } from "@/services/api";
 import type { Task } from "@/types/task";
 import { showErrorToast, showSuccessToast, showUndoToast } from "@/lib/toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -67,7 +68,15 @@ export function TasksProvider({ children }: { children: ReactNode }) {
       const fetchedTasks = await getTasks();
       setTasks(fetchedTasks);
     } catch (err) {
-      showBoundary(err);
+      // Ein 401 heisst nur "nicht (mehr) authentifiziert" - z.B. eine
+      // Logout-Race (Token wird zwischen Auth-Check und diesem Request
+      // ungültig) - das behandelt der globale Auth-Flow bereits (Redirect/
+      // AuthContext-State), kein Fall für den Error-Boundary-Crash.
+      if (isUnauthorized(err)) {
+        setTasks([]);
+      } else {
+        showBoundary(err);
+      }
     } finally {
       setLoading(false);
     }
