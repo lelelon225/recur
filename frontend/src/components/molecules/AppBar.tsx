@@ -70,9 +70,9 @@ function AppBar({ title, isPrimaryRoute = false, showAddTaskButton = false }: Ap
         {showAddTaskButton && (
           <Button
             variant="ghost"
-            size="icon-sm"
+            size="icon"
             aria-label="Neue Aufgabe hinzufügen"
-            className="-mr-1 justify-self-end rounded-full bg-sidebar-accent"
+            className="justify-self-end rounded-full border border-white/30 bg-white/15 shadow-[0_8px_20px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(255,255,255,0.08)] backdrop-blur-[17px] supports-backdrop-filter:bg-white/10"
             onClick={() => openAddTaskForm()}
           >
             <Plus />
