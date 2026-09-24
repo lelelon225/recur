@@ -16,7 +16,7 @@ import ch.noseryoung.domain.recur.models.notification.NotificationLog;
 import ch.noseryoung.domain.recur.models.notification.NotificationSettings;
 import ch.noseryoung.domain.recur.models.task.Task;
 import ch.noseryoung.domain.recur.models.task.TaskReminderOverride;
-import ch.noseryoung.domain.recur.models.User;
+import ch.noseryoung.domain.recur.auth.model.User;
 import ch.noseryoung.domain.recur.repositories.notification.NotificationLogRepository;
 import ch.noseryoung.domain.recur.repositories.notification.NotificationSettingsRepository;
 import ch.noseryoung.domain.recur.repositories.task.TaskReminderOverrideRepository;

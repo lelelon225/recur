@@ -18,11 +18,11 @@ import ch.noseryoung.domain.recur.exceptions.group.ProjectNotArchivedException;
 import ch.noseryoung.domain.recur.exceptions.group.ProjectNotFoundException;
 import ch.noseryoung.domain.recur.models.group.Project;
 import ch.noseryoung.domain.recur.models.group.TaskGroup;
-import ch.noseryoung.domain.recur.models.User;
+import ch.noseryoung.domain.recur.auth.model.User;
 import ch.noseryoung.domain.recur.repositories.group.ProjectRepository;
 import ch.noseryoung.domain.recur.repositories.group.TaskGroupRepository;
 import ch.noseryoung.domain.recur.repositories.task.TaskRepository;
-import ch.noseryoung.domain.recur.security.CustomUserDetails;
+import ch.noseryoung.domain.recur.auth.security.CustomUserDetails;
 
 @Service
 public class ProjectService {

@@ -33,11 +33,11 @@ import ch.noseryoung.domain.recur.enums.Frequency;
 import ch.noseryoung.domain.recur.exceptions.InvalidCompletionException;
 import ch.noseryoung.domain.recur.exceptions.TaskNotFoundException;
 import ch.noseryoung.domain.recur.models.Task;
-import ch.noseryoung.domain.recur.models.User;
+import ch.noseryoung.domain.recur.auth.model.User;
 import ch.noseryoung.domain.recur.repositories.ProjectRepository;
 import ch.noseryoung.domain.recur.repositories.TaskRepository;
 import ch.noseryoung.domain.recur.repositories.TaskReminderOverrideRepository;
-import ch.noseryoung.domain.recur.security.CustomUserDetails;
+import ch.noseryoung.domain.recur.auth.security.CustomUserDetails;
 import ch.noseryoung.domain.recur.utils.TaskUtil;
 
 /**

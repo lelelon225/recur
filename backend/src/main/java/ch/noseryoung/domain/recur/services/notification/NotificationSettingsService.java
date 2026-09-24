@@ -6,9 +6,9 @@ import org.springframework.stereotype.Service;
 
 import ch.noseryoung.domain.recur.dto.notification.NotificationSettingsResponse;
 import ch.noseryoung.domain.recur.models.notification.NotificationSettings;
-import ch.noseryoung.domain.recur.models.User;
+import ch.noseryoung.domain.recur.auth.model.User;
 import ch.noseryoung.domain.recur.repositories.notification.NotificationSettingsRepository;
-import ch.noseryoung.domain.recur.repositories.UserRepository;
+import ch.noseryoung.domain.recur.auth.repository.UserRepository;
 
 @Service
 public class NotificationSettingsService {

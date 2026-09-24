@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import ch.noseryoung.domain.recur.models.notification.PushSubscription;
-import ch.noseryoung.domain.recur.models.User;
+import ch.noseryoung.domain.recur.auth.model.User;
 
 @Repository
 public interface PushSubscriptionRepository extends JpaRepository<PushSubscription, UUID> {

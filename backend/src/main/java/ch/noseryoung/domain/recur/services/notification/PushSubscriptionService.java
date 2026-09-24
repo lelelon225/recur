@@ -8,9 +8,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import ch.noseryoung.domain.recur.dto.notification.PushSubscriptionRequest;
 import ch.noseryoung.domain.recur.models.notification.PushSubscription;
-import ch.noseryoung.domain.recur.models.User;
+import ch.noseryoung.domain.recur.auth.model.User;
 import ch.noseryoung.domain.recur.repositories.notification.PushSubscriptionRepository;
-import ch.noseryoung.domain.recur.security.CustomUserDetails;
+import ch.noseryoung.domain.recur.auth.security.CustomUserDetails;
 
 @Service
 public class PushSubscriptionService {

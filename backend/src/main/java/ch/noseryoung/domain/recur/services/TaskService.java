@@ -16,11 +16,11 @@ import ch.noseryoung.domain.recur.exceptions.task.TaskNotFoundException;
 import ch.noseryoung.domain.recur.models.group.Project;
 import ch.noseryoung.domain.recur.models.task.Task;
 import ch.noseryoung.domain.recur.models.task.TaskReminderOverride;
-import ch.noseryoung.domain.recur.models.User;
+import ch.noseryoung.domain.recur.auth.model.User;
 import ch.noseryoung.domain.recur.repositories.group.ProjectRepository;
 import ch.noseryoung.domain.recur.repositories.task.TaskReminderOverrideRepository;
 import ch.noseryoung.domain.recur.repositories.task.TaskRepository;
-import ch.noseryoung.domain.recur.security.CustomUserDetails;
+import ch.noseryoung.domain.recur.auth.security.CustomUserDetails;
 import ch.noseryoung.domain.recur.utils.TaskUtil;
 
 import java.time.Instant;

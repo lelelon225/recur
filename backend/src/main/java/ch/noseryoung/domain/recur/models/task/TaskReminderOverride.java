@@ -1,6 +1,6 @@
 package ch.noseryoung.domain.recur.models.task;
 
-import ch.noseryoung.domain.recur.models.User;
+import ch.noseryoung.domain.recur.auth.model.User;
 
 import java.util.UUID;
 

@@ -10,10 +10,10 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import ch.noseryoung.domain.recur.enums.ProfileVisibility;
-import ch.noseryoung.domain.recur.models.User;
-import ch.noseryoung.domain.recur.models.UserPrivacySettings;
-import ch.noseryoung.domain.recur.repositories.UserPrivacySettingsRepository;
+import ch.noseryoung.domain.recur.auth.enums.ProfileVisibility;
+import ch.noseryoung.domain.recur.auth.model.User;
+import ch.noseryoung.domain.recur.auth.model.UserPrivacySettings;
+import ch.noseryoung.domain.recur.auth.repository.UserPrivacySettingsRepository;
 
 // Setzt die Datenschutzerklärung um: ein Mitglied mit profileVisibility=HIDDEN
 // zeigt anderen Gruppenmitgliedern (nie sich selbst) nur noch Initialen statt
