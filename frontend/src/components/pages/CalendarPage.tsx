@@ -19,7 +19,7 @@ import {
 import { toDateOnlyString } from "@/utils/formatDate";
 import { isDoneForCurrentPeriod } from "@/utils/taskCompletions";
 import { cn } from "@/lib/utils";
-import { Spinner } from "@/components/ui/spinner";
+import TaskCardGridSkeleton from "@/components/molecules/task/TaskCardGridSkeleton";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import TaskDetailDialog from "@/components/organisms/dialogs/TaskDetailDialog";
@@ -168,11 +168,7 @@ function CalendarPage() {
   }
 
   if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <Spinner className="size-8 text-primary" />
-      </div>
-    );
+    return <TaskCardGridSkeleton count={6} direction="row" />;
   }
 
   const weekDays = getWeekDays(anchorDate);
