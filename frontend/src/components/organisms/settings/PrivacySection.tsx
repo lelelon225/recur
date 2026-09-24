@@ -80,8 +80,9 @@ function PrivacySection({ initialSettings }: PrivacySectionProps) {
           open={confirmDeleteOpen}
           onOpenChange={setConfirmDeleteOpen}
           onConfirm={handleDeleteAccount}
-          confirmText={deleting ? "Wird gelöscht..." : "Löschen"}
+          confirmText="Löschen"
           cancelText="Abbrechen"
+          loading={deleting}
           trigger={
             <Button variant="destructive" className="mt-3">
               Konto löschen

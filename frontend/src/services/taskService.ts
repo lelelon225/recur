@@ -1,5 +1,5 @@
 import axios from "axios";
-import api from "./api";
+import api, { isUnauthorized } from "./api";
 import type { ReminderLeadTime } from "@/types/notifications";
 import type { Task, NewTask, PatchTaskOptions } from "@/types/task";
 
@@ -46,6 +46,10 @@ function getTasks(archived?: boolean, favorite?: boolean): Promise<Task[]> {
     .get("/task", { params: { archived, favorite } })
     .then((response) => response.data as Task[])
     .catch((err: unknown) => {
+      // Roh weiterwerfen statt in eine Message-Error zu verpacken - TasksContext
+      // muss einen 401 hier erkennen können (nicht (mehr) authentifiziert,
+      // z.B. Logout-Race), um das nicht wie einen echten Fehler zu behandeln.
+      if (isUnauthorized(err)) throw err;
       throw new Error(
         extractErrorMessage(err, "Fehler beim Abrufen der Aufgaben")
       );

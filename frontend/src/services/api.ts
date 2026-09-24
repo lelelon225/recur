@@ -21,4 +21,9 @@ const api = axios.create({
   },
 });
 
+/** Ein 401 heisst hier immer "nicht (mehr) authentifiziert" - der axios-Interceptor oben behandelt bereits die globale Konsequenz (Redirect/Silent-Logout), ein Caller sollte dafür nie einen eigenen Error-Screen zeigen. */
+export function isUnauthorized(err: unknown): boolean {
+  return axios.isAxiosError(err) && err.response?.status === 401;
+}
+
 export default api;

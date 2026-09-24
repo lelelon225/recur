@@ -141,6 +141,14 @@ const REFRESH_EXEMPT_ENDPOINTS = ["/auth/login", "/auth/register", "/auth/refres
 let sessionExpiredHandled = false;
 let refreshPromise: Promise<AuthResponse> | null = null;
 let csrfRefreshPromise: Promise<unknown> | null = null;
+// War /auth/me (der Auth-Bootstrap-Check beim App-Start) der Auslöser des
+// laufenden Refresh-Versuchs? Schlägt der Refresh dann auch fehl, heisst das
+// nur "nie eingeloggt gewesen" (kein Cookie), keine echte Session, die
+// "abgelaufen" sein könnte - ProtectedRoute schickt in dem Fall ohnehin
+// schon still nach /login. Ohne dieses Flag griff unten fälschlich die
+// "Sitzung abgelaufen"-Meldung, weil der 401 des verschachtelten
+// /auth/refresh-Requests (nicht in AUTH_ENDPOINTS) die Prüfung durchlief.
+let refreshTriggeredByMeCheck = false;
 
 // GET-Requests sind von Springs CSRF-Prüfung ausgenommen - ein 403 auf einer
 // dieser Methoden kann also nur ein abgelehntes Double-Submit-Token sein, nie
@@ -172,6 +180,7 @@ api.interceptors.response.use(
       originalRequest._retry = true;
       try {
         if (!refreshPromise) {
+          refreshTriggeredByMeCheck = url ? url.includes("/auth/me") : false;
           refreshPromise = refreshAccessToken().finally(() => {
             refreshPromise = null;
           });
@@ -214,7 +223,19 @@ api.interceptors.response.use(
       }
     }
 
-    if (status === 401 && !isAuthEndpoint && !sessionExpiredHandled) {
+    // Der 401 des verschachtelten /auth/refresh-Requests selbst landet auch
+    // hier (nicht in AUTH_ENDPOINTS) - war der Auslöser dafür der
+    // /auth/me-Bootstrap-Check, ist das kein "Sitzung abgelaufen"-Fall,
+    // sondern schlicht "nie eingeloggt gewesen" (siehe refreshTriggeredByMeCheck).
+    const isBootstrapRefreshFailure =
+      url?.includes("/auth/refresh") && refreshTriggeredByMeCheck;
+
+    if (
+      status === 401 &&
+      !isAuthEndpoint &&
+      !isBootstrapRefreshFailure &&
+      !sessionExpiredHandled
+    ) {
       sessionExpiredHandled = true;
       if (!["/login", "/logout"].includes(window.location.pathname)) {
         window.location.href = "/logout?reason=expired";
