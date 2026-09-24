@@ -26,7 +26,6 @@ public class OAuth2AuthenticationFailureHandler implements AuthenticationFailure
         // weitergeleitet wird - eine SPA-Route mit diesem Präfix würde nie erreicht.
         // Absolute Frontend-URL statt relativem Pfad, da sendRedirect() sonst
         // relativ zum Backend (aktueller Request-Host) aufgelöst würde.
-        /* String message = java.net.URLEncoder.encode(exception.getMessage(), java.nio.charset.StandardCharsets.UTF_8); */
         String message = exception.getMessage();
 
         if (message == null) {
@@ -34,9 +33,8 @@ public class OAuth2AuthenticationFailureHandler implements AuthenticationFailure
         }
 
         message = java.net.URLEncoder.encode(
-            message,
-            java.nio.charset.StandardCharsets.UTF_8
-        );
+                message,
+                java.nio.charset.StandardCharsets.UTF_8);
         response.sendRedirect(frontendUrl + "/auth/error?message=" + message);
     }
 }
