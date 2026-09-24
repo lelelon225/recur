@@ -136,7 +136,7 @@ function BottomNavigation({ destinations, activeValue }: BottomNavigationProps) 
             aria-label={label}
             aria-current={isActive ? "page" : undefined}
             className={cn(
-              "relative z-10 flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-xs transition-colors",
+              "relative z-10 flex flex-1 flex-col items-center justify-center gap-0.5 py-3 text-xs transition-colors",
               isActive
                 ? "font-semibold text-sidebar-accent-foreground"
                 : "font-medium text-muted-foreground"
