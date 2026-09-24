@@ -1,6 +1,5 @@
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -9,6 +8,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import LoadingButton from "@/components/atoms/loading/LoadingButton";
 
 type ConfirmDialogProps = {
   severity?: "normal" | "high";
@@ -21,6 +21,8 @@ type ConfirmDialogProps = {
   trigger?: React.ReactElement;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  /** Spinner + disabled auf dem Confirm-Button während einer laufenden Mutation. */
+  loading?: boolean;
 };
 
 function ConfirmDialog({
@@ -34,8 +36,9 @@ function ConfirmDialog({
   cancelText,
   open,
   onOpenChange,
+  loading,
 }: ConfirmDialogProps) {
-  
+
   const buttonVariant = severity === "high" ? "destructive" : "default";
 
   return (
@@ -47,12 +50,12 @@ function ConfirmDialog({
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={onCancel}>
+          <AlertDialogCancel onClick={onCancel} disabled={loading}>
             {cancelText || "Abbrechen"}
           </AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm} variant={buttonVariant}>
+          <LoadingButton onClick={onConfirm} variant={buttonVariant} loading={loading}>
             {confirmText || "Fortfahren"}
-          </AlertDialogAction>
+          </LoadingButton>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
