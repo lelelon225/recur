@@ -1,13 +1,18 @@
 import { Formik } from "formik";
 import type { FormikHelpers } from "formik";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { LogOut, Settings } from "lucide-react";
 import * as yup from "yup";
 import type { UserResponse as User } from "@/types/auth";
 import { patchUser } from "@/services/authService";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import LoadingButton from "@/components/atoms/loading/LoadingButton";
 import AccountForm from "@/components/organisms/settings/AccountForm";
 import { useAuth } from "@/contexts/AuthContext";
+import { useBreakpoint } from "@/hooks/useBreakpoint";
 
 const validationSchema = yup.object().shape({
   firstName: yup.string().required("Vorname ist erforderlich"),
@@ -16,7 +21,9 @@ const validationSchema = yup.object().shape({
 });
 
 function AccountPage() {
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, logout } = useAuth();
+  const router = useRouter();
+  const isMobile = useBreakpoint() === "mobile";
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,6 +63,19 @@ function AccountPage() {
 
   return (
     <div className="mx-auto max-w-xl px-4 py-6">
+      {/* Settings-Zugriff via Sidebar-Dropdown auf Desktop schon vorhanden - hier nur für Mobile, wo der Sidebar/Drawer weg ist. */}
+      {isMobile && (
+        <div className="mb-4 flex justify-end">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Einstellungen"
+            onClick={() => router.push("/settings")}
+          >
+            <Settings />
+          </Button>
+        </div>
+      )}
       <Formik<Partial<User>>
         initialValues={user}
         onSubmit={handleSubmit}
@@ -94,6 +114,16 @@ function AccountPage() {
           </>
         )}
       </Formik>
+
+      {isMobile && (
+        <>
+          <Separator className="my-6" />
+          <Button variant="outline" className="w-full" onClick={logout}>
+            <LogOut className="h-4 w-4" />
+            Abmelden
+          </Button>
+        </>
+      )}
     </div>
   );
 }
