@@ -1,4 +1,4 @@
-package ch.noseryoung.domain.recur.services.notification;
+package ch.noseryoung.domain.recur.notification.service;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -6,10 +6,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import ch.noseryoung.domain.recur.dto.notification.PushSubscriptionRequest;
-import ch.noseryoung.domain.recur.models.notification.PushSubscription;
+import ch.noseryoung.domain.recur.notification.dto.PushSubscriptionRequest;
+import ch.noseryoung.domain.recur.notification.model.PushSubscription;
 import ch.noseryoung.domain.recur.models.User;
-import ch.noseryoung.domain.recur.repositories.notification.PushSubscriptionRepository;
+import ch.noseryoung.domain.recur.notification.repository.PushSubscriptionRepository;
 import ch.noseryoung.domain.recur.security.CustomUserDetails;
 
 @Service

@@ -1,4 +1,4 @@
-package ch.noseryoung.domain.recur.models.notification;
+package ch.noseryoung.domain.recur.notification.model;
 
 import ch.noseryoung.domain.recur.models.User;
 

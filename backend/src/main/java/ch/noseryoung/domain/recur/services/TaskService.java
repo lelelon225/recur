@@ -1,13 +1,13 @@
 package ch.noseryoung.domain.recur.services;
 
 import ch.noseryoung.domain.recur.services.group.GroupMemberVisibilityService;
-import ch.noseryoung.domain.recur.services.notification.NotificationDispatchService;
+import ch.noseryoung.domain.recur.notification.service.NotificationDispatchService;
 
 import ch.noseryoung.domain.recur.dto.task.CreateTaskRequest;
 import ch.noseryoung.domain.recur.dto.task.PatchTaskRequest;
 import ch.noseryoung.domain.recur.dto.task.ProjectReference;
 import ch.noseryoung.domain.recur.enums.task.Frequency;
-import ch.noseryoung.domain.recur.enums.notification.ReminderLeadTime;
+import ch.noseryoung.domain.recur.notification.enums.ReminderLeadTime;
 import ch.noseryoung.domain.recur.exceptions.task.InvalidCompletionException;
 import ch.noseryoung.domain.recur.exceptions.group.NotGroupAdminException;
 import ch.noseryoung.domain.recur.exceptions.group.NotGroupMemberException;

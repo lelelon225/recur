@@ -1,4 +1,4 @@
-package ch.noseryoung.domain.recur.services.notification;
+package ch.noseryoung.domain.recur.notification.service;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -10,15 +10,15 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import ch.noseryoung.domain.recur.enums.notification.NotificationType;
-import ch.noseryoung.domain.recur.enums.notification.ReminderLeadTime;
-import ch.noseryoung.domain.recur.models.notification.NotificationLog;
-import ch.noseryoung.domain.recur.models.notification.NotificationSettings;
+import ch.noseryoung.domain.recur.notification.enums.NotificationType;
+import ch.noseryoung.domain.recur.notification.enums.ReminderLeadTime;
+import ch.noseryoung.domain.recur.notification.model.NotificationLog;
+import ch.noseryoung.domain.recur.notification.model.NotificationSettings;
 import ch.noseryoung.domain.recur.models.task.Task;
 import ch.noseryoung.domain.recur.models.task.TaskReminderOverride;
 import ch.noseryoung.domain.recur.models.User;
-import ch.noseryoung.domain.recur.repositories.notification.NotificationLogRepository;
-import ch.noseryoung.domain.recur.repositories.notification.NotificationSettingsRepository;
+import ch.noseryoung.domain.recur.notification.repository.NotificationLogRepository;
+import ch.noseryoung.domain.recur.notification.repository.NotificationSettingsRepository;
 import ch.noseryoung.domain.recur.repositories.task.TaskReminderOverrideRepository;
 import ch.noseryoung.domain.recur.repositories.task.TaskRepository;
 

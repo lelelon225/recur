@@ -1,4 +1,4 @@
-package ch.noseryoung.domain.recur.dto.notification;
+package ch.noseryoung.domain.recur.notification.dto;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;

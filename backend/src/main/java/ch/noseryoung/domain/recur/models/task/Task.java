@@ -2,7 +2,7 @@ package ch.noseryoung.domain.recur.models.task;
 
 import ch.noseryoung.domain.recur.models.User;
 import ch.noseryoung.domain.recur.models.group.Project;
-import ch.noseryoung.domain.recur.models.notification.NotificationLog;
+import ch.noseryoung.domain.recur.notification.model.NotificationLog;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -15,7 +15,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import ch.noseryoung.domain.recur.enums.task.Category;
 import ch.noseryoung.domain.recur.enums.task.Frequency;
-import ch.noseryoung.domain.recur.enums.notification.ReminderLeadTime;
+import ch.noseryoung.domain.recur.notification.enums.ReminderLeadTime;
 import lombok.*;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
