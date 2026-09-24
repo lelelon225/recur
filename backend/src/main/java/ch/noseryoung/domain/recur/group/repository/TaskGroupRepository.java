@@ -1,4 +1,4 @@
-package ch.noseryoung.domain.recur.repositories.group;
+package ch.noseryoung.domain.recur.group.repository;
 
 import java.util.List;
 import java.util.Optional;
@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import ch.noseryoung.domain.recur.models.group.TaskGroup;
+import ch.noseryoung.domain.recur.group.model.TaskGroup;
 import ch.noseryoung.domain.recur.models.User;
 
 @Repository

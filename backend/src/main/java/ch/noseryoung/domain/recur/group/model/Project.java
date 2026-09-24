@@ -1,4 +1,4 @@
-package ch.noseryoung.domain.recur.models.group;
+package ch.noseryoung.domain.recur.group.model;
 
 import java.time.Instant;
 import java.util.UUID;

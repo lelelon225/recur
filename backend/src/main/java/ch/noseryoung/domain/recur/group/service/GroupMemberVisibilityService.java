@@ -1,4 +1,4 @@
-package ch.noseryoung.domain.recur.services.group;
+package ch.noseryoung.domain.recur.group.service;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;

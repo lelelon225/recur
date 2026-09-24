@@ -1,4 +1,4 @@
-package ch.noseryoung.domain.recur.exceptions.group;
+package ch.noseryoung.domain.recur.group.exceptions;
 
 public class NotGroupAdminException extends RuntimeException {
 

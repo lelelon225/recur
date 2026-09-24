@@ -1,4 +1,4 @@
-package ch.noseryoung.domain.recur.services.group;
+package ch.noseryoung.domain.recur.group.service;
 
 import java.security.SecureRandom;
 import java.util.Collection;
@@ -13,19 +13,19 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import ch.noseryoung.domain.recur.dto.group.CreateGroupRequest;
-import ch.noseryoung.domain.recur.dto.group.GroupInvitePreview;
-import ch.noseryoung.domain.recur.exceptions.group.AdminSuccessorRequiredException;
-import ch.noseryoung.domain.recur.exceptions.group.CannotRemoveAdminException;
-import ch.noseryoung.domain.recur.exceptions.group.GroupNotFoundException;
-import ch.noseryoung.domain.recur.exceptions.group.InvalidSuccessorException;
-import ch.noseryoung.domain.recur.exceptions.group.NotGroupAdminException;
-import ch.noseryoung.domain.recur.exceptions.group.NotGroupMemberException;
-import ch.noseryoung.domain.recur.models.group.Project;
-import ch.noseryoung.domain.recur.models.group.TaskGroup;
+import ch.noseryoung.domain.recur.group.dto.CreateGroupRequest;
+import ch.noseryoung.domain.recur.group.dto.GroupInvitePreview;
+import ch.noseryoung.domain.recur.group.exceptions.AdminSuccessorRequiredException;
+import ch.noseryoung.domain.recur.group.exceptions.CannotRemoveAdminException;
+import ch.noseryoung.domain.recur.group.exceptions.GroupNotFoundException;
+import ch.noseryoung.domain.recur.group.exceptions.InvalidSuccessorException;
+import ch.noseryoung.domain.recur.group.exceptions.NotGroupAdminException;
+import ch.noseryoung.domain.recur.group.exceptions.NotGroupMemberException;
+import ch.noseryoung.domain.recur.group.model.Project;
+import ch.noseryoung.domain.recur.group.model.TaskGroup;
 import ch.noseryoung.domain.recur.models.User;
-import ch.noseryoung.domain.recur.repositories.group.ProjectRepository;
-import ch.noseryoung.domain.recur.repositories.group.TaskGroupRepository;
+import ch.noseryoung.domain.recur.group.repository.ProjectRepository;
+import ch.noseryoung.domain.recur.group.repository.TaskGroupRepository;
 import ch.noseryoung.domain.recur.repositories.task.TaskRepository;
 import ch.noseryoung.domain.recur.security.CustomUserDetails;
 

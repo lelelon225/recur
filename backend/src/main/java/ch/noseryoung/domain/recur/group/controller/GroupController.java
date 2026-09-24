@@ -1,4 +1,4 @@
-package ch.noseryoung.domain.recur.controllers.group;
+package ch.noseryoung.domain.recur.group.controller;
 
 import java.util.Collection;
 import java.util.List;
@@ -10,11 +10,11 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import ch.noseryoung.domain.recur.dto.group.CreateGroupRequest;
-import ch.noseryoung.domain.recur.dto.group.GroupInvitePreview;
-import ch.noseryoung.domain.recur.models.group.Project;
-import ch.noseryoung.domain.recur.models.group.TaskGroup;
-import ch.noseryoung.domain.recur.services.group.GroupService;
+import ch.noseryoung.domain.recur.group.dto.CreateGroupRequest;
+import ch.noseryoung.domain.recur.group.dto.GroupInvitePreview;
+import ch.noseryoung.domain.recur.group.model.Project;
+import ch.noseryoung.domain.recur.group.model.TaskGroup;
+import ch.noseryoung.domain.recur.group.service.GroupService;
 
 @RestController
 @RequestMapping("/api/group")
