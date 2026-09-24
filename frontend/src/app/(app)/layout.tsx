@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import ProtectedRoute from "@/components/organisms/ProtectedRoute";
 import DefaultLayout from "@/components/templates/DefaultLayout";
+import { SETTINGS_SECTIONS } from "@/components/organisms/settings/settingsSections";
 
 function getPageTitle(pathname: string): string {
   if (pathname === "/") return "Deine Aufgaben";
@@ -14,6 +15,10 @@ function getPageTitle(pathname: string): string {
   if (pathname.startsWith("/groups/join/")) return "Gruppe beitreten";
   if (pathname.startsWith("/groups/")) return "Gruppendetails";
   if (pathname === "/settings") return "Einstellungen";
+  if (pathname.startsWith("/settings/")) {
+    const sectionId = pathname.slice("/settings/".length);
+    return SETTINGS_SECTIONS.find((s) => s.id === sectionId)?.label ?? "Einstellungen";
+  }
   if (pathname === "/account") return "Account";
   return "";
 }
