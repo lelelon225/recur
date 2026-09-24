@@ -1,7 +1,7 @@
-package ch.noseryoung.domain.recur.dto.notification;
+package ch.noseryoung.domain.recur.notification.dto;
 
-import ch.noseryoung.domain.recur.enums.notification.ReminderLeadTime;
-import ch.noseryoung.domain.recur.models.notification.NotificationSettings;
+import ch.noseryoung.domain.recur.notification.enums.ReminderLeadTime;
+import ch.noseryoung.domain.recur.notification.model.NotificationSettings;
 
 // Auch für PATCH /api/auth/me/notification-settings verwendet: null-Felder
 // bedeuten "nicht ändern" (Analogon zu Task.OnCreate, siehe

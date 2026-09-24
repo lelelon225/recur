@@ -15,7 +15,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import ch.noseryoung.domain.recur.enums.task.Category;
 import ch.noseryoung.domain.recur.enums.task.Frequency;
-import ch.noseryoung.domain.recur.enums.notification.ReminderLeadTime;
+import ch.noseryoung.domain.recur.notification.enums.ReminderLeadTime;
 import lombok.*;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;

@@ -1,4 +1,4 @@
-package ch.noseryoung.domain.recur.models.notification;
+package ch.noseryoung.domain.recur.notification.model;
 
 import ch.noseryoung.domain.recur.models.User;
 import ch.noseryoung.domain.recur.models.task.Task;
@@ -8,7 +8,7 @@ import java.util.UUID;
 
 import org.hibernate.annotations.CreationTimestamp;
 
-import ch.noseryoung.domain.recur.enums.notification.NotificationType;
+import ch.noseryoung.domain.recur.notification.enums.NotificationType;
 import jakarta.persistence.*;
 import lombok.*;
 

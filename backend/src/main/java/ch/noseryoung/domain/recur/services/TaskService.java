@@ -7,7 +7,7 @@ import ch.noseryoung.domain.recur.dto.task.CreateTaskRequest;
 import ch.noseryoung.domain.recur.dto.task.PatchTaskRequest;
 import ch.noseryoung.domain.recur.dto.task.ProjectReference;
 import ch.noseryoung.domain.recur.enums.task.Frequency;
-import ch.noseryoung.domain.recur.enums.notification.ReminderLeadTime;
+import ch.noseryoung.domain.recur.notification.enums.ReminderLeadTime;
 import ch.noseryoung.domain.recur.exceptions.task.InvalidCompletionException;
 import ch.noseryoung.domain.recur.group.exceptions.NotGroupAdminException;
 import ch.noseryoung.domain.recur.group.exceptions.NotGroupMemberException;

@@ -1,4 +1,4 @@
-package ch.noseryoung.domain.recur.controllers.notification;
+package ch.noseryoung.domain.recur.notification.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import ch.noseryoung.domain.recur.dto.notification.NotificationSettingsResponse;
-import ch.noseryoung.domain.recur.services.notification.NotificationSettingsService;
+import ch.noseryoung.domain.recur.notification.dto.NotificationSettingsResponse;
+import ch.noseryoung.domain.recur.notification.service.NotificationSettingsService;
 
 @RestController
 @RequestMapping("/api/auth/me/notification-settings")
