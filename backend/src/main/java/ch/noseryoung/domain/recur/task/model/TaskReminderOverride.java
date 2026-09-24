@@ -1,4 +1,4 @@
-package ch.noseryoung.domain.recur.models.task;
+package ch.noseryoung.domain.recur.task.model;
 
 import ch.noseryoung.domain.recur.models.User;
 

@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import ch.noseryoung.domain.recur.enums.notification.NotificationType;
 import ch.noseryoung.domain.recur.models.notification.NotificationLog;
-import ch.noseryoung.domain.recur.models.task.Task;
+import ch.noseryoung.domain.recur.task.model.Task;
 import ch.noseryoung.domain.recur.models.User;
 
 @Repository

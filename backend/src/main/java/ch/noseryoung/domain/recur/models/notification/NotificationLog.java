@@ -1,7 +1,7 @@
 package ch.noseryoung.domain.recur.models.notification;
 
 import ch.noseryoung.domain.recur.models.User;
-import ch.noseryoung.domain.recur.models.task.Task;
+import ch.noseryoung.domain.recur.task.model.Task;
 
 import java.time.Instant;
 import java.util.UUID;

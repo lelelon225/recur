@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import ch.noseryoung.domain.recur.models.notification.NotificationSettings;
-import ch.noseryoung.domain.recur.models.task.Task;
+import ch.noseryoung.domain.recur.task.model.Task;
 import ch.noseryoung.domain.recur.models.User;
 import ch.noseryoung.domain.recur.repositories.notification.NotificationSettingsRepository;
 

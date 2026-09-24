@@ -26,7 +26,7 @@ import ch.noseryoung.domain.recur.models.group.TaskGroup;
 import ch.noseryoung.domain.recur.models.User;
 import ch.noseryoung.domain.recur.repositories.group.ProjectRepository;
 import ch.noseryoung.domain.recur.repositories.group.TaskGroupRepository;
-import ch.noseryoung.domain.recur.repositories.task.TaskRepository;
+import ch.noseryoung.domain.recur.task.repository.TaskRepository;
 import ch.noseryoung.domain.recur.security.CustomUserDetails;
 
 @Service

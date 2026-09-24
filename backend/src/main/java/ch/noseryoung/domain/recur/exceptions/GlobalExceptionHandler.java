@@ -29,8 +29,8 @@ import ch.noseryoung.domain.recur.exceptions.group.NotGroupAdminException;
 import ch.noseryoung.domain.recur.exceptions.group.NotGroupMemberException;
 import ch.noseryoung.domain.recur.exceptions.group.ProjectNotArchivedException;
 import ch.noseryoung.domain.recur.exceptions.group.ProjectNotFoundException;
-import ch.noseryoung.domain.recur.exceptions.task.InvalidCompletionException;
-import ch.noseryoung.domain.recur.exceptions.task.TaskNotFoundException;
+import ch.noseryoung.domain.recur.task.exceptions.InvalidCompletionException;
+import ch.noseryoung.domain.recur.task.exceptions.TaskNotFoundException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {

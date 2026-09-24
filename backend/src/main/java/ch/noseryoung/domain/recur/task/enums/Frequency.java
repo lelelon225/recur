@@ -1,4 +1,4 @@
-package ch.noseryoung.domain.recur.enums.task;
+package ch.noseryoung.domain.recur.task.enums;
 
 public enum Frequency {
     ONCE,

@@ -1,4 +1,4 @@
-package ch.noseryoung.domain.recur.repositories.task;
+package ch.noseryoung.domain.recur.task.repository;
 
 import java.util.*;
 import org.springframework.data.jpa.repository.Modifying;
@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import ch.noseryoung.domain.recur.models.group.Project;
-import ch.noseryoung.domain.recur.models.task.Task;
+import ch.noseryoung.domain.recur.task.model.Task;
 import ch.noseryoung.domain.recur.models.User;
 
 import org.springframework.data.jpa.repository.JpaRepository;

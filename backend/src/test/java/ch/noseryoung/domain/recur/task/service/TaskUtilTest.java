@@ -1,4 +1,4 @@
-package ch.noseryoung.domain.recur.utils;
+package ch.noseryoung.domain.recur.task.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
@@ -10,8 +10,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import ch.noseryoung.domain.recur.enums.Frequency;
-import ch.noseryoung.domain.recur.models.Task;
+import ch.noseryoung.domain.recur.task.enums.Frequency;
+import ch.noseryoung.domain.recur.task.model.Task;
 
 /**
  * Deckt die Fortschritts-/Zeitspannen-Berechnung ab - das Kernstück der

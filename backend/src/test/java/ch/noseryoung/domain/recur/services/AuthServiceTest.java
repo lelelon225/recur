@@ -28,7 +28,7 @@ import ch.noseryoung.domain.recur.models.PasswordResetToken;
 import ch.noseryoung.domain.recur.models.User;
 import ch.noseryoung.domain.recur.repositories.NotificationSettingsRepository;
 import ch.noseryoung.domain.recur.repositories.PasswordResetTokenRepository;
-import ch.noseryoung.domain.recur.repositories.TaskRepository;
+import ch.noseryoung.domain.recur.task.repository.TaskRepository;
 import ch.noseryoung.domain.recur.repositories.UserPrivacySettingsRepository;
 import ch.noseryoung.domain.recur.repositories.UserRepository;
 import ch.noseryoung.domain.recur.repositories.VerificationTokenRepository;

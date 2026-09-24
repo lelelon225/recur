@@ -1,4 +1,4 @@
-package ch.noseryoung.domain.recur.exceptions.task;
+package ch.noseryoung.domain.recur.task.exceptions;
 
 public class InvalidCompletionException extends RuntimeException {
 
