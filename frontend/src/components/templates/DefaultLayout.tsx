@@ -14,7 +14,7 @@ import BottomNavigation from "../organisms/BottomNavigation";
 import AppBar from "../molecules/AppBar";
 
 // Bottom-Nav sitzt fixed über bottom-[calc(env(safe-area-inset-bottom)+1rem)]
-// mit ~3.5rem Eigenhöhe - Fab/Toaster brauchen auf Mobile genug Abstand
+// mit ~3.5rem Eigenhöhe - der Toaster braucht auf Mobile genug Abstand
 // darüber, damit nichts überlappt.
 const MOBILE_BOTTOM_CLEARANCE = "calc(env(safe-area-inset-bottom) + 6rem)";
 
@@ -77,7 +77,11 @@ function DefaultLayout({ children, pageTitle }: DefaultLayoutProps) {
           {!isMobile && <AppSidebar destinations={destinations} />}
 
           <SidebarInset>
-            <AppBar title={pageTitle} isPrimaryRoute={activeValue !== ""} />
+            <AppBar
+              title={pageTitle}
+              isPrimaryRoute={activeValue !== ""}
+              showAddTaskButton={FAB_ROUTES.has(pathname)}
+            />
 
             <div
               className={cn(
@@ -93,13 +97,9 @@ function DefaultLayout({ children, pageTitle }: DefaultLayoutProps) {
               offset={isMobile ? { bottom: MOBILE_BOTTOM_CLEARANCE } : undefined}
               mobileOffset={isMobile ? { bottom: MOBILE_BOTTOM_CLEARANCE } : undefined}
             />
-            {FAB_ROUTES.has(pathname) && (
-              <Fab
-                className={cn(
-                  "fixed right-4",
-                  isMobile ? "bottom-[calc(env(safe-area-inset-bottom)+6rem)]" : "bottom-4"
-                )}
-              />
+            {/* Mobile: der "+"-Button sitzt jetzt in der AppBar statt hier (#208) - Desktop unverändert. */}
+            {!isMobile && FAB_ROUTES.has(pathname) && (
+              <Fab className="fixed right-4 bottom-4" />
             )}
 
             {isMobile && (
