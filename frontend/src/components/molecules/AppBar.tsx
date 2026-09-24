@@ -24,9 +24,16 @@ function AppBar({ title, isPrimaryRoute = false }: AppBarProps) {
   // Eine Ebene nach oben statt router.back(): als installierte PWA kann z.B.
   // /settings/notifications ohne In-App-Historie geöffnet werden (letzter
   // Screen beim Schliessen), dann liefe router.back() ins Leere.
-  const segments = pathname.split("/").filter(Boolean);
-  segments.pop();
-  const backHref = segments.length ? `/${segments.join("/")}` : "/";
+  // Sonderfall /settings: dahin gelangt man nur über /account (Zahnrad-Icon),
+  // daher soll "zurück" auch wieder dorthin führen statt zu "/".
+  let backHref: string;
+  if (pathname === "/settings") {
+    backHref = "/account";
+  } else {
+    const segments = pathname.split("/").filter(Boolean);
+    segments.pop();
+    backHref = segments.length ? `/${segments.join("/")}` : "/";
+  }
 
   if (isMobile) {
     return (
