@@ -36,6 +36,19 @@ function BottomNavigation({ destinations, activeValue }: BottomNavigationProps) 
   // ohne Transition (sonst hinkt sie spürbar hinterher).
   const [dragLeftPx, setDragLeftPx] = useState<number | null>(null);
   const pointerDownXRef = useRef<number | null>(null);
+  // Nach dem Loslassen eines Drags: Index der Spalte, zu der die Pille noch
+  // per Transition hin unterwegs ist, während navigate() erst asynchron die
+  // Route (und damit activeIndex) nachzieht - siehe Effect unten. State statt
+  // Ref, da es die Transition-Klasse beim Rendern mitbestimmt.
+  const [releaseTargetIndex, setReleaseTargetIndex] = useState<number | null>(null);
+
+  const columnLeftPx = (index: number) => {
+    const nav = navRef.current;
+    if (!nav) return 0;
+    const rect = nav.getBoundingClientRect();
+    const insetPx = PILL_INSET_REM * REM_IN_PX;
+    return (rect.width / destinations.length) * index + insetPx;
+  };
 
   const updateDragPosition = (clientX: number) => {
     const nav = navRef.current;
@@ -48,6 +61,20 @@ function BottomNavigation({ destinations, activeValue }: BottomNavigationProps) 
     const clamped = Math.min(Math.max(rawLeft, insetPx), rect.width - insetPx - pillWidth);
     setDragLeftPx(clamped);
   };
+
+  // Sobald die Route (activeIndex) beim per Drag angewählten Ziel angekommen
+  // ist, auf die CSS-Transition per activeIndex umschalten - die Pille steht
+  // dann bereits an genau dieser Position, kein Sprung. "Adjusting state
+  // when a prop changes" während des Renderns statt per useEffect (kein
+  // zusätzlicher Render-Zyklus nötig, siehe React-Doku dazu).
+  const [prevActiveIndex, setPrevActiveIndex] = useState(activeIndex);
+  if (activeIndex !== prevActiveIndex) {
+    setPrevActiveIndex(activeIndex);
+    if (releaseTargetIndex !== null && activeIndex === releaseTargetIndex) {
+      setReleaseTargetIndex(null);
+      setDragLeftPx(null);
+    }
+  }
 
   const columnIndexAt = (clientX: number): number => {
     const nav = navRef.current;
@@ -78,10 +105,15 @@ function BottomNavigation({ destinations, activeValue }: BottomNavigationProps) 
     // die Pille gleitet dann einmal per CSS-Transition zur neuen Position.
     if (dragLeftPx === null) return;
     const index = columnIndexAt(event.clientX);
-    setDragLeftPx(null);
     const target = destinations[index];
     if (target && target.path !== activeValue) {
+      // Direkt zur Ziel-Spalte gleiten statt zu activeIndex zurückzuspringen
+      // - dragLeftPx bleibt bis Route/activeIndex nachziehen (Effect oben).
+      setReleaseTargetIndex(index);
+      setDragLeftPx(columnLeftPx(index));
       target.navigate();
+    } else {
+      setDragLeftPx(null);
     }
   };
 
@@ -92,7 +124,13 @@ function BottomNavigation({ destinations, activeValue }: BottomNavigationProps) 
       style={{
         left: NAV_EDGE_INSET,
         right: NAV_EDGE_INSET,
-        bottom: `calc(env(safe-area-inset-bottom) + ${NAV_EDGE_INSET})`,
+        // Nicht addieren: env(safe-area-inset-bottom) allein reicht schon aus,
+        // um den Home-Indicator freizuhalten (iPhone: ~34px, deutlich mehr
+        // als NAV_EDGE_INSET) - das zusätzliche Aufaddieren liess die Bar
+        // unnötig hoch/den unteren Abstand ungleich grösser wirken als den
+        // seitlichen. max() sorgt nur auf Geräten ohne Safe-Area (Android)
+        // dafür, dass der Abstand nicht unter NAV_EDGE_INSET fällt.
+        bottom: `max(${NAV_EDGE_INSET}, env(safe-area-inset-bottom))`,
       }}
       aria-label="Hauptnavigation"
       onPointerDown={handlePointerDown}
@@ -113,7 +151,8 @@ function BottomNavigation({ destinations, activeValue }: BottomNavigationProps) 
         aria-hidden
         className={cn(
           "absolute rounded-full bg-sidebar-accent",
-          dragLeftPx === null && "transition-[left,opacity] duration-300 ease-out",
+          (dragLeftPx === null || releaseTargetIndex !== null) &&
+            "transition-[left,opacity] duration-300 ease-out",
           activeIndex === -1 && dragLeftPx === null && "opacity-0"
         )}
         style={{
