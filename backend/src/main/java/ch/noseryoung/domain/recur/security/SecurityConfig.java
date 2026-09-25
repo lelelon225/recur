@@ -30,11 +30,12 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import ch.noseryoung.domain.recur.exceptions.ErrorResponse;
-import ch.noseryoung.domain.recur.security.jwt.JwtAuthenticationFilter;
-import ch.noseryoung.domain.recur.security.oauth2.CustomOAuth2UserService;
-import ch.noseryoung.domain.recur.security.oauth2.CustomOidcUserService;
-import ch.noseryoung.domain.recur.security.oauth2.OAuth2AuthenticationFailureHandler;
-import ch.noseryoung.domain.recur.security.oauth2.OAuth2AuthenticationSuccessHandler;
+import ch.noseryoung.domain.recur.auth.security.CustomUserDetailsService;
+import ch.noseryoung.domain.recur.auth.security.jwt.JwtAuthenticationFilter;
+import ch.noseryoung.domain.recur.auth.security.oauth2.CustomOAuth2UserService;
+import ch.noseryoung.domain.recur.auth.security.oauth2.CustomOidcUserService;
+import ch.noseryoung.domain.recur.auth.security.oauth2.OAuth2AuthenticationFailureHandler;
+import ch.noseryoung.domain.recur.auth.security.oauth2.OAuth2AuthenticationSuccessHandler;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

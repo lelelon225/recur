@@ -7,9 +7,9 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import ch.noseryoung.domain.recur.models.group.Project;
 import ch.noseryoung.domain.recur.task.model.Task;
-import ch.noseryoung.domain.recur.models.User;
+import ch.noseryoung.domain.recur.group.model.Project;
+import ch.noseryoung.domain.recur.auth.model.User;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

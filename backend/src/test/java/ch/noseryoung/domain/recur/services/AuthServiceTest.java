@@ -18,22 +18,23 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import ch.noseryoung.domain.recur.dto.LoginRequest;
-import ch.noseryoung.domain.recur.dto.RegisterRequest;
-import ch.noseryoung.domain.recur.enums.AuthProvider;
-import ch.noseryoung.domain.recur.exceptions.EmailAlreadyExistsException;
-import ch.noseryoung.domain.recur.exceptions.InvalidCredentialsException;
-import ch.noseryoung.domain.recur.exceptions.InvalidPasswordResetTokenException;
-import ch.noseryoung.domain.recur.models.PasswordResetToken;
-import ch.noseryoung.domain.recur.models.User;
-import ch.noseryoung.domain.recur.repositories.NotificationSettingsRepository;
-import ch.noseryoung.domain.recur.repositories.PasswordResetTokenRepository;
+import ch.noseryoung.domain.recur.auth.model.PasswordResetToken;
+import ch.noseryoung.domain.recur.auth.model.User;
 import ch.noseryoung.domain.recur.task.repository.TaskRepository;
-import ch.noseryoung.domain.recur.repositories.UserPrivacySettingsRepository;
-import ch.noseryoung.domain.recur.repositories.UserRepository;
-import ch.noseryoung.domain.recur.repositories.VerificationTokenRepository;
-import ch.noseryoung.domain.recur.security.JwtService;
-import ch.noseryoung.domain.recur.security.RefreshTokenService;
+import ch.noseryoung.domain.recur.auth.repository.UserPrivacySettingsRepository;
+import ch.noseryoung.domain.recur.auth.repository.UserRepository;
+import ch.noseryoung.domain.recur.auth.repository.VerificationTokenRepository;
+import ch.noseryoung.domain.recur.auth.repository.PasswordResetTokenRepository;
+import ch.noseryoung.domain.recur.auth.security.jwt.JwtService;
+import ch.noseryoung.domain.recur.auth.security.jwt.RefreshTokenService;
+import ch.noseryoung.domain.recur.auth.service.AuthService;
+import ch.noseryoung.domain.recur.notification.repository.NotificationSettingsRepository;
+import ch.noseryoung.domain.recur.auth.dto.LoginRequest;
+import ch.noseryoung.domain.recur.auth.dto.RegisterRequest;
+import ch.noseryoung.domain.recur.auth.enums.AuthProvider;
+import ch.noseryoung.domain.recur.auth.exceptions.EmailAlreadyExistsException;
+import ch.noseryoung.domain.recur.auth.exceptions.InvalidCredentialsException;
+import ch.noseryoung.domain.recur.auth.exceptions.InvalidPasswordResetTokenException;
 import jakarta.servlet.http.HttpServletRequest;
 
 /**

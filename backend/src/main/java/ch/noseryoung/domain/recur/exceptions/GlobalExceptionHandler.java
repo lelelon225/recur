@@ -16,21 +16,21 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import ch.noseryoung.domain.recur.exceptions.auth.EmailAlreadyExistsException;
-import ch.noseryoung.domain.recur.exceptions.auth.EmailNotVerifiedException;
-import ch.noseryoung.domain.recur.exceptions.auth.InvalidCredentialsException;
-import ch.noseryoung.domain.recur.exceptions.auth.InvalidPasswordResetTokenException;
-import ch.noseryoung.domain.recur.exceptions.auth.InvalidRefreshTokenException;
-import ch.noseryoung.domain.recur.exceptions.group.AdminSuccessorRequiredException;
-import ch.noseryoung.domain.recur.exceptions.group.CannotRemoveAdminException;
-import ch.noseryoung.domain.recur.exceptions.group.GroupNotFoundException;
-import ch.noseryoung.domain.recur.exceptions.group.InvalidSuccessorException;
-import ch.noseryoung.domain.recur.exceptions.group.NotGroupAdminException;
-import ch.noseryoung.domain.recur.exceptions.group.NotGroupMemberException;
-import ch.noseryoung.domain.recur.exceptions.group.ProjectNotArchivedException;
-import ch.noseryoung.domain.recur.exceptions.group.ProjectNotFoundException;
 import ch.noseryoung.domain.recur.task.exceptions.InvalidCompletionException;
 import ch.noseryoung.domain.recur.task.exceptions.TaskNotFoundException;
+import ch.noseryoung.domain.recur.auth.exceptions.EmailAlreadyExistsException;
+import ch.noseryoung.domain.recur.auth.exceptions.EmailNotVerifiedException;
+import ch.noseryoung.domain.recur.auth.exceptions.InvalidCredentialsException;
+import ch.noseryoung.domain.recur.auth.exceptions.InvalidPasswordResetTokenException;
+import ch.noseryoung.domain.recur.auth.exceptions.InvalidRefreshTokenException;
+import ch.noseryoung.domain.recur.group.exceptions.AdminSuccessorRequiredException;
+import ch.noseryoung.domain.recur.group.exceptions.CannotRemoveAdminException;
+import ch.noseryoung.domain.recur.group.exceptions.GroupNotFoundException;
+import ch.noseryoung.domain.recur.group.exceptions.InvalidSuccessorException;
+import ch.noseryoung.domain.recur.group.exceptions.NotGroupAdminException;
+import ch.noseryoung.domain.recur.group.exceptions.NotGroupMemberException;
+import ch.noseryoung.domain.recur.group.exceptions.ProjectNotArchivedException;
+import ch.noseryoung.domain.recur.group.exceptions.ProjectNotFoundException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {

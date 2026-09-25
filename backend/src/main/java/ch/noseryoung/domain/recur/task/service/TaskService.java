@@ -1,26 +1,26 @@
 package ch.noseryoung.domain.recur.task.service;
 
-import ch.noseryoung.domain.recur.services.group.GroupMemberVisibilityService;
-import ch.noseryoung.domain.recur.services.notification.NotificationDispatchService;
+import ch.noseryoung.domain.recur.group.service.GroupMemberVisibilityService;
 
 import ch.noseryoung.domain.recur.task.dto.CreateTaskRequest;
 import ch.noseryoung.domain.recur.task.dto.PatchTaskRequest;
 import ch.noseryoung.domain.recur.task.dto.ProjectReference;
 import ch.noseryoung.domain.recur.task.enums.Frequency;
-import ch.noseryoung.domain.recur.enums.notification.ReminderLeadTime;
 import ch.noseryoung.domain.recur.task.exceptions.InvalidCompletionException;
-import ch.noseryoung.domain.recur.exceptions.group.NotGroupAdminException;
-import ch.noseryoung.domain.recur.exceptions.group.NotGroupMemberException;
-import ch.noseryoung.domain.recur.exceptions.group.ProjectNotFoundException;
 import ch.noseryoung.domain.recur.task.exceptions.TaskNotFoundException;
-import ch.noseryoung.domain.recur.models.group.Project;
 import ch.noseryoung.domain.recur.task.model.Task;
 import ch.noseryoung.domain.recur.task.model.TaskReminderOverride;
-import ch.noseryoung.domain.recur.models.User;
-import ch.noseryoung.domain.recur.repositories.group.ProjectRepository;
 import ch.noseryoung.domain.recur.task.repository.TaskReminderOverrideRepository;
 import ch.noseryoung.domain.recur.task.repository.TaskRepository;
-import ch.noseryoung.domain.recur.security.CustomUserDetails;
+import ch.noseryoung.domain.recur.notification.enums.ReminderLeadTime;
+import ch.noseryoung.domain.recur.notification.service.NotificationDispatchService;
+import ch.noseryoung.domain.recur.group.exceptions.NotGroupAdminException;
+import ch.noseryoung.domain.recur.group.exceptions.NotGroupMemberException;
+import ch.noseryoung.domain.recur.group.exceptions.ProjectNotFoundException;
+import ch.noseryoung.domain.recur.group.model.Project;
+import ch.noseryoung.domain.recur.auth.model.User;
+import ch.noseryoung.domain.recur.group.repository.ProjectRepository;
+import ch.noseryoung.domain.recur.auth.security.CustomUserDetails;
 
 import java.time.Instant;
 import java.time.LocalDate;
