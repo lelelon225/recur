@@ -334,6 +334,19 @@ public class TaskService {
                 }
         }
 
+        // Für TaskReminderScheduler (#102): Kandidaten für Erinnerung/Überfällig -
+        // notification darf task's Repository nicht direkt aufrufen.
+        public List<Task> findDueTasks() {
+                return taskRepository.findByIsArchivedFalseAndDateUntilIsNotNull();
+        }
+
+        // Für TaskReminderScheduler#leadTimeOf - der vom Empfänger selbst für
+        // diesen Task gesetzte Erinnerungs-Vorlauf-Override, falls vorhanden.
+        public Optional<ReminderLeadTime> reminderLeadTimeOverride(Task task, User recipient) {
+                return taskReminderOverrideRepository.findByTaskAndUser(task, recipient)
+                                .map(TaskReminderOverride::getReminderLeadTime);
+        }
+
         // Räumt beim Löschen eines Accounts (siehe UserService#deleteCurrentUser)
         // die task-eigenen Referenzen auf den User auf - muss synchron laufen,
         // bevor UserService den User selbst löscht, sonst schlagen die
