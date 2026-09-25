@@ -1,4 +1,4 @@
-package ch.noseryoung.domain.recur.group.service;
+package ch.noseryoung.domain.recur.user.service;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -10,10 +10,10 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import ch.noseryoung.domain.recur.auth.enums.ProfileVisibility;
-import ch.noseryoung.domain.recur.auth.model.User;
-import ch.noseryoung.domain.recur.auth.model.UserPrivacySettings;
-import ch.noseryoung.domain.recur.auth.repository.UserPrivacySettingsRepository;
+import ch.noseryoung.domain.recur.user.enums.ProfileVisibility;
+import ch.noseryoung.domain.recur.user.model.User;
+import ch.noseryoung.domain.recur.user.model.UserPrivacySettings;
+import ch.noseryoung.domain.recur.user.repository.UserPrivacySettingsRepository;
 
 // Setzt die Datenschutzerklärung um: ein Mitglied mit profileVisibility=HIDDEN
 // zeigt anderen Gruppenmitgliedern (nie sich selbst) nur noch Initialen statt
@@ -21,11 +21,11 @@ import ch.noseryoung.domain.recur.auth.repository.UserPrivacySettingsRepository;
 // betroffenen User (nie die verwaltete Entity selbst), damit nichts davon
 // versehentlich in die DB zurückgeschrieben wird.
 @Service
-public class GroupMemberVisibilityService {
+public class UserVisibilityService {
 
     private final UserPrivacySettingsRepository privacySettingsRepository;
 
-    public GroupMemberVisibilityService(UserPrivacySettingsRepository privacySettingsRepository) {
+    public UserVisibilityService(UserPrivacySettingsRepository privacySettingsRepository) {
         this.privacySettingsRepository = privacySettingsRepository;
     }
 

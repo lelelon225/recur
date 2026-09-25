@@ -35,10 +35,10 @@ import ch.noseryoung.domain.recur.task.exceptions.TaskNotFoundException;
 import ch.noseryoung.domain.recur.task.model.Task;
 import ch.noseryoung.domain.recur.task.repository.TaskRepository;
 import ch.noseryoung.domain.recur.task.repository.TaskReminderOverrideRepository;
-import ch.noseryoung.domain.recur.auth.model.User;
+import ch.noseryoung.domain.recur.user.model.User;
 import ch.noseryoung.domain.recur.auth.security.CustomUserDetails;
+import ch.noseryoung.domain.recur.user.service.UserVisibilityService;
 import ch.noseryoung.domain.recur.group.repository.ProjectRepository;
-import ch.noseryoung.domain.recur.group.service.GroupMemberVisibilityService;
 import ch.noseryoung.domain.recur.notification.service.NotificationDispatchService;
 
 /**
@@ -59,7 +59,7 @@ class TaskServiceTest {
     private ProjectRepository projectRepository;
 
     @Mock
-    private GroupMemberVisibilityService visibilityService;
+    private UserVisibilityService visibilityService;
 
     @Mock
     private NotificationDispatchService notificationDispatchService;

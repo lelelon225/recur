@@ -1,6 +1,6 @@
 package ch.noseryoung.domain.recur.task.service;
 
-import ch.noseryoung.domain.recur.group.service.GroupMemberVisibilityService;
+import ch.noseryoung.domain.recur.user.service.UserVisibilityService;
 
 import ch.noseryoung.domain.recur.task.dto.CreateTaskRequest;
 import ch.noseryoung.domain.recur.task.dto.PatchTaskRequest;
@@ -12,13 +12,13 @@ import ch.noseryoung.domain.recur.task.model.Task;
 import ch.noseryoung.domain.recur.task.model.TaskReminderOverride;
 import ch.noseryoung.domain.recur.task.repository.TaskReminderOverrideRepository;
 import ch.noseryoung.domain.recur.task.repository.TaskRepository;
-import ch.noseryoung.domain.recur.notification.enums.ReminderLeadTime;
+import ch.noseryoung.domain.recur.task.enums.ReminderLeadTime;
 import ch.noseryoung.domain.recur.notification.service.NotificationDispatchService;
 import ch.noseryoung.domain.recur.group.exceptions.NotGroupAdminException;
 import ch.noseryoung.domain.recur.group.exceptions.NotGroupMemberException;
 import ch.noseryoung.domain.recur.group.exceptions.ProjectNotFoundException;
 import ch.noseryoung.domain.recur.group.model.Project;
-import ch.noseryoung.domain.recur.auth.model.User;
+import ch.noseryoung.domain.recur.user.model.User;
 import ch.noseryoung.domain.recur.group.repository.ProjectRepository;
 import ch.noseryoung.domain.recur.auth.security.CustomUserDetails;
 
@@ -39,12 +39,12 @@ public class TaskService {
         private final TaskRepository taskRepository;
         private final ProjectRepository projectRepository;
         private final TaskUtil taskUtil;
-        private final GroupMemberVisibilityService visibilityService;
+        private final UserVisibilityService visibilityService;
         private final NotificationDispatchService notificationDispatchService;
         private final TaskReminderOverrideRepository taskReminderOverrideRepository;
 
         public TaskService(TaskRepository taskRepository, ProjectRepository projectRepository, TaskUtil taskUtil,
-                        GroupMemberVisibilityService visibilityService,
+                        UserVisibilityService visibilityService,
                         NotificationDispatchService notificationDispatchService,
                         TaskReminderOverrideRepository taskReminderOverrideRepository) {
                 this.taskRepository = taskRepository;
@@ -82,7 +82,7 @@ public class TaskService {
         }
 
         // Baut für die Response eine transiente Kopie mit maskierten Mitgliedern
-        // (siehe GroupMemberVisibilityService) - die verwaltete Entity bleibt
+        // (siehe UserVisibilityService) - die verwaltete Entity bleibt
         // unangetastet, damit nichts davon in die echten Zuweisungs-/Archiv-
         // Tabellen zurückgeschrieben wird. Persönliche Tasks sind immer nur für
         // ihren eigenen owner sichtbar, daher hier sonst ein No-Op.

@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import ch.noseryoung.domain.recur.auth.exceptions.InvalidRefreshTokenException;
 import ch.noseryoung.domain.recur.auth.model.RefreshToken;
-import ch.noseryoung.domain.recur.auth.model.User;
+import ch.noseryoung.domain.recur.user.model.User;
 import ch.noseryoung.domain.recur.auth.repository.RefreshTokenRepository;
 import jakarta.servlet.http.HttpServletRequest;
 

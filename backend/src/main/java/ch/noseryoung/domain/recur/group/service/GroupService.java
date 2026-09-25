@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import ch.noseryoung.domain.recur.task.repository.TaskRepository;
-import ch.noseryoung.domain.recur.auth.model.User;
+import ch.noseryoung.domain.recur.user.model.User;
 import ch.noseryoung.domain.recur.group.dto.CreateGroupRequest;
 import ch.noseryoung.domain.recur.group.dto.GroupInvitePreview;
 import ch.noseryoung.domain.recur.group.exceptions.AdminSuccessorRequiredException;
@@ -28,6 +28,7 @@ import ch.noseryoung.domain.recur.group.model.TaskGroup;
 import ch.noseryoung.domain.recur.group.repository.ProjectRepository;
 import ch.noseryoung.domain.recur.group.repository.TaskGroupRepository;
 import ch.noseryoung.domain.recur.auth.security.CustomUserDetails;
+import ch.noseryoung.domain.recur.user.service.UserVisibilityService;
 
 @Service
 public class GroupService {
@@ -38,11 +39,11 @@ public class GroupService {
     private final TaskGroupRepository taskGroupRepository;
     private final ProjectRepository projectRepository;
     private final TaskRepository taskRepository;
-    private final GroupMemberVisibilityService visibilityService;
+    private final UserVisibilityService visibilityService;
     private final SecureRandom random = new SecureRandom();
 
     public GroupService(TaskGroupRepository taskGroupRepository, ProjectRepository projectRepository,
-            TaskRepository taskRepository, GroupMemberVisibilityService visibilityService) {
+            TaskRepository taskRepository, UserVisibilityService visibilityService) {
         this.taskGroupRepository = taskGroupRepository;
         this.projectRepository = projectRepository;
         this.taskRepository = taskRepository;
@@ -50,7 +51,7 @@ public class GroupService {
     }
 
     // Baut eine transiente Response-Kopie mit maskierten Mitgliedern/Admin -
-    // die verwaltete Entity bleibt unangetastet (siehe GroupMemberVisibilityService).
+    // die verwaltete Entity bleibt unangetastet (siehe UserVisibilityService).
     private TaskGroup maskMembers(TaskGroup group, User viewer) {
         return group.toBuilder()
                 .members(visibilityService.maskIfHidden(group.getMembers(), viewer))

@@ -1,4 +1,4 @@
-package ch.noseryoung.domain.recur.auth.controller;
+package ch.noseryoung.domain.recur.user.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import ch.noseryoung.domain.recur.auth.dto.PrivacySettingsResponse;
-import ch.noseryoung.domain.recur.auth.service.PrivacySettingsService;
+import ch.noseryoung.domain.recur.user.dto.PrivacySettingsResponse;
+import ch.noseryoung.domain.recur.user.service.PrivacySettingsService;
 
 @RestController
 @RequestMapping("/api/auth/me/privacy-settings")

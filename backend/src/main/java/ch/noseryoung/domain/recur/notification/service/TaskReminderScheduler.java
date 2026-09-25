@@ -14,10 +14,10 @@ import ch.noseryoung.domain.recur.task.model.TaskReminderOverride;
 import ch.noseryoung.domain.recur.task.repository.TaskReminderOverrideRepository;
 import ch.noseryoung.domain.recur.task.repository.TaskRepository;
 import ch.noseryoung.domain.recur.notification.enums.NotificationType;
-import ch.noseryoung.domain.recur.notification.enums.ReminderLeadTime;
+import ch.noseryoung.domain.recur.task.enums.ReminderLeadTime;
 import ch.noseryoung.domain.recur.notification.model.NotificationLog;
 import ch.noseryoung.domain.recur.notification.model.NotificationSettings;
-import ch.noseryoung.domain.recur.auth.model.User;
+import ch.noseryoung.domain.recur.user.model.User;
 import ch.noseryoung.domain.recur.notification.repository.NotificationLogRepository;
 import ch.noseryoung.domain.recur.notification.repository.NotificationSettingsRepository;
 

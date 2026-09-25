@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import ch.noseryoung.domain.recur.task.repository.TaskRepository;
-import ch.noseryoung.domain.recur.auth.model.User;
+import ch.noseryoung.domain.recur.user.model.User;
 import ch.noseryoung.domain.recur.group.dto.CreateProjectRequest;
 import ch.noseryoung.domain.recur.group.exceptions.GroupNotFoundException;
 import ch.noseryoung.domain.recur.group.exceptions.NotGroupAdminException;

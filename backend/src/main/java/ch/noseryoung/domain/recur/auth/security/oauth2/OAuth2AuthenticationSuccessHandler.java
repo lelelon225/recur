@@ -13,7 +13,7 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import ch.noseryoung.domain.recur.auth.model.User;
+import ch.noseryoung.domain.recur.user.model.User;
 import ch.noseryoung.domain.recur.auth.security.jwt.JwtService;
 import ch.noseryoung.domain.recur.auth.security.jwt.RefreshTokenService;
 import lombok.RequiredArgsConstructor;

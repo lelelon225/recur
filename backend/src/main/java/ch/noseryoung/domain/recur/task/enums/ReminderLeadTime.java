@@ -1,4 +1,4 @@
-package ch.noseryoung.domain.recur.notification.enums;
+package ch.noseryoung.domain.recur.task.enums;
 
 import java.time.Duration;
 

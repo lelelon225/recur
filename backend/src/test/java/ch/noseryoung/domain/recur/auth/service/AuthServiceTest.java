@@ -19,10 +19,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import ch.noseryoung.domain.recur.auth.model.PasswordResetToken;
-import ch.noseryoung.domain.recur.auth.model.User;
+import ch.noseryoung.domain.recur.user.model.User;
 import ch.noseryoung.domain.recur.task.repository.TaskRepository;
-import ch.noseryoung.domain.recur.auth.repository.UserPrivacySettingsRepository;
-import ch.noseryoung.domain.recur.auth.repository.UserRepository;
+import ch.noseryoung.domain.recur.user.repository.UserPrivacySettingsRepository;
+import ch.noseryoung.domain.recur.user.repository.UserRepository;
 import ch.noseryoung.domain.recur.auth.repository.VerificationTokenRepository;
 import ch.noseryoung.domain.recur.auth.repository.PasswordResetTokenRepository;
 import ch.noseryoung.domain.recur.auth.security.jwt.JwtService;
@@ -31,7 +31,7 @@ import ch.noseryoung.domain.recur.notification.repository.NotificationSettingsRe
 import ch.noseryoung.domain.recur.shared.service.EmailService;
 import ch.noseryoung.domain.recur.auth.dto.LoginRequest;
 import ch.noseryoung.domain.recur.auth.dto.RegisterRequest;
-import ch.noseryoung.domain.recur.auth.enums.AuthProvider;
+import ch.noseryoung.domain.recur.user.enums.AuthProvider;
 import ch.noseryoung.domain.recur.auth.exceptions.EmailAlreadyExistsException;
 import ch.noseryoung.domain.recur.auth.exceptions.InvalidCredentialsException;
 import ch.noseryoung.domain.recur.auth.exceptions.InvalidPasswordResetTokenException;

@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import ch.noseryoung.domain.recur.task.model.Task;
 import ch.noseryoung.domain.recur.group.model.Project;
-import ch.noseryoung.domain.recur.auth.model.User;
+import ch.noseryoung.domain.recur.user.model.User;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

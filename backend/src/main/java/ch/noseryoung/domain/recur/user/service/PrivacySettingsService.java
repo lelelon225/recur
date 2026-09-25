@@ -1,14 +1,14 @@
-package ch.noseryoung.domain.recur.auth.service;
+package ch.noseryoung.domain.recur.user.service;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import ch.noseryoung.domain.recur.auth.dto.PrivacySettingsResponse;
-import ch.noseryoung.domain.recur.auth.model.User;
-import ch.noseryoung.domain.recur.auth.model.UserPrivacySettings;
-import ch.noseryoung.domain.recur.auth.repository.UserPrivacySettingsRepository;
-import ch.noseryoung.domain.recur.auth.repository.UserRepository;
+import ch.noseryoung.domain.recur.user.dto.PrivacySettingsResponse;
+import ch.noseryoung.domain.recur.user.model.User;
+import ch.noseryoung.domain.recur.user.model.UserPrivacySettings;
+import ch.noseryoung.domain.recur.user.repository.UserPrivacySettingsRepository;
+import ch.noseryoung.domain.recur.user.repository.UserRepository;
 
 @Service
 public class PrivacySettingsService {

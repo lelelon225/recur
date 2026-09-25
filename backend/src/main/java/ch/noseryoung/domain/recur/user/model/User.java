@@ -1,4 +1,4 @@
-package ch.noseryoung.domain.recur.auth.model;
+package ch.noseryoung.domain.recur.user.model;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -7,7 +7,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import ch.noseryoung.domain.recur.auth.enums.AuthProvider;
+import ch.noseryoung.domain.recur.user.enums.AuthProvider;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -15,7 +15,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
-// toBuilder=true wird für maskierte Kopien in GroupMemberVisibilityService
+// toBuilder=true wird für maskierte Kopien in UserVisibilityService
 // gebraucht: eine transiente Kopie mit anonymisiertem Namen/Avatar, die nie
 // in einer Hibernate-Session landet und daher niemals zurückgeschrieben wird.
 @Builder(toBuilder = true)
