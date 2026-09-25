@@ -1,6 +1,6 @@
 package ch.noseryoung.domain.recur.notification.service;
 
-import ch.noseryoung.domain.recur.services.EmailService;
+import ch.noseryoung.domain.recur.shared.service.EmailService;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

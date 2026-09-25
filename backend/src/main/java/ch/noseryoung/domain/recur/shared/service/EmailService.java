@@ -1,4 +1,4 @@
-package ch.noseryoung.domain.recur.services;
+package ch.noseryoung.domain.recur.shared.service;
 
 import java.util.List;
 

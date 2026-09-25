@@ -27,7 +27,7 @@ import ch.noseryoung.domain.recur.auth.model.User;
 import ch.noseryoung.domain.recur.auth.model.VerificationToken;
 import ch.noseryoung.domain.recur.auth.repository.PasswordResetTokenRepository;
 import ch.noseryoung.domain.recur.notification.repository.NotificationSettingsRepository;
-import ch.noseryoung.domain.recur.services.EmailService;
+import ch.noseryoung.domain.recur.shared.service.EmailService;
 import ch.noseryoung.domain.recur.auth.repository.UserPrivacySettingsRepository;
 import ch.noseryoung.domain.recur.auth.repository.UserRepository;
 import ch.noseryoung.domain.recur.auth.repository.VerificationTokenRepository;

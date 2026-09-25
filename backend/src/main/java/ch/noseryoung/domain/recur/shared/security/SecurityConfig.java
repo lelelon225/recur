@@ -1,4 +1,4 @@
-package ch.noseryoung.domain.recur.security;
+package ch.noseryoung.domain.recur.shared.security;
 
 import java.io.IOException;
 import java.util.Arrays;

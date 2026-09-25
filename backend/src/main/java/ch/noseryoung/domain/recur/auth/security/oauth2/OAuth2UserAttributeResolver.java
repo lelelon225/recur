@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import ch.noseryoung.domain.recur.auth.enums.AuthProvider;
 import ch.noseryoung.domain.recur.auth.model.User;
 import ch.noseryoung.domain.recur.auth.repository.UserRepository;
-import ch.noseryoung.domain.recur.services.EmailService;
+import ch.noseryoung.domain.recur.shared.service.EmailService;
 import lombok.RequiredArgsConstructor;
 
 @Component
