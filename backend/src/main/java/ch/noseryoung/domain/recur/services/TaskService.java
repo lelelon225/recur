@@ -1,7 +1,7 @@
 package ch.noseryoung.domain.recur.services;
 
-import ch.noseryoung.domain.recur.services.group.GroupMemberVisibilityService;
-import ch.noseryoung.domain.recur.notification.service.NotificationDispatchService;
+import ch.noseryoung.domain.recur.group.service.GroupMemberVisibilityService;
+import ch.noseryoung.domain.recur.services.notification.NotificationDispatchService;
 
 import ch.noseryoung.domain.recur.dto.task.CreateTaskRequest;
 import ch.noseryoung.domain.recur.dto.task.PatchTaskRequest;
@@ -9,15 +9,15 @@ import ch.noseryoung.domain.recur.dto.task.ProjectReference;
 import ch.noseryoung.domain.recur.enums.task.Frequency;
 import ch.noseryoung.domain.recur.notification.enums.ReminderLeadTime;
 import ch.noseryoung.domain.recur.exceptions.task.InvalidCompletionException;
-import ch.noseryoung.domain.recur.exceptions.group.NotGroupAdminException;
-import ch.noseryoung.domain.recur.exceptions.group.NotGroupMemberException;
-import ch.noseryoung.domain.recur.exceptions.group.ProjectNotFoundException;
+import ch.noseryoung.domain.recur.group.exceptions.NotGroupAdminException;
+import ch.noseryoung.domain.recur.group.exceptions.NotGroupMemberException;
+import ch.noseryoung.domain.recur.group.exceptions.ProjectNotFoundException;
 import ch.noseryoung.domain.recur.exceptions.task.TaskNotFoundException;
-import ch.noseryoung.domain.recur.models.group.Project;
+import ch.noseryoung.domain.recur.group.model.Project;
 import ch.noseryoung.domain.recur.models.task.Task;
 import ch.noseryoung.domain.recur.models.task.TaskReminderOverride;
 import ch.noseryoung.domain.recur.models.User;
-import ch.noseryoung.domain.recur.repositories.group.ProjectRepository;
+import ch.noseryoung.domain.recur.group.repository.ProjectRepository;
 import ch.noseryoung.domain.recur.repositories.task.TaskReminderOverrideRepository;
 import ch.noseryoung.domain.recur.repositories.task.TaskRepository;
 import ch.noseryoung.domain.recur.security.CustomUserDetails;

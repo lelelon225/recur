@@ -1,4 +1,4 @@
-package ch.noseryoung.domain.recur.controllers.group;
+package ch.noseryoung.domain.recur.group.controller;
 
 import java.util.Collection;
 import java.util.UUID;
@@ -8,9 +8,9 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import ch.noseryoung.domain.recur.dto.group.CreateProjectRequest;
-import ch.noseryoung.domain.recur.models.group.Project;
-import ch.noseryoung.domain.recur.services.group.ProjectService;
+import ch.noseryoung.domain.recur.group.dto.CreateProjectRequest;
+import ch.noseryoung.domain.recur.group.model.Project;
+import ch.noseryoung.domain.recur.group.service.ProjectService;
 
 @RestController
 @RequestMapping("/api/group/{groupId}/project")

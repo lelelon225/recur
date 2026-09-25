@@ -1,4 +1,4 @@
-package ch.noseryoung.domain.recur.services.group;
+package ch.noseryoung.domain.recur.group.service;
 
 import java.util.Collection;
 import java.util.List;
@@ -10,17 +10,17 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import ch.noseryoung.domain.recur.dto.group.CreateProjectRequest;
-import ch.noseryoung.domain.recur.exceptions.group.GroupNotFoundException;
-import ch.noseryoung.domain.recur.exceptions.group.NotGroupAdminException;
-import ch.noseryoung.domain.recur.exceptions.group.NotGroupMemberException;
-import ch.noseryoung.domain.recur.exceptions.group.ProjectNotArchivedException;
-import ch.noseryoung.domain.recur.exceptions.group.ProjectNotFoundException;
-import ch.noseryoung.domain.recur.models.group.Project;
-import ch.noseryoung.domain.recur.models.group.TaskGroup;
+import ch.noseryoung.domain.recur.group.dto.CreateProjectRequest;
+import ch.noseryoung.domain.recur.group.exceptions.GroupNotFoundException;
+import ch.noseryoung.domain.recur.group.exceptions.NotGroupAdminException;
+import ch.noseryoung.domain.recur.group.exceptions.NotGroupMemberException;
+import ch.noseryoung.domain.recur.group.exceptions.ProjectNotArchivedException;
+import ch.noseryoung.domain.recur.group.exceptions.ProjectNotFoundException;
+import ch.noseryoung.domain.recur.group.model.Project;
+import ch.noseryoung.domain.recur.group.model.TaskGroup;
 import ch.noseryoung.domain.recur.models.User;
-import ch.noseryoung.domain.recur.repositories.group.ProjectRepository;
-import ch.noseryoung.domain.recur.repositories.group.TaskGroupRepository;
+import ch.noseryoung.domain.recur.group.repository.ProjectRepository;
+import ch.noseryoung.domain.recur.group.repository.TaskGroupRepository;
 import ch.noseryoung.domain.recur.repositories.task.TaskRepository;
 import ch.noseryoung.domain.recur.security.CustomUserDetails;
 
