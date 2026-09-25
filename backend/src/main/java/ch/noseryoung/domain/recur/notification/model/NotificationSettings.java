@@ -1,12 +1,12 @@
 package ch.noseryoung.domain.recur.notification.model;
 
-import ch.noseryoung.domain.recur.auth.model.User;
+import ch.noseryoung.domain.recur.user.model.User;
 
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import ch.noseryoung.domain.recur.notification.enums.ReminderLeadTime;
+import ch.noseryoung.domain.recur.task.enums.ReminderLeadTime;
 import jakarta.persistence.*;
 import lombok.*;
 

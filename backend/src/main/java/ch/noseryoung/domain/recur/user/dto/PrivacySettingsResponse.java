@@ -1,7 +1,7 @@
-package ch.noseryoung.domain.recur.auth.dto;
+package ch.noseryoung.domain.recur.user.dto;
 
-import ch.noseryoung.domain.recur.auth.enums.ProfileVisibility;
-import ch.noseryoung.domain.recur.auth.model.UserPrivacySettings;
+import ch.noseryoung.domain.recur.user.enums.ProfileVisibility;
+import ch.noseryoung.domain.recur.user.model.UserPrivacySettings;
 
 // Auch für PATCH /api/auth/me/privacy-settings verwendet: null-Felder bedeuten
 // "nicht ändern" (Analogon zu Task.OnCreate, siehe PrivacySettingsService.updateCurrentSettings).

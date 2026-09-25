@@ -1,8 +1,12 @@
 package ch.noseryoung.domain.recur.group.exceptions;
 
-public class InvalidSuccessorException extends RuntimeException {
+import org.springframework.http.HttpStatus;
+
+import ch.noseryoung.domain.recur.shared.exceptions.ApiException;
+
+public class InvalidSuccessorException extends ApiException {
 
     public InvalidSuccessorException() {
-        super("Der gewählte Nachfolger ist kein gültiges Mitglied dieser Gruppe");
+        super(HttpStatus.BAD_REQUEST, "Bad request", "Der gewählte Nachfolger ist kein gültiges Mitglied dieser Gruppe");
     }
 }

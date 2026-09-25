@@ -7,7 +7,7 @@ import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 
-import ch.noseryoung.domain.recur.auth.model.User;
+import ch.noseryoung.domain.recur.user.model.User;
 
 public class CustomOidcUser extends DefaultOidcUser implements RecurOAuth2User {
 

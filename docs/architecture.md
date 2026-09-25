@@ -18,10 +18,15 @@ frontend (Next.js, :3000)  --/api, /oauth2, /login/oauth2-->  backend (Spring Bo
 
 ## Backend
 
-Package convention:
-`ch.noseryoung.domain.recur.{controllers,services,repositories,models,enums,dto,security,exceptions,utils}`.
-Layers do what their names say — controllers accept requests and delegate,
-services hold business logic, repositories are Spring Data JPA interfaces.
+Package convention is domain-first, not layer-first:
+`ch.noseryoung.domain.recur.<domain>.{controller,service,repository,model,dto,enums,exceptions}`
+— one package per business domain (`user`, `auth`, `task`, `group`,
+`notification`), each with its own layer subfolders. Layers do what their
+names say — controllers accept requests and delegate, services hold
+business logic, repositories are Spring Data JPA interfaces. Cross-cutting
+code with no single domain owner lives in `shared/` instead. See
+[Domains (backend)](#domains-backend) below for what each domain owns and
+how they're allowed to depend on each other.
 
 **Auth** is hybrid, both paths sharing one `SecurityFilterChain`
 (`SecurityConfig`):
@@ -87,31 +92,39 @@ called out as such rather than silently ignored.
 
 ### Backend (`backend/.../domain/recur/`)
 
+Domain-first, not layer-first: each business domain owns a package with its
+own layer subfolders, not the other way around.
+
 | Folder | What belongs there |
 | --- | --- |
-| `controllers/` | REST endpoints: accept and validate the request, delegate to a service — no business logic. |
-| `services/` | Business logic and transaction boundaries. |
-| `repositories/` | Spring Data JPA interfaces, no implementation. |
-| `models/` | JPA entities. |
-| `enums/` | Domain enums shared across multiple models/DTOs. |
-| `dto/` | Request/response objects that cross the API boundary — never used directly as an entity. |
-| `security/` | Auth/OAuth2/JWT infrastructure (filters, `UserDetails` implementations, OAuth2 handlers). |
-| `exceptions/` | Custom exceptions plus their matching error-response types. |
-| `utils/` | Stateless static helpers that don't clearly belong to one model/service. |
+| `<domain>/controller/` | REST endpoints: accept and validate the request, delegate to a service — no business logic. |
+| `<domain>/service/` | Business logic and transaction boundaries. |
+| `<domain>/repository/` | Spring Data JPA interfaces, no implementation. |
+| `<domain>/model/` | JPA entities. |
+| `<domain>/enums/` | Domain enums shared across multiple models/DTOs of that domain. |
+| `<domain>/dto/` | Request/response objects that cross the API boundary — never used directly as an entity. |
+| `<domain>/exceptions/` | Custom exceptions for that domain, all extending `shared/exceptions/ApiException` (status + title), plus their matching error-response types. |
+| `<domain>/event/` | `record`s published/consumed via Spring `ApplicationEvent` for the one case a domain needs to react to another domain that isn't allowed to depend on it (see below). |
+| `auth/security/` | Auth/OAuth2/JWT infrastructure (filters, `UserDetails` implementations, OAuth2 handlers, `SecurityConfig`) — lives in `auth`, not `shared`, since it only wires `auth`'s own classes. |
 
-### Domain subpackages (backend)
+### Domains (backend)
 
-Within `dto/`, `exceptions/`, `security/`, `controllers/`, `services/`,
-`repositories/`, `models/`, and `enums/`, classes are grouped one level
-deeper by the business domain they belong to, not by their technical role:
-
-- `auth` — login/registration/password-reset/refresh-token flows.
+- `user` — `User`/`UserPrivacySettings`, `/api/auth/me` CRUD, HIDDEN-profile masking (`UserVisibilityService`). The one domain every other domain may depend on.
+- `auth` — login/registration/password-reset/refresh-token flows, OAuth2/JWT.
 - `task` — task CRUD, completions, reminders.
 - `group` — groups and their projects (`Project` is a group sub-concept,
   not a standalone domain).
 - `notification` — email/push notifications, notification settings, the
   reminder scheduler.
-- `oauth2` / `jwt` — inside `security/` only, split by auth mechanism
+- `shared` — code no single domain owns: `GlobalExceptionHandler`/`ApiException`/`ErrorResponse`, the generic `EmailService.send(to, subject, text)` (domain-specific email templates live with their callers, e.g. `AuthService`/`NotificationDispatchService`). Depends on no domain.
+- `oauth2` / `jwt` — inside `auth/security/` only, split by auth mechanism.
+
+Domains depend in one direction only: `shared` ← `user` ← `auth`/`group` ←
+`task` ← `notification` (each may also depend on everything to its left).
+`ArchitectureTest` enforces this by scanning imports — the reverse direction
+goes through a domain event instead of a direct call, and a domain never
+imports another domain's `repository` package directly (only its `service`;
+`UserRepository` is the one accepted exception).
   instead of business domain (OAuth2/OIDC login vs. JWT issuing/refresh).
 
 A class used across domains (`SecurityConfig`, `CustomUserDetails`,

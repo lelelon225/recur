@@ -1,10 +1,10 @@
-package ch.noseryoung.domain.recur.auth.model;
+package ch.noseryoung.domain.recur.user.model;
 
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import ch.noseryoung.domain.recur.auth.enums.ProfileVisibility;
+import ch.noseryoung.domain.recur.user.enums.ProfileVisibility;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;

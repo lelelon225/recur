@@ -5,9 +5,9 @@ import java.util.Map;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.stereotype.Component;
 
-import ch.noseryoung.domain.recur.auth.enums.AuthProvider;
-import ch.noseryoung.domain.recur.auth.model.User;
-import ch.noseryoung.domain.recur.auth.repository.UserRepository;
+import ch.noseryoung.domain.recur.user.enums.AuthProvider;
+import ch.noseryoung.domain.recur.user.model.User;
+import ch.noseryoung.domain.recur.user.repository.UserRepository;
 import ch.noseryoung.domain.recur.shared.service.EmailService;
 import lombok.RequiredArgsConstructor;
 
@@ -77,7 +77,9 @@ public class OAuth2UserAttributeResolver {
         User savedUser = userRepository.save(user);
 
         if (isNewUser) {
-            emailService.sendWelcomeEmail(savedUser);
+            emailService.send(savedUser.getEmail(), "Willkommen bei Recur",
+                    "Hallo " + savedUser.getFirstName() + ",\n\n"
+                            + "willkommen bei Recur! Dein Konto wurde erfolgreich über Google erstellt.");
         }
 
         return savedUser;

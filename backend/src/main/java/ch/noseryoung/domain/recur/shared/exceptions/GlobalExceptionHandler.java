@@ -16,22 +16,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import ch.noseryoung.domain.recur.task.exceptions.InvalidCompletionException;
-import ch.noseryoung.domain.recur.task.exceptions.TaskNotFoundException;
-import ch.noseryoung.domain.recur.auth.exceptions.EmailAlreadyExistsException;
-import ch.noseryoung.domain.recur.auth.exceptions.EmailNotVerifiedException;
-import ch.noseryoung.domain.recur.auth.exceptions.InvalidCredentialsException;
-import ch.noseryoung.domain.recur.auth.exceptions.InvalidPasswordResetTokenException;
-import ch.noseryoung.domain.recur.auth.exceptions.InvalidRefreshTokenException;
-import ch.noseryoung.domain.recur.group.exceptions.AdminSuccessorRequiredException;
-import ch.noseryoung.domain.recur.group.exceptions.CannotRemoveAdminException;
-import ch.noseryoung.domain.recur.group.exceptions.GroupNotFoundException;
-import ch.noseryoung.domain.recur.group.exceptions.InvalidSuccessorException;
-import ch.noseryoung.domain.recur.group.exceptions.NotGroupAdminException;
-import ch.noseryoung.domain.recur.group.exceptions.NotGroupMemberException;
-import ch.noseryoung.domain.recur.group.exceptions.ProjectNotArchivedException;
-import ch.noseryoung.domain.recur.group.exceptions.ProjectNotFoundException;
-
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -80,242 +64,21 @@ public class GlobalExceptionHandler {
                                                 getPath(request)));
         }
 
-        @ExceptionHandler(TaskNotFoundException.class)
-        public ResponseEntity<ErrorResponse> handleTaskNotFound(
-                        TaskNotFoundException ex,
+        // Ersetzt die frühere Handler-Methode pro Domain-Exception: jede
+        // Domain-Exception bringt über ApiException ihren eigenen Status/Titel
+        // mit, sonst müsste shared/ hier jede Exception jeder Domain importieren.
+        @ExceptionHandler(ApiException.class)
+        public ResponseEntity<ErrorResponse> handleApiException(
+                        ApiException ex,
                         WebRequest request) {
 
-                logger.info("Task not found: {}", ex.getMessage());
+                logger.info("{}: {}", ex.getError(), ex.getMessage());
 
                 return ResponseEntity
-                                .status(HttpStatus.NOT_FOUND)
+                                .status(ex.getStatus())
                                 .body(ErrorResponse.of(
-                                                404,
-                                                "Task not found",
-                                                ex.getMessage(),
-                                                getPath(request)));
-        }
-
-        @ExceptionHandler(InvalidCompletionException.class)
-        public ResponseEntity<ErrorResponse> handleInvalidCompletion(
-                        InvalidCompletionException ex,
-                        WebRequest request) {
-
-                logger.info("Completion rejected: {}", ex.getMessage());
-
-                return ResponseEntity
-                                .status(HttpStatus.BAD_REQUEST)
-                                .body(ErrorResponse.of(
-                                                400,
-                                                "Invalid completion",
-                                                ex.getMessage(),
-                                                getPath(request)));
-        }
-
-        @ExceptionHandler(GroupNotFoundException.class)
-        public ResponseEntity<ErrorResponse> handleGroupNotFound(
-                        GroupNotFoundException ex,
-                        WebRequest request) {
-
-                logger.info("Group not found: {}", ex.getMessage());
-
-                return ResponseEntity
-                                .status(HttpStatus.NOT_FOUND)
-                                .body(ErrorResponse.of(
-                                                404,
-                                                "Group not found",
-                                                ex.getMessage(),
-                                                getPath(request)));
-        }
-
-        @ExceptionHandler(ProjectNotFoundException.class)
-        public ResponseEntity<ErrorResponse> handleProjectNotFound(
-                        ProjectNotFoundException ex,
-                        WebRequest request) {
-
-                logger.info("Project not found: {}", ex.getMessage());
-
-                return ResponseEntity
-                                .status(HttpStatus.NOT_FOUND)
-                                .body(ErrorResponse.of(
-                                                404,
-                                                "Project not found",
-                                                ex.getMessage(),
-                                                getPath(request)));
-        }
-
-        @ExceptionHandler(NotGroupMemberException.class)
-        public ResponseEntity<ErrorResponse> handleNotGroupMember(
-                        NotGroupMemberException ex,
-                        WebRequest request) {
-
-                logger.info("Access denied, not a group member: {}", ex.getMessage());
-
-                return ResponseEntity
-                                .status(HttpStatus.FORBIDDEN)
-                                .body(ErrorResponse.of(
-                                                403,
-                                                "Forbidden",
-                                                ex.getMessage(),
-                                                getPath(request)));
-        }
-
-        @ExceptionHandler(ProjectNotArchivedException.class)
-        public ResponseEntity<ErrorResponse> handleProjectNotArchived(
-                        ProjectNotArchivedException ex,
-                        WebRequest request) {
-
-                logger.info("Project deletion rejected: {}", ex.getMessage());
-
-                return ResponseEntity
-                                .status(HttpStatus.FORBIDDEN)
-                                .body(ErrorResponse.of(
-                                                403,
-                                                "Forbidden",
-                                                ex.getMessage(),
-                                                getPath(request)));
-        }
-
-        @ExceptionHandler(NotGroupAdminException.class)
-        public ResponseEntity<ErrorResponse> handleNotGroupAdmin(
-                        NotGroupAdminException ex,
-                        WebRequest request) {
-
-                logger.info("Access denied, not group admin: {}", ex.getMessage());
-
-                return ResponseEntity
-                                .status(HttpStatus.FORBIDDEN)
-                                .body(ErrorResponse.of(
-                                                403,
-                                                "Forbidden",
-                                                ex.getMessage(),
-                                                getPath(request)));
-        }
-
-        @ExceptionHandler(AdminSuccessorRequiredException.class)
-        public ResponseEntity<ErrorResponse> handleAdminSuccessorRequired(
-                        AdminSuccessorRequiredException ex,
-                        WebRequest request) {
-
-                logger.info("Leave group rejected: {}", ex.getMessage());
-
-                return ResponseEntity
-                                .status(HttpStatus.CONFLICT)
-                                .body(ErrorResponse.of(
-                                                409,
-                                                "Conflict",
-                                                ex.getMessage(),
-                                                getPath(request)));
-        }
-
-        @ExceptionHandler(InvalidSuccessorException.class)
-        public ResponseEntity<ErrorResponse> handleInvalidSuccessor(
-                        InvalidSuccessorException ex,
-                        WebRequest request) {
-
-                logger.info("Invalid successor: {}", ex.getMessage());
-
-                return ResponseEntity
-                                .status(HttpStatus.BAD_REQUEST)
-                                .body(ErrorResponse.of(
-                                                400,
-                                                "Bad request",
-                                                ex.getMessage(),
-                                                getPath(request)));
-        }
-
-        @ExceptionHandler(CannotRemoveAdminException.class)
-        public ResponseEntity<ErrorResponse> handleCannotRemoveAdmin(
-                        CannotRemoveAdminException ex,
-                        WebRequest request) {
-
-                logger.info("Remove member rejected: {}", ex.getMessage());
-
-                return ResponseEntity
-                                .status(HttpStatus.CONFLICT)
-                                .body(ErrorResponse.of(
-                                                409,
-                                                "Conflict",
-                                                ex.getMessage(),
-                                                getPath(request)));
-        }
-
-        @ExceptionHandler(EmailAlreadyExistsException.class)
-        public ResponseEntity<ErrorResponse> handleEmailAlreadyExists(
-                        EmailAlreadyExistsException ex,
-                        WebRequest request) {
-
-                logger.info("Registration failed, email already exists: {}", ex.getMessage());
-
-                return ResponseEntity
-                                .status(HttpStatus.CONFLICT)
-                                .body(ErrorResponse.of(
-                                                409,
-                                                "Email already exists",
-                                                ex.getMessage(),
-                                                getPath(request)));
-        }
-
-        @ExceptionHandler(InvalidCredentialsException.class)
-        public ResponseEntity<ErrorResponse> handleInvalidCredentials(
-                        InvalidCredentialsException ex,
-                        WebRequest request) {
-
-                logger.info("Login failed: invalid credentials");
-
-                return ResponseEntity
-                                .status(HttpStatus.UNAUTHORIZED)
-                                .body(ErrorResponse.of(
-                                                401,
-                                                "Invalid credentials",
-                                                ex.getMessage(),
-                                                getPath(request)));
-        }
-
-        @ExceptionHandler(EmailNotVerifiedException.class)
-        public ResponseEntity<ErrorResponse> handleEmailNotVerified(
-                        EmailNotVerifiedException ex,
-                        WebRequest request) {
-
-                logger.info("Login rejected, email not verified");
-
-                return ResponseEntity
-                                .status(HttpStatus.FORBIDDEN)
-                                .body(ErrorResponse.of(
-                                                403,
-                                                "Email not verified",
-                                                ex.getMessage(),
-                                                getPath(request)));
-        }
-
-        @ExceptionHandler(InvalidRefreshTokenException.class)
-        public ResponseEntity<ErrorResponse> handleInvalidRefreshToken(
-                        InvalidRefreshTokenException ex,
-                        WebRequest request) {
-
-                logger.info("Refresh rejected: {}", ex.getMessage());
-
-                return ResponseEntity
-                                .status(HttpStatus.UNAUTHORIZED)
-                                .body(ErrorResponse.of(
-                                                401,
-                                                "Invalid refresh token",
-                                                ex.getMessage(),
-                                                getPath(request)));
-        }
-
-        @ExceptionHandler(InvalidPasswordResetTokenException.class)
-        public ResponseEntity<ErrorResponse> handleInvalidPasswordResetToken(
-                        InvalidPasswordResetTokenException ex,
-                        WebRequest request) {
-
-                logger.info("Password reset rejected: {}", ex.getMessage());
-
-                return ResponseEntity
-                                .status(HttpStatus.BAD_REQUEST)
-                                .body(ErrorResponse.of(
-                                                400,
-                                                "Invalid password reset token",
+                                                ex.getStatus().value(),
+                                                ex.getError(),
                                                 ex.getMessage(),
                                                 getPath(request)));
         }

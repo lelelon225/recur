@@ -2,9 +2,13 @@ package ch.noseryoung.domain.recur.task.exceptions;
 
 import java.util.UUID;
 
-public class TaskNotFoundException extends RuntimeException {
+import org.springframework.http.HttpStatus;
+
+import ch.noseryoung.domain.recur.shared.exceptions.ApiException;
+
+public class TaskNotFoundException extends ApiException {
 
     public TaskNotFoundException(UUID id) {
-        super("Task mit ID " + id + " wurde nicht gefunden");
+        super(HttpStatus.NOT_FOUND, "Task not found", "Task mit ID " + id + " wurde nicht gefunden");
     }
 }

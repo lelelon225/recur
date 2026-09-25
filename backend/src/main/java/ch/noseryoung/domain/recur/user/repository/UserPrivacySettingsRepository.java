@@ -1,4 +1,4 @@
-package ch.noseryoung.domain.recur.auth.repository;
+package ch.noseryoung.domain.recur.user.repository;
 
 import java.util.Collection;
 import java.util.List;
@@ -8,7 +8,7 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import ch.noseryoung.domain.recur.auth.model.UserPrivacySettings;
+import ch.noseryoung.domain.recur.user.model.UserPrivacySettings;
 
 @Repository
 public interface UserPrivacySettingsRepository extends JpaRepository<UserPrivacySettings, UUID> {

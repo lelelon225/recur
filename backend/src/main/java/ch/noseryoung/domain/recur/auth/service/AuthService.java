@@ -1,35 +1,32 @@
 package ch.noseryoung.domain.recur.auth.service;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.context.event.EventListener;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import ch.noseryoung.domain.recur.task.model.Task;
-import ch.noseryoung.domain.recur.task.repository.TaskRepository;
 import ch.noseryoung.domain.recur.auth.dto.AuthResponse;
 import ch.noseryoung.domain.recur.auth.dto.LoginRequest;
 import ch.noseryoung.domain.recur.auth.dto.RegisterRequest;
-import ch.noseryoung.domain.recur.auth.dto.UserResponse;
-import ch.noseryoung.domain.recur.auth.enums.AuthProvider;
+import ch.noseryoung.domain.recur.user.dto.UserResponse;
+import ch.noseryoung.domain.recur.user.enums.AuthProvider;
 import ch.noseryoung.domain.recur.auth.enums.VerificationStatus;
 import ch.noseryoung.domain.recur.auth.exceptions.EmailAlreadyExistsException;
 import ch.noseryoung.domain.recur.auth.exceptions.InvalidCredentialsException;
 import ch.noseryoung.domain.recur.auth.exceptions.InvalidPasswordResetTokenException;
 import ch.noseryoung.domain.recur.auth.model.PasswordResetToken;
-import ch.noseryoung.domain.recur.auth.model.User;
+import ch.noseryoung.domain.recur.user.model.User;
 import ch.noseryoung.domain.recur.auth.model.VerificationToken;
 import ch.noseryoung.domain.recur.auth.repository.PasswordResetTokenRepository;
-import ch.noseryoung.domain.recur.notification.repository.NotificationSettingsRepository;
 import ch.noseryoung.domain.recur.shared.service.EmailService;
-import ch.noseryoung.domain.recur.auth.repository.UserPrivacySettingsRepository;
-import ch.noseryoung.domain.recur.auth.repository.UserRepository;
+import ch.noseryoung.domain.recur.user.event.UserDeletedEvent;
+import ch.noseryoung.domain.recur.user.repository.UserRepository;
 import ch.noseryoung.domain.recur.auth.repository.VerificationTokenRepository;
 import ch.noseryoung.domain.recur.auth.security.jwt.JwtService;
 import ch.noseryoung.domain.recur.auth.security.jwt.RefreshTokenService;
@@ -39,12 +36,11 @@ import jakarta.servlet.http.HttpServletRequest;
 @Service
 public class AuthService {
 
+    private static final Logger logger = LogManager.getLogger(AuthService.class);
+
     private final UserRepository userRepository;
-    private final UserPrivacySettingsRepository privacySettingsRepository;
-    private final NotificationSettingsRepository notificationSettingsRepository;
     private final VerificationTokenRepository verificationTokenRepository;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
-    private final TaskRepository taskRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
@@ -72,19 +68,14 @@ public class AuthService {
     @Value("${app.mail.password-reset-cooldown-seconds}")
     private long passwordResetCooldownSeconds;
 
-    public AuthService(UserRepository userRepository, UserPrivacySettingsRepository privacySettingsRepository,
-            NotificationSettingsRepository notificationSettingsRepository,
+    public AuthService(UserRepository userRepository,
             VerificationTokenRepository verificationTokenRepository,
             PasswordResetTokenRepository passwordResetTokenRepository,
-            TaskRepository taskRepository,
             PasswordEncoder passwordEncoder, JwtService jwtService, RefreshTokenService refreshTokenService,
             EmailService emailService) {
         this.userRepository = userRepository;
-        this.privacySettingsRepository = privacySettingsRepository;
-        this.notificationSettingsRepository = notificationSettingsRepository;
         this.verificationTokenRepository = verificationTokenRepository;
         this.passwordResetTokenRepository = passwordResetTokenRepository;
-        this.taskRepository = taskRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.refreshTokenService = refreshTokenService;
@@ -202,7 +193,20 @@ public class AuthService {
                 .build()
                 .toUriString();
 
-        emailService.sendVerificationEmail(user, verificationLink);
+        // Ein Ausfall des Brevo-API-Aufrufs darf die Registrierung nicht mit
+        // einem 500 scheitern lassen - der User-Datensatz ist zu diesem
+        // Zeitpunkt bereits gespeichert, ein erneuter Versuch würde nur auf
+        // EmailAlreadyExistsException laufen. Der Nutzer kann die E-Mail
+        // stattdessen über "erneut senden" anfordern. Der Link wird
+        // zusätzlich auf DEBUG geloggt, damit die Verifizierung auch lokal
+        // ohne Brevo-API-Key testbar ist.
+        logger.debug("Verification link for {}: {}", user.getEmail(), verificationLink);
+        emailService.send(user.getEmail(), "Bestätige deine E-Mail-Adresse bei Recur",
+                "Hallo " + user.getFirstName() + ",\n\n"
+                        + "bitte bestätige deine E-Mail-Adresse, indem du auf den folgenden Link klickst:\n\n"
+                        + verificationLink + "\n\n"
+                        + "Dieser Link ist 24 Stunden gültig.\n\n"
+                        + "Falls du dich nicht bei Recur registriert hast, kannst du diese E-Mail ignorieren.");
     }
 
     // Antwortet immer gleich (Controller-Ebene), egal ob das Konto existiert,
@@ -260,7 +264,15 @@ public class AuthService {
                 .build()
                 .toUriString();
 
-        emailService.sendPasswordResetEmail(user, resetLink);
+        logger.debug("Password reset link for {}: {}", user.getEmail(), resetLink);
+        emailService.send(user.getEmail(), "Setze dein Passwort bei Recur zurück",
+                "Hallo " + user.getFirstName() + ",\n\n"
+                        + "du hast angefordert, dein Passwort zurückzusetzen. Klicke auf den folgenden Link, "
+                        + "um ein neues Passwort zu vergeben:\n\n"
+                        + resetLink + "\n\n"
+                        + "Dieser Link ist 1 Stunde gültig.\n\n"
+                        + "Falls du kein neues Passwort angefordert hast, kannst du diese E-Mail ignorieren "
+                        + "- dein Passwort bleibt unverändert.");
     }
 
     // Tauscht das kurzlebige HttpOnly-Handoff-Cookie (siehe
@@ -289,62 +301,16 @@ public class AuthService {
         return new TokenExchangeResult(new AuthResponse(UserResponse.from(user)), token);
     }
 
-    public UserResponse getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalStateException("Authentifizierter User nicht gefunden: " + email));
-
-        return UserResponse.from(user);
+    // Räumt beim Löschen eines Accounts (siehe UserService#deleteCurrentUser)
+    // die auth-eigenen Referenzen auf den User auf - muss synchron laufen,
+    // bevor UserService den User selbst löscht, sonst schlagen die
+    // FK-Constraints von verification_token.user_id bzw.
+    // password_reset_token.user_id fehl (Standard-@EventListener ist
+    // synchron im selben Thread/derselben Transaktion).
+    @EventListener
+    public void onUserDeleted(UserDeletedEvent event) {
+        verificationTokenRepository.deleteByUserId(event.userId());
+        passwordResetTokenRepository.deleteByUserId(event.userId());
+        refreshTokenService.deleteAllForUser(event.userId());
     }
-
-    public UserResponse updateCurrentUser(UserResponse userResponse) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalStateException("Authentifizierter User nicht gefunden: " + email));
-
-
-        user.setFirstName(userResponse.firstName());
-        user.setLastName(userResponse.lastName());
-        user.setAvatarUrl(userResponse.avatarUrl());
-
-        userRepository.save(user);
-
-        return UserResponse.from(user);
-    }
-    public void deleteCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalStateException("Authentifizierter User nicht gefunden: " + email));
-
-        // Muss vor dem User gelöscht werden, sonst schlägt der Delete an der
-        // FK-Constraint von user_privacy_settings.user_id, notification_settings.user_id,
-        // verification_token.user_id bzw. password_reset_token.user_id fehl.
-        privacySettingsRepository.findByUserId(user.getId())
-                .ifPresent(privacySettingsRepository::delete);
-        notificationSettingsRepository.findByUserId(user.getId())
-                .ifPresent(notificationSettingsRepository::delete);
-        verificationTokenRepository.deleteByUserId(user.getId());
-        passwordResetTokenRepository.deleteByUserId(user.getId());
-        refreshTokenService.deleteAllForUser(user.getId());
-
-        // Projekt-Tasks, die der User erstellt oder für sich ausgeblendet hat
-        // (siehe TaskService#deleteTask), referenzieren ihn per FK -
-        // taskRepository.delete(user) allein würde sonst an genau dieser
-        // Constraint scheitern. Der Task selbst bleibt für die übrigen
-        // Mitglieder bestehen (createdBy=null -> Fallback auf den
-        // Gruppen-Admin, siehe TaskService#isTaskCreator).
-        taskRepository.clearCreatedBy(user);
-        List<Task> hiddenTasks = taskRepository.findByHiddenForContaining(user);
-        hiddenTasks.forEach(task -> task.getHiddenFor().remove(user));
-        taskRepository.saveAll(hiddenTasks);
-
-        userRepository.delete(user);
-    }
-
 }

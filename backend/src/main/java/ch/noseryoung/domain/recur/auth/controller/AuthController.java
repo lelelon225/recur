@@ -10,9 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -26,7 +24,6 @@ import ch.noseryoung.domain.recur.auth.dto.MessageResponse;
 import ch.noseryoung.domain.recur.auth.dto.RegisterRequest;
 import ch.noseryoung.domain.recur.auth.dto.ResendVerificationRequest;
 import ch.noseryoung.domain.recur.auth.dto.ResetPasswordRequest;
-import ch.noseryoung.domain.recur.auth.dto.UserResponse;
 import ch.noseryoung.domain.recur.auth.enums.VerificationStatus;
 import ch.noseryoung.domain.recur.auth.exceptions.InvalidCredentialsException;
 import ch.noseryoung.domain.recur.auth.exceptions.InvalidRefreshTokenException;
@@ -182,21 +179,5 @@ public class AuthController {
                 .header(HttpHeaders.SET_COOKIE, jwtService.buildCookie(result.accessToken(), request).toString())
                 .header(HttpHeaders.SET_COOKIE, clearHandoffCookie.toString())
                 .body(result.authResponse());
-    }
-
-    @GetMapping("/me")
-    public ResponseEntity<UserResponse> getCurrentUser() {
-        return ResponseEntity.ok(authService.getCurrentUser());
-    }
-
-    @PatchMapping("/me")
-    public ResponseEntity<UserResponse> updateCurrentUser(@Valid @RequestBody UserResponse userResponse) {
-        return ResponseEntity.ok(authService.updateCurrentUser(userResponse));
-    }
-
-    @DeleteMapping("/me")
-    public ResponseEntity<Void> deleteCurrentUser() {
-        authService.deleteCurrentUser();
-        return ResponseEntity.noContent().build();
     }
 }

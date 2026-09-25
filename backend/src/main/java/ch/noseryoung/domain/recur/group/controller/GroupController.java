@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.*;
 
 import ch.noseryoung.domain.recur.group.dto.CreateGroupRequest;
 import ch.noseryoung.domain.recur.group.dto.GroupInvitePreview;
+import ch.noseryoung.domain.recur.group.dto.GroupResponse;
 import ch.noseryoung.domain.recur.group.model.Project;
-import ch.noseryoung.domain.recur.group.model.TaskGroup;
 import ch.noseryoung.domain.recur.group.service.GroupService;
 
 @RestController
@@ -28,17 +28,17 @@ public class GroupController {
     }
 
     @PostMapping({ "", "/" })
-    public ResponseEntity<TaskGroup> createGroup(@Valid @RequestBody CreateGroupRequest request) {
+    public ResponseEntity<GroupResponse> createGroup(@Valid @RequestBody CreateGroupRequest request) {
         return groupService.createGroup(request);
     }
 
     @GetMapping({ "", "/" })
-    public ResponseEntity<Collection<TaskGroup>> getMyGroups() {
+    public ResponseEntity<Collection<GroupResponse>> getMyGroups() {
         return groupService.getMyGroups();
     }
 
     @GetMapping({ "/{id}", "/{id}/" })
-    public ResponseEntity<TaskGroup> getGroup(@PathVariable UUID id) {
+    public ResponseEntity<GroupResponse> getGroup(@PathVariable UUID id) {
         return groupService.getGroup(id);
     }
 
@@ -66,7 +66,7 @@ public class GroupController {
     }
 
     @PatchMapping({ "/{id}/admin", "/{id}/admin/" })
-    public ResponseEntity<TaskGroup> transferAdmin(@PathVariable UUID id, @RequestParam UUID newAdminId) {
+    public ResponseEntity<GroupResponse> transferAdmin(@PathVariable UUID id, @RequestParam UUID newAdminId) {
         return groupService.transferAdmin(id, newAdminId);
     }
 
@@ -79,7 +79,7 @@ public class GroupController {
     }
 
     @PostMapping({ "/invite/{inviteCode}/join", "/invite/{inviteCode}/join/" })
-    public ResponseEntity<TaskGroup> joinGroup(@PathVariable String inviteCode) {
+    public ResponseEntity<GroupResponse> joinGroup(@PathVariable String inviteCode) {
         return groupService.joinGroup(inviteCode);
     }
 }

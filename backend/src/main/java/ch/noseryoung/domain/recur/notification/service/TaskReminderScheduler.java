@@ -10,14 +10,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import ch.noseryoung.domain.recur.task.model.Task;
-import ch.noseryoung.domain.recur.task.model.TaskReminderOverride;
-import ch.noseryoung.domain.recur.task.repository.TaskReminderOverrideRepository;
-import ch.noseryoung.domain.recur.task.repository.TaskRepository;
 import ch.noseryoung.domain.recur.notification.enums.NotificationType;
-import ch.noseryoung.domain.recur.notification.enums.ReminderLeadTime;
+import ch.noseryoung.domain.recur.task.enums.ReminderLeadTime;
+import ch.noseryoung.domain.recur.task.service.TaskService;
 import ch.noseryoung.domain.recur.notification.model.NotificationLog;
 import ch.noseryoung.domain.recur.notification.model.NotificationSettings;
-import ch.noseryoung.domain.recur.auth.model.User;
+import ch.noseryoung.domain.recur.user.model.User;
 import ch.noseryoung.domain.recur.notification.repository.NotificationLogRepository;
 import ch.noseryoung.domain.recur.notification.repository.NotificationSettingsRepository;
 
@@ -34,23 +32,20 @@ public class TaskReminderScheduler {
     private static final Duration OVERDUE_AFTER_TIMED = Duration.ofHours(1);
     private static final Duration OVERDUE_AFTER_ALL_DAY = Duration.ofDays(1);
 
-    private final TaskRepository taskRepository;
+    private final TaskService taskService;
     private final NotificationSettingsRepository notificationSettingsRepository;
     private final NotificationLogRepository notificationLogRepository;
     private final NotificationDispatchService notificationDispatchService;
-    private final TaskReminderOverrideRepository taskReminderOverrideRepository;
 
     public TaskReminderScheduler(
-            TaskRepository taskRepository,
+            TaskService taskService,
             NotificationSettingsRepository notificationSettingsRepository,
             NotificationLogRepository notificationLogRepository,
-            NotificationDispatchService notificationDispatchService,
-            TaskReminderOverrideRepository taskReminderOverrideRepository) {
-        this.taskRepository = taskRepository;
+            NotificationDispatchService notificationDispatchService) {
+        this.taskService = taskService;
         this.notificationSettingsRepository = notificationSettingsRepository;
         this.notificationLogRepository = notificationLogRepository;
         this.notificationDispatchService = notificationDispatchService;
-        this.taskReminderOverrideRepository = taskReminderOverrideRepository;
     }
 
     // Transaktion noetig, weil recipientsOf() ueber lazy
@@ -62,7 +57,7 @@ public class TaskReminderScheduler {
     public void checkDueTasks() {
         Instant now = Instant.now();
 
-        for (Task task : taskRepository.findByIsArchivedFalseAndDateUntilIsNotNull()) {
+        for (Task task : taskService.findDueTasks()) {
             for (User recipient : recipientsOf(task)) {
                 processReminder(task, recipient, now);
                 processOverdue(task, recipient, now);
@@ -134,8 +129,7 @@ public class TaskReminderScheduler {
     // Kontoeinstellung. Pro (task, recipient), nicht pro Task, da geteilte
     // Projekt-Tasks mehrere Empfänger mit je eigenem Vorlauf haben können.
     private Duration leadTimeOf(Task task, User recipient) {
-        return taskReminderOverrideRepository.findByTaskAndUser(task, recipient)
-                .map(TaskReminderOverride::getReminderLeadTime)
+        return taskService.reminderLeadTimeOverride(task, recipient)
                 .or(() -> notificationSettingsRepository.findByUserId(recipient.getId())
                         .map(NotificationSettings::getReminderLeadTime))
                 .orElse(ReminderLeadTime.TWENTY_FOUR_HOURS)

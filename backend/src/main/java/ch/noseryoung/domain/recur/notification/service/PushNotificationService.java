@@ -11,7 +11,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import ch.noseryoung.domain.recur.auth.model.User;
+import ch.noseryoung.domain.recur.user.model.User;
 import ch.noseryoung.domain.recur.notification.model.PushSubscription;
 import ch.noseryoung.domain.recur.notification.repository.PushSubscriptionRepository;
 import nl.martijndwars.webpush.Notification;

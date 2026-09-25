@@ -1,8 +1,12 @@
 package ch.noseryoung.domain.recur.group.exceptions;
 
-public class CannotRemoveAdminException extends RuntimeException {
+import org.springframework.http.HttpStatus;
+
+import ch.noseryoung.domain.recur.shared.exceptions.ApiException;
+
+public class CannotRemoveAdminException extends ApiException {
 
     public CannotRemoveAdminException() {
-        super("Der Admin kann nicht entfernt werden - zuerst die Adminrolle übertragen");
+        super(HttpStatus.CONFLICT, "Conflict", "Der Admin kann nicht entfernt werden - zuerst die Adminrolle übertragen");
     }
 }

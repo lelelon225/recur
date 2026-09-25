@@ -1,6 +1,6 @@
 package ch.noseryoung.domain.recur.group.model;
 
-import ch.noseryoung.domain.recur.auth.model.User;
+import ch.noseryoung.domain.recur.user.model.User;
 
 import java.time.Instant;
 import java.util.HashSet;

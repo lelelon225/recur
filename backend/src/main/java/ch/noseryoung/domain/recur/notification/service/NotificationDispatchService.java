@@ -3,11 +3,15 @@ package ch.noseryoung.domain.recur.notification.service;
 import ch.noseryoung.domain.recur.shared.service.EmailService;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
+import ch.noseryoung.domain.recur.task.event.ProjectTaskCreatedEvent;
+import ch.noseryoung.domain.recur.task.event.TasksDeletedEvent;
 import ch.noseryoung.domain.recur.task.model.Task;
 import ch.noseryoung.domain.recur.notification.model.NotificationSettings;
-import ch.noseryoung.domain.recur.auth.model.User;
+import ch.noseryoung.domain.recur.user.model.User;
+import ch.noseryoung.domain.recur.notification.repository.NotificationLogRepository;
 import ch.noseryoung.domain.recur.notification.repository.NotificationSettingsRepository;
 
 // Bündelt Email-/Push-Versand hinter den beiden Empfänger-Toggles
@@ -17,6 +21,7 @@ import ch.noseryoung.domain.recur.notification.repository.NotificationSettingsRe
 public class NotificationDispatchService {
 
     private final NotificationSettingsRepository notificationSettingsRepository;
+    private final NotificationLogRepository notificationLogRepository;
     private final EmailService emailService;
     private final PushNotificationService pushNotificationService;
 
@@ -31,9 +36,11 @@ public class NotificationDispatchService {
 
     public NotificationDispatchService(
             NotificationSettingsRepository notificationSettingsRepository,
+            NotificationLogRepository notificationLogRepository,
             EmailService emailService,
             PushNotificationService pushNotificationService) {
         this.notificationSettingsRepository = notificationSettingsRepository;
+        this.notificationLogRepository = notificationLogRepository;
         this.emailService = emailService;
         this.pushNotificationService = pushNotificationService;
     }
@@ -51,7 +58,10 @@ public class NotificationDispatchService {
     public void sendReminder(User recipient, Task task) {
         NotificationSettings settings = settingsFor(recipient);
         if (emailNotificationsEnabled && Boolean.TRUE.equals(settings.getEmailEnabled())) {
-            emailService.sendTaskReminderEmail(recipient, task);
+            emailService.send(recipient.getEmail(), "Erinnerung: \"" + task.getName() + "\" ist bald fällig",
+                    "Hallo " + recipient.getFirstName() + ",\n\n"
+                            + "dein Task \"" + task.getName() + "\" ist bald fällig.\n\n"
+                            + "Viel Erfolg!");
         }
         if (Boolean.TRUE.equals(settings.getPushEnabled())) {
             pushNotificationService.sendToUser(recipient, "Bald fällig",
@@ -62,7 +72,10 @@ public class NotificationDispatchService {
     public void sendOverdue(User recipient, Task task) {
         NotificationSettings settings = settingsFor(recipient);
         if (emailNotificationsEnabled && Boolean.TRUE.equals(settings.getEmailEnabled())) {
-            emailService.sendTaskOverdueEmail(recipient, task);
+            emailService.send(recipient.getEmail(), "Überfällig: \"" + task.getName() + "\"",
+                    "Hallo " + recipient.getFirstName() + ",\n\n"
+                            + "dein Task \"" + task.getName() + "\" ist überfällig und noch nicht erledigt.\n\n"
+                            + "Du kannst ihn in Recur abschliessen oder archivieren.");
         }
         if (Boolean.TRUE.equals(settings.getPushEnabled())) {
             pushNotificationService.sendToUser(recipient, "Überfällig",
@@ -70,10 +83,28 @@ public class NotificationDispatchService {
         }
     }
 
-    public void sendProjectTaskCreated(User recipient, Task task, User creator) {
+    // Läuft über ein Event, da task (Aufrufer: TaskService) nicht von
+    // notification abhängen darf (siehe ProjectTaskCreatedEvent).
+    @EventListener
+    public void onProjectTaskCreated(ProjectTaskCreatedEvent event) {
+        event.recipients().forEach(recipient -> sendProjectTaskCreated(recipient, event.task(), event.creator()));
+    }
+
+    // Ersetzt Task.notificationLogs (frühere JPA-Cascade REMOVE) - muss
+    // synchron laufen, bevor TaskService die Tasks selbst löscht, sonst
+    // schlägt die FK-Constraint von notification_log.task_id fehl.
+    @EventListener
+    public void onTasksDeleted(TasksDeletedEvent event) {
+        notificationLogRepository.deleteByTaskIdIn(event.taskIds());
+    }
+
+    private void sendProjectTaskCreated(User recipient, Task task, User creator) {
         NotificationSettings settings = settingsFor(recipient);
         if (emailNotificationsEnabled && Boolean.TRUE.equals(settings.getEmailEnabled())) {
-            emailService.sendProjectTaskCreatedEmail(recipient, task, creator);
+            emailService.send(recipient.getEmail(), "Neuer Task in eurem Projekt: \"" + task.getName() + "\"",
+                    "Hallo " + recipient.getFirstName() + ",\n\n"
+                            + creator.getFirstName() + " hat den Task \"" + task.getName()
+                            + "\" für euer gemeinsames Projekt erstellt.");
         }
         if (Boolean.TRUE.equals(settings.getPushEnabled())) {
             pushNotificationService.sendToUser(recipient, "Neuer Projekt-Task",

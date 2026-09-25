@@ -1,33 +1,22 @@
-package ch.noseryoung.domain.recur.auth.service;
+package ch.noseryoung.domain.recur.user.service;
 
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import ch.noseryoung.domain.recur.auth.dto.PrivacySettingsResponse;
-import ch.noseryoung.domain.recur.auth.model.User;
-import ch.noseryoung.domain.recur.auth.model.UserPrivacySettings;
-import ch.noseryoung.domain.recur.auth.repository.UserPrivacySettingsRepository;
-import ch.noseryoung.domain.recur.auth.repository.UserRepository;
+import ch.noseryoung.domain.recur.user.dto.PrivacySettingsResponse;
+import ch.noseryoung.domain.recur.user.model.User;
+import ch.noseryoung.domain.recur.user.model.UserPrivacySettings;
+import ch.noseryoung.domain.recur.user.repository.UserPrivacySettingsRepository;
 
 @Service
 public class PrivacySettingsService {
 
-    private final UserRepository userRepository;
     private final UserPrivacySettingsRepository privacySettingsRepository;
+    private final CurrentUserService currentUserService;
 
-    public PrivacySettingsService(UserRepository userRepository,
-            UserPrivacySettingsRepository privacySettingsRepository) {
-        this.userRepository = userRepository;
+    public PrivacySettingsService(UserPrivacySettingsRepository privacySettingsRepository,
+            CurrentUserService currentUserService) {
         this.privacySettingsRepository = privacySettingsRepository;
-    }
-
-    private User getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalStateException("Authentifizierter User nicht gefunden: " + email));
+        this.currentUserService = currentUserService;
     }
 
     // Nutzer, die vor Einführung dieser Einstellungen registriert wurden, haben
@@ -40,12 +29,12 @@ public class PrivacySettingsService {
     }
 
     public PrivacySettingsResponse getCurrentSettings() {
-        User user = getCurrentUser();
+        User user = currentUserService.get();
         return PrivacySettingsResponse.from(getOrCreateSettings(user));
     }
 
     public PrivacySettingsResponse updateCurrentSettings(PrivacySettingsResponse update) {
-        User user = getCurrentUser();
+        User user = currentUserService.get();
         UserPrivacySettings settings = getOrCreateSettings(user);
 
         if (update.profileVisibility() != null) {

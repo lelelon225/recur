@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 
-import ch.noseryoung.domain.recur.auth.model.User;
+import ch.noseryoung.domain.recur.user.model.User;
 
 public class CustomOAuth2User extends DefaultOAuth2User implements RecurOAuth2User {
 

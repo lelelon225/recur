@@ -1,10 +1,11 @@
 package ch.noseryoung.domain.recur.task.service;
 
-import ch.noseryoung.domain.recur.group.service.GroupMemberVisibilityService;
+import ch.noseryoung.domain.recur.user.service.UserVisibilityService;
 
 import ch.noseryoung.domain.recur.task.dto.CreateTaskRequest;
 import ch.noseryoung.domain.recur.task.dto.PatchTaskRequest;
 import ch.noseryoung.domain.recur.task.dto.ProjectReference;
+import ch.noseryoung.domain.recur.task.dto.TaskResponse;
 import ch.noseryoung.domain.recur.task.enums.Frequency;
 import ch.noseryoung.domain.recur.task.exceptions.InvalidCompletionException;
 import ch.noseryoung.domain.recur.task.exceptions.TaskNotFoundException;
@@ -12,15 +13,17 @@ import ch.noseryoung.domain.recur.task.model.Task;
 import ch.noseryoung.domain.recur.task.model.TaskReminderOverride;
 import ch.noseryoung.domain.recur.task.repository.TaskReminderOverrideRepository;
 import ch.noseryoung.domain.recur.task.repository.TaskRepository;
-import ch.noseryoung.domain.recur.notification.enums.ReminderLeadTime;
-import ch.noseryoung.domain.recur.notification.service.NotificationDispatchService;
+import ch.noseryoung.domain.recur.task.enums.ReminderLeadTime;
+import ch.noseryoung.domain.recur.task.event.ProjectTaskCreatedEvent;
+import ch.noseryoung.domain.recur.task.event.TasksDeletedEvent;
+import ch.noseryoung.domain.recur.group.event.ProjectsDeletedEvent;
 import ch.noseryoung.domain.recur.group.exceptions.NotGroupAdminException;
-import ch.noseryoung.domain.recur.group.exceptions.NotGroupMemberException;
-import ch.noseryoung.domain.recur.group.exceptions.ProjectNotFoundException;
 import ch.noseryoung.domain.recur.group.model.Project;
-import ch.noseryoung.domain.recur.auth.model.User;
-import ch.noseryoung.domain.recur.group.repository.ProjectRepository;
-import ch.noseryoung.domain.recur.auth.security.CustomUserDetails;
+import ch.noseryoung.domain.recur.group.service.GroupService;
+import ch.noseryoung.domain.recur.user.dto.UserSummary;
+import ch.noseryoung.domain.recur.user.event.UserDeletedEvent;
+import ch.noseryoung.domain.recur.user.model.User;
+import ch.noseryoung.domain.recur.user.service.CurrentUserService;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -28,8 +31,8 @@ import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.http.ResponseEntity;
 
@@ -37,21 +40,24 @@ import org.springframework.http.ResponseEntity;
 public class TaskService {
 
         private final TaskRepository taskRepository;
-        private final ProjectRepository projectRepository;
+        private final GroupService groupService;
         private final TaskUtil taskUtil;
-        private final GroupMemberVisibilityService visibilityService;
-        private final NotificationDispatchService notificationDispatchService;
+        private final UserVisibilityService visibilityService;
+        private final CurrentUserService currentUserService;
+        private final ApplicationEventPublisher eventPublisher;
         private final TaskReminderOverrideRepository taskReminderOverrideRepository;
 
-        public TaskService(TaskRepository taskRepository, ProjectRepository projectRepository, TaskUtil taskUtil,
-                        GroupMemberVisibilityService visibilityService,
-                        NotificationDispatchService notificationDispatchService,
+        public TaskService(TaskRepository taskRepository, GroupService groupService, TaskUtil taskUtil,
+                        UserVisibilityService visibilityService,
+                        CurrentUserService currentUserService,
+                        ApplicationEventPublisher eventPublisher,
                         TaskReminderOverrideRepository taskReminderOverrideRepository) {
                 this.taskRepository = taskRepository;
-                this.projectRepository = projectRepository;
+                this.groupService = groupService;
                 this.taskUtil = taskUtil;
                 this.visibilityService = visibilityService;
-                this.notificationDispatchService = notificationDispatchService;
+                this.currentUserService = currentUserService;
+                this.eventPublisher = eventPublisher;
                 this.taskReminderOverrideRepository = taskReminderOverrideRepository;
         }
 
@@ -68,37 +74,30 @@ public class TaskService {
         }
 
         // Löst eine vom Client mitgeschickte Projekt-Referenz (nur die id ist
-        // relevant) in das gemanagte Project auf und prüft dabei, dass der User
-        // Mitglied der zugehörigen Gruppe ist.
+        // relevant) auf und prüft dabei, dass der User Mitglied der zugehörigen
+        // Gruppe ist - über GroupService statt direktem Repository-Zugriff auf
+        // eine andere Domain.
         private Project resolveProjectForAssignment(UUID projectId, User user) {
-                Project managedProject = projectRepository.findById(projectId)
-                                .orElseThrow(() -> new ProjectNotFoundException(projectId));
-
-                if (managedProject.getGroup() == null || !managedProject.getGroup().getMembers().contains(user)) {
-                        throw new NotGroupMemberException();
-                }
-
-                return managedProject;
+                return groupService.requireProjectForMember(projectId, user);
         }
 
-        // Baut für die Response eine transiente Kopie mit maskierten Mitgliedern
-        // (siehe GroupMemberVisibilityService) - die verwaltete Entity bleibt
-        // unangetastet, damit nichts davon in die echten Zuweisungs-/Archiv-
-        // Tabellen zurückgeschrieben wird. Persönliche Tasks sind immer nur für
-        // ihren eigenen owner sichtbar, daher hier sonst ein No-Op.
+        // Baut die Response mit maskierten Mitgliedern (siehe UserVisibilityService)
+        // als UserSummary statt vollem User-Objekt - die verwaltete Entity bleibt
+        // unangetastet. Persönliche Tasks sind immer nur für ihren eigenen owner
+        // sichtbar, daher hier sonst kein Masking nötig.
         //
-        // Befüllt ausserdem das transiente Task.reminderLeadTime mit dem
-        // Override des jeweiligen viewer für diesen Task (#102-Follow-up) -
-        // dieser gemeinsame Response-Pfad ist der einzige Ort, an dem ein Task
-        // je nach Betrachter unterschiedlich befüllt zurückgegeben wird, daher
-        // hier statt an jeder einzelnen Aufrufstelle.
-        private Task maskMembers(Task task, User viewer) {
-                task.setReminderLeadTime(taskReminderOverrideRepository.findByTaskAndUser(task, viewer)
+        // Befüllt ausserdem reminderLeadTime mit dem Override des jeweiligen
+        // viewer für diesen Task (#102-Follow-up) - dieser gemeinsame
+        // Response-Pfad ist der einzige Ort, an dem ein Task je nach Betrachter
+        // unterschiedlich befüllt zurückgegeben wird, daher hier statt an jeder
+        // einzelnen Aufrufstelle.
+        private TaskResponse toResponse(Task task, User viewer) {
+                ReminderLeadTime reminderLeadTime = taskReminderOverrideRepository.findByTaskAndUser(task, viewer)
                                 .map(TaskReminderOverride::getReminderLeadTime)
-                                .orElse(null));
+                                .orElse(null);
 
                 if (task.getProject() == null) {
-                        return task;
+                        return TaskResponse.from(task, reminderLeadTime, null, null, Set.of(), Set.of());
                 }
 
                 Set<User> relevantUsers = new HashSet<>(task.getAssignedMembers());
@@ -110,21 +109,30 @@ public class TaskService {
                 Map<UUID, User> maskedById = visibilityService.maskIfHidden(relevantUsers, viewer).stream()
                                 .collect(Collectors.toMap(User::getId, u -> u));
 
-                return task.toBuilder()
-                                .assignedMembers(task.getAssignedMembers().stream()
-                                                .map(u -> maskedById.get(u.getId()))
-                                                .collect(Collectors.toCollection(HashSet::new)))
-                                .archivedBy(task.getArchivedBy().stream()
-                                                .map(u -> maskedById.get(u.getId()))
-                                                .collect(Collectors.toCollection(HashSet::new)))
-                                .completedBy(task.getCompletedBy() != null
-                                                ? maskedById.get(task.getCompletedBy().getId())
-                                                : null)
-                                .build();
+                Set<UserSummary> assignedMembers = task.getAssignedMembers().stream()
+                                .map(u -> UserSummary.from(maskedById.get(u.getId())))
+                                .collect(Collectors.toCollection(LinkedHashSet::new));
+                Set<UserSummary> archivedBy = task.getArchivedBy().stream()
+                                .map(u -> UserSummary.from(maskedById.get(u.getId())))
+                                .collect(Collectors.toCollection(LinkedHashSet::new));
+                UserSummary completedBy = task.getCompletedBy() != null
+                                ? UserSummary.from(maskedById.get(task.getCompletedBy().getId()))
+                                : null;
+
+                return TaskResponse.from(task, reminderLeadTime, TaskResponse.ProjectSummary.from(task.getProject()),
+                                completedBy, assignedMembers, archivedBy);
         }
 
-        private Collection<Task> maskMembers(Collection<Task> tasks, User viewer) {
-                return tasks.stream().map(task -> maskMembers(task, viewer)).toList();
+        private Collection<TaskResponse> toResponses(Collection<Task> tasks, User viewer) {
+                return tasks.stream().map(task -> toResponse(task, viewer)).toList();
+        }
+
+        // Für addCompletion/removeCompletion (nur persönliche Tasks, kein
+        // Projekt, keine Mitglieder zu maskieren) - bewusst ohne den
+        // Erinnerungs-Override-Lookup von toResponse, diesen Pfad hat das schon
+        // vor der DTO-Einführung nie befüllt.
+        private TaskResponse toPersonalResponse(Task task) {
+                return TaskResponse.from(task, null, null, null, Set.of(), Set.of());
         }
 
         // Der Gruppen-Admin (TaskGroup.createdBy) eines Projekt-Tasks - bei
@@ -212,49 +220,35 @@ public class TaskService {
                 }
         }
 
-        // Liest den eingeloggten User aus dem SecurityContext. Funktioniert für
-        // JWT-authentifizierte Requests, da JwtAuthenticationFilter ein
-        // CustomUserDetails als Principal setzt (siehe JwtAuthenticationFilter).
-        private User getCurrentUser() {
-                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-                if (authentication == null
-                                || !(authentication.getPrincipal() instanceof CustomUserDetails userDetails)) {
-                        throw new IllegalStateException("Kein authentifizierter User im SecurityContext gefunden");
-                }
-
-                return userDetails.getUser();
-        }
-
         // GET METHODS
-        public ResponseEntity<Collection<Task>> getTasks(Boolean archived, Boolean favorite) {
+        public ResponseEntity<Collection<TaskResponse>> getTasks(Boolean archived, Boolean favorite) {
                 if (archived != null && archived)
                         return getArchivedTasks();
 
                 if (favorite != null && favorite)
                         return getFavoriteTasks();
 
-                User user = getCurrentUser();
+                User user = currentUserService.get();
                 Collection<Task> tasks = taskRepository.findVisibleToUser(user);
                 recalculateAll(tasks);
 
-                return ResponseEntity.ok(maskMembers(tasks, user));
+                return ResponseEntity.ok(toResponses(tasks, user));
         }
 
-        public ResponseEntity<Collection<Task>> getFavoriteTasks() {
-                User owner = getCurrentUser();
+        public ResponseEntity<Collection<TaskResponse>> getFavoriteTasks() {
+                User owner = currentUserService.get();
                 List<Task> favoriteTasks = taskRepository.findByOwnerAndIsFavorite(owner, true);
                 recalculateAll(favoriteTasks);
 
-                return ResponseEntity.ok(maskMembers(favoriteTasks, owner));
+                return ResponseEntity.ok(toResponses(favoriteTasks, owner));
         }
 
-        public ResponseEntity<Collection<Task>> getArchivedTasks() {
-                User owner = getCurrentUser();
+        public ResponseEntity<Collection<TaskResponse>> getArchivedTasks() {
+                User owner = currentUserService.get();
                 List<Task> archivedTasks = taskRepository.findByOwnerAndIsArchived(owner, true);
                 recalculateAll(archivedTasks);
 
-                return ResponseEntity.ok(maskMembers(archivedTasks, owner));
+                return ResponseEntity.ok(toResponses(archivedTasks, owner));
         }
 
         private void recalculateAll(Collection<Task> tasks) {
@@ -276,21 +270,21 @@ public class TaskService {
                 taskUtil.calculateProgress(task);
         }
 
-        public ResponseEntity<Task> getTask(UUID id) {
-                User user = getCurrentUser();
+        public ResponseEntity<TaskResponse> getTask(UUID id) {
+                User user = currentUserService.get();
                 Task task = taskRepository.findById(id)
                                 .filter(t -> hasAccess(t, user))
                                 .orElseThrow(() -> new TaskNotFoundException(id));
 
                 recalculate(task);
 
-                return ResponseEntity.ok(maskMembers(task, user));
+                return ResponseEntity.ok(toResponse(task, user));
         }
 
         // POST METHODS
-        public ResponseEntity<Task> createTask(CreateTaskRequest request) {
+        public ResponseEntity<TaskResponse> createTask(CreateTaskRequest request) {
 
-                User currentUser = getCurrentUser();
+                User currentUser = currentUserService.get();
 
                 Task task = Task.builder()
                                 .name(request.name())
@@ -318,24 +312,74 @@ public class TaskService {
                 taskRepository.save(task);
                 notifyGroupOfNewProjectTask(task, currentUser);
 
-                return ResponseEntity.status(201).body(maskMembers(task, currentUser));
+                return ResponseEntity.status(201).body(toResponse(task, currentUser));
         }
 
         // #102: benachrichtigt alle übrigen Gruppenmitglieder, wenn jemand einen
         // neuen geteilten Projekt-Task erstellt hat. Persönliche Tasks (kein
-        // project) betreffen niemand anderen und lösen daher nichts aus.
+        // project) betreffen niemand anderen und lösen daher nichts aus. Läuft
+        // über ein Event statt eines direkten Aufrufs, da task nicht von
+        // notification abhängen darf (siehe ProjectTaskCreatedEvent).
         private void notifyGroupOfNewProjectTask(Task task, User creator) {
                 if (task.getProject() == null || task.getProject().getGroup() == null) {
                         return;
                 }
 
-                task.getProject().getGroup().getMembers().stream()
+                List<User> recipients = task.getProject().getGroup().getMembers().stream()
                                 .filter(member -> !member.equals(creator))
-                                .forEach(member -> notificationDispatchService.sendProjectTaskCreated(member, task, creator));
+                                .toList();
+
+                if (!recipients.isEmpty()) {
+                        eventPublisher.publishEvent(new ProjectTaskCreatedEvent(task, creator, recipients));
+                }
+        }
+
+        // Für TaskReminderScheduler (#102): Kandidaten für Erinnerung/Überfällig -
+        // notification darf task's Repository nicht direkt aufrufen.
+        public List<Task> findDueTasks() {
+                return taskRepository.findByIsArchivedFalseAndDateUntilIsNotNull();
+        }
+
+        // Für TaskReminderScheduler#leadTimeOf - der vom Empfänger selbst für
+        // diesen Task gesetzte Erinnerungs-Vorlauf-Override, falls vorhanden.
+        public Optional<ReminderLeadTime> reminderLeadTimeOverride(Task task, User recipient) {
+                return taskReminderOverrideRepository.findByTaskAndUser(task, recipient)
+                                .map(TaskReminderOverride::getReminderLeadTime);
+        }
+
+        // Räumt beim Löschen eines Accounts (siehe UserService#deleteCurrentUser)
+        // die task-eigenen Referenzen auf den User auf - muss synchron laufen,
+        // bevor UserService den User selbst löscht, sonst schlagen die
+        // FK-Constraints von task.created_by_id bzw. task_hidden_for fehl.
+        @EventListener
+        public void onUserDeleted(UserDeletedEvent event) {
+                User user = new User();
+                user.setId(event.userId());
+
+                taskRepository.clearCreatedBy(user);
+                List<Task> hiddenTasks = taskRepository.findByHiddenForContaining(user);
+                hiddenTasks.forEach(task -> task.getHiddenFor().remove(user));
+                taskRepository.saveAll(hiddenTasks);
+        }
+
+        // Räumt beim Löschen eines Projekts/einer Gruppe (siehe
+        // ProjectService#deleteProject, GroupService#deleteGroupInternal) dessen
+        // Tasks auf - läuft über ein Event statt eines direkten Aufrufs von
+        // group aus, da group nicht von task's Repository abhängen darf.
+        @EventListener
+        public void onProjectsDeleted(ProjectsDeletedEvent event) {
+                List<Project> projects = groupService.findProjectsByIds(event.projectIds());
+                List<Task> tasks = taskRepository.findByProjectIn(projects);
+
+                if (!tasks.isEmpty()) {
+                        eventPublisher.publishEvent(new TasksDeletedEvent(tasks.stream().map(Task::getId).toList()));
+                }
+
+                taskRepository.deleteByProjectIn(projects);
         }
 
         // PATCH METHODS
-        public ResponseEntity<Task> patchTask(
+        public ResponseEntity<TaskResponse> patchTask(
                         UUID id,
                         PatchTaskRequest request,
                         Boolean resetProgress,
@@ -345,7 +389,7 @@ public class TaskService {
                         Boolean unassignProject,
                         Boolean hidden) {
 
-                User currentUser = getCurrentUser();
+                User currentUser = currentUserService.get();
                 Task existingTask = taskRepository.findById(id)
                                 .filter(t -> hasAccess(t, currentUser))
                                 .orElseThrow(() -> new TaskNotFoundException(id));
@@ -449,14 +493,14 @@ public class TaskService {
 
                 taskRepository.save(existingTask);
 
-                return ResponseEntity.ok(maskMembers(existingTask, currentUser));
+                return ResponseEntity.ok(toResponse(existingTask, currentUser));
         }
 
         // Self-Service: ein Gruppenmitglied weist sich selbst einem geteilten
         // Projekt-Task zu bzw. meldet sich wieder ab. Bei persönlichen Tasks
         // ohne Wirkung, da Zuweisung dort kein Konzept ist.
-        public ResponseEntity<Task> assignSelf(UUID id) {
-                User currentUser = getCurrentUser();
+        public ResponseEntity<TaskResponse> assignSelf(UUID id) {
+                User currentUser = currentUserService.get();
                 Task task = taskRepository.findById(id)
                                 .filter(t -> hasAccess(t, currentUser))
                                 .orElseThrow(() -> new TaskNotFoundException(id));
@@ -466,11 +510,11 @@ public class TaskService {
                         taskRepository.save(task);
                 }
 
-                return ResponseEntity.ok(maskMembers(task, currentUser));
+                return ResponseEntity.ok(toResponse(task, currentUser));
         }
 
-        public ResponseEntity<Task> unassignSelf(UUID id) {
-                User currentUser = getCurrentUser();
+        public ResponseEntity<TaskResponse> unassignSelf(UUID id) {
+                User currentUser = currentUserService.get();
                 Task task = taskRepository.findById(id)
                                 .filter(t -> hasAccess(t, currentUser))
                                 .orElseThrow(() -> new TaskNotFoundException(id));
@@ -479,7 +523,7 @@ public class TaskService {
                 task.getArchivedBy().remove(currentUser);
                 taskRepository.save(task);
 
-                return ResponseEntity.ok(maskMembers(task, currentUser));
+                return ResponseEntity.ok(toResponse(task, currentUser));
         }
 
         // Setzt/löscht den Erinnerungs-Vorlauf-Override des aktuellen Users für
@@ -488,8 +532,8 @@ public class TaskService {
         // damit nur seine eigene Erinnerung ändern, nie die der anderen
         // zugewiesenen Mitglieder. leadTime == null löscht den Override wieder
         // (zurück auf die Kontoeinstellung).
-        public ResponseEntity<Task> setReminderLeadTime(UUID id, ReminderLeadTime leadTime) {
-                User currentUser = getCurrentUser();
+        public ResponseEntity<TaskResponse> setReminderLeadTime(UUID id, ReminderLeadTime leadTime) {
+                User currentUser = currentUserService.get();
                 Task task = taskRepository.findById(id)
                                 .filter(t -> hasAccess(t, currentUser))
                                 .orElseThrow(() -> new TaskNotFoundException(id));
@@ -510,14 +554,14 @@ public class TaskService {
                                         .build());
                 }
 
-                return ResponseEntity.ok(maskMembers(task, currentUser));
+                return ResponseEntity.ok(toResponse(task, currentUser));
         }
 
         // COMPLETION METHODS (#152) - nachträgliches Abhaken/Rückgängig einzelner
         // Tage. Nur für persönliche Tasks (findByIdAndOwner statt hasAccess),
         // Projekt-Tasks bleiben bei ihrer bestehenden completedBy-Logik.
-        public ResponseEntity<Task> addCompletion(UUID id, LocalDate date) {
-                User owner = getCurrentUser();
+        public ResponseEntity<TaskResponse> addCompletion(UUID id, LocalDate date) {
+                User owner = currentUserService.get();
                 Task task = taskRepository.findByIdAndOwner(id, owner)
                                 .orElseThrow(() -> new TaskNotFoundException(id));
 
@@ -538,11 +582,11 @@ public class TaskService {
                 taskUtil.calculateProgress(task);
                 taskRepository.save(task);
 
-                return ResponseEntity.ok(task);
+                return ResponseEntity.ok(toPersonalResponse(task));
         }
 
-        public ResponseEntity<Task> removeCompletion(UUID id, LocalDate date) {
-                User owner = getCurrentUser();
+        public ResponseEntity<TaskResponse> removeCompletion(UUID id, LocalDate date) {
+                User owner = currentUserService.get();
                 Task task = taskRepository.findByIdAndOwner(id, owner)
                                 .orElseThrow(() -> new TaskNotFoundException(id));
 
@@ -558,7 +602,7 @@ public class TaskService {
                 taskUtil.calculateProgress(task);
                 taskRepository.save(task);
 
-                return ResponseEntity.ok(task);
+                return ResponseEntity.ok(toPersonalResponse(task));
         }
 
         private void validateCompletionDate(Task task, LocalDate date) {
@@ -605,9 +649,9 @@ public class TaskService {
         // die anderen zugewiesenen Mitglieder behalten ihn. Rückgängig machbar
         // über PATCH ?hidden=false, daher hier 200 mit dem aktualisierten Task
         // als Body, damit das Frontend einen Undo-Toast anbieten kann.
-        public ResponseEntity<Task> deleteTask(UUID id) {
+        public ResponseEntity<TaskResponse> deleteTask(UUID id) {
 
-                User user = getCurrentUser();
+                User user = currentUserService.get();
                 Task task = taskRepository.findById(id)
                                 .filter(t -> hasAccess(t, user))
                                 .orElseThrow(() -> new TaskNotFoundException(id));
@@ -617,6 +661,7 @@ public class TaskService {
                 }
 
                 if (task.getProject() == null || isTaskCreator(task, user)) {
+                        eventPublisher.publishEvent(new TasksDeletedEvent(List.of(id)));
                         taskRepository.deleteById(id);
                         return ResponseEntity.ok().build();
                 }
@@ -624,12 +669,18 @@ public class TaskService {
                 task.getHiddenFor().add(user);
                 taskRepository.save(task);
 
-                return ResponseEntity.ok(maskMembers(task, user));
+                return ResponseEntity.ok(toResponse(task, user));
         }
 
-        public ResponseEntity<Task> deleteAllTasks() {
+        public ResponseEntity<TaskResponse> deleteAllTasks() {
 
-                User owner = getCurrentUser();
+                User owner = currentUserService.get();
+                List<Task> tasks = taskRepository.findByOwner(owner);
+
+                if (!tasks.isEmpty()) {
+                        eventPublisher.publishEvent(new TasksDeletedEvent(tasks.stream().map(Task::getId).toList()));
+                }
+
                 taskRepository.deleteByOwner(owner);
 
                 return ResponseEntity.ok().build();

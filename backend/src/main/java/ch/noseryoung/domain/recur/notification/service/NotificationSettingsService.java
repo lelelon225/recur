@@ -1,33 +1,25 @@
 package ch.noseryoung.domain.recur.notification.service;
 
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
-import ch.noseryoung.domain.recur.auth.model.User;
-import ch.noseryoung.domain.recur.auth.repository.UserRepository;
 import ch.noseryoung.domain.recur.notification.dto.NotificationSettingsResponse;
 import ch.noseryoung.domain.recur.notification.model.NotificationSettings;
 import ch.noseryoung.domain.recur.notification.repository.NotificationSettingsRepository;
+import ch.noseryoung.domain.recur.user.event.UserDeletedEvent;
+import ch.noseryoung.domain.recur.user.model.User;
+import ch.noseryoung.domain.recur.user.service.CurrentUserService;
 
 @Service
 public class NotificationSettingsService {
 
-    private final UserRepository userRepository;
     private final NotificationSettingsRepository notificationSettingsRepository;
+    private final CurrentUserService currentUserService;
 
-    public NotificationSettingsService(UserRepository userRepository,
-            NotificationSettingsRepository notificationSettingsRepository) {
-        this.userRepository = userRepository;
+    public NotificationSettingsService(NotificationSettingsRepository notificationSettingsRepository,
+            CurrentUserService currentUserService) {
         this.notificationSettingsRepository = notificationSettingsRepository;
-    }
-
-    private User getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalStateException("Authentifizierter User nicht gefunden: " + email));
+        this.currentUserService = currentUserService;
     }
 
     // Nutzer, die vor Einführung dieser Einstellungen registriert wurden, haben
@@ -41,12 +33,12 @@ public class NotificationSettingsService {
     }
 
     public NotificationSettingsResponse getCurrentSettings() {
-        User user = getCurrentUser();
+        User user = currentUserService.get();
         return NotificationSettingsResponse.from(getOrCreateSettings(user));
     }
 
     public NotificationSettingsResponse updateCurrentSettings(NotificationSettingsResponse update) {
-        User user = getCurrentUser();
+        User user = currentUserService.get();
         NotificationSettings settings = getOrCreateSettings(user);
 
         if (update.emailEnabled() != null) {
@@ -62,5 +54,15 @@ public class NotificationSettingsService {
         notificationSettingsRepository.save(settings);
 
         return NotificationSettingsResponse.from(settings);
+    }
+
+    // Räumt beim Löschen eines Accounts (siehe UserService#deleteCurrentUser)
+    // die NotificationSettings-Zeile des Users auf - muss synchron laufen,
+    // bevor UserService den User selbst löscht, sonst schlägt die
+    // FK-Constraint von notification_settings.user_id fehl.
+    @EventListener
+    public void onUserDeleted(UserDeletedEvent event) {
+        notificationSettingsRepository.findByUserId(event.userId())
+                .ifPresent(notificationSettingsRepository::delete);
     }
 }

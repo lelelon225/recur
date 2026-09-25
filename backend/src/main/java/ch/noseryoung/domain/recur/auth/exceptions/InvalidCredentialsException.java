@@ -1,8 +1,12 @@
 package ch.noseryoung.domain.recur.auth.exceptions;
 
-public class InvalidCredentialsException extends RuntimeException {
+import org.springframework.http.HttpStatus;
+
+import ch.noseryoung.domain.recur.shared.exceptions.ApiException;
+
+public class InvalidCredentialsException extends ApiException {
 
     public InvalidCredentialsException() {
-        super("E-Mail oder Passwort ist falsch");
+        super(HttpStatus.UNAUTHORIZED, "Invalid credentials", "E-Mail oder Passwort ist falsch");
     }
 }

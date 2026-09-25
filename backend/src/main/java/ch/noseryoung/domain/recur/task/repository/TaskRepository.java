@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import ch.noseryoung.domain.recur.task.model.Task;
 import ch.noseryoung.domain.recur.group.model.Project;
-import ch.noseryoung.domain.recur.auth.model.User;
+import ch.noseryoung.domain.recur.user.model.User;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -30,6 +30,8 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     public void deleteByOwner(User owner);
 
     public List<Task> findByProject(Project project);
+
+    public List<Task> findByProjectIn(Collection<Project> projects);
 
     // Kandidaten für den Erinnerungs-/Überfällig-Scheduler (#102): nicht
     // archivierte Tasks mit einem Fälligkeitsdatum. Die Fenster-Prüfung

@@ -1,13 +1,11 @@
 package ch.noseryoung.domain.recur.notification.service;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import ch.noseryoung.domain.recur.auth.model.User;
-import ch.noseryoung.domain.recur.auth.security.CustomUserDetails;
+import ch.noseryoung.domain.recur.user.model.User;
+import ch.noseryoung.domain.recur.user.service.CurrentUserService;
 import ch.noseryoung.domain.recur.notification.dto.PushSubscriptionRequest;
 import ch.noseryoung.domain.recur.notification.model.PushSubscription;
 import ch.noseryoung.domain.recur.notification.repository.PushSubscriptionRepository;
@@ -16,22 +14,15 @@ import ch.noseryoung.domain.recur.notification.repository.PushSubscriptionReposi
 public class PushSubscriptionService {
 
     private final PushSubscriptionRepository pushSubscriptionRepository;
+    private final CurrentUserService currentUserService;
     private final String vapidPublicKey;
 
     public PushSubscriptionService(PushSubscriptionRepository pushSubscriptionRepository,
+            CurrentUserService currentUserService,
             @Value("${app.push.vapid-public-key}") String vapidPublicKey) {
         this.pushSubscriptionRepository = pushSubscriptionRepository;
+        this.currentUserService = currentUserService;
         this.vapidPublicKey = vapidPublicKey;
-    }
-
-    private User getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !(authentication.getPrincipal() instanceof CustomUserDetails userDetails)) {
-            throw new IllegalStateException("Kein authentifizierter User im SecurityContext gefunden");
-        }
-
-        return userDetails.getUser();
     }
 
     public String getVapidPublicKey() {
@@ -41,7 +32,7 @@ public class PushSubscriptionService {
     // Idempotent: derselbe Browser kann sich mehrfach re-subscriben (z.B. nach
     // erneutem Aktivieren des Toggles), der endpoint ist dabei stabil.
     public void subscribe(PushSubscriptionRequest request) {
-        User user = getCurrentUser();
+        User user = currentUserService.get();
 
         PushSubscription subscription = pushSubscriptionRepository.findByEndpoint(request.endpoint())
                 .orElseGet(() -> PushSubscription.builder().endpoint(request.endpoint()).build());
