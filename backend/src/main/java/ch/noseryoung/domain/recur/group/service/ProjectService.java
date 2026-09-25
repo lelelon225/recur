@@ -4,15 +4,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import ch.noseryoung.domain.recur.task.repository.TaskRepository;
 import ch.noseryoung.domain.recur.user.model.User;
 import ch.noseryoung.domain.recur.group.dto.CreateProjectRequest;
+import ch.noseryoung.domain.recur.group.event.ProjectsDeletedEvent;
 import ch.noseryoung.domain.recur.group.exceptions.GroupNotFoundException;
 import ch.noseryoung.domain.recur.group.exceptions.NotGroupAdminException;
 import ch.noseryoung.domain.recur.group.exceptions.NotGroupMemberException;
@@ -22,30 +21,22 @@ import ch.noseryoung.domain.recur.group.model.Project;
 import ch.noseryoung.domain.recur.group.model.TaskGroup;
 import ch.noseryoung.domain.recur.group.repository.ProjectRepository;
 import ch.noseryoung.domain.recur.group.repository.TaskGroupRepository;
-import ch.noseryoung.domain.recur.auth.security.CustomUserDetails;
+import ch.noseryoung.domain.recur.user.service.CurrentUserService;
 
 @Service
 public class ProjectService {
 
     private final ProjectRepository projectRepository;
     private final TaskGroupRepository taskGroupRepository;
-    private final TaskRepository taskRepository;
+    private final CurrentUserService currentUserService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public ProjectService(ProjectRepository projectRepository, TaskGroupRepository taskGroupRepository,
-            TaskRepository taskRepository) {
+            CurrentUserService currentUserService, ApplicationEventPublisher eventPublisher) {
         this.projectRepository = projectRepository;
         this.taskGroupRepository = taskGroupRepository;
-        this.taskRepository = taskRepository;
-    }
-
-    private User getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !(authentication.getPrincipal() instanceof CustomUserDetails userDetails)) {
-            throw new IllegalStateException("Kein authentifizierter User im SecurityContext gefunden");
-        }
-
-        return userDetails.getUser();
+        this.currentUserService = currentUserService;
+        this.eventPublisher = eventPublisher;
     }
 
     private TaskGroup requireMembership(UUID groupId, User user) {
@@ -66,7 +57,7 @@ public class ProjectService {
     }
 
     public ResponseEntity<Project> createProject(UUID groupId, CreateProjectRequest request) {
-        TaskGroup group = requireMembership(groupId, getCurrentUser());
+        TaskGroup group = requireMembership(groupId, currentUserService.get());
 
         Project newProject = Project.builder()
                 .name(request.name())
@@ -79,14 +70,14 @@ public class ProjectService {
     }
 
     public ResponseEntity<Collection<Project>> getProjects(UUID groupId) {
-        TaskGroup group = requireMembership(groupId, getCurrentUser());
+        TaskGroup group = requireMembership(groupId, currentUserService.get());
         List<Project> projects = projectRepository.findByGroup(group);
 
         return ResponseEntity.ok(projects);
     }
 
     public ResponseEntity<Project> patchProject(UUID groupId, UUID id, Boolean archived) {
-        User currentUser = getCurrentUser();
+        User currentUser = currentUserService.get();
         TaskGroup group = requireMembership(groupId, currentUser);
         requireAdmin(group, currentUser);
         Project project = projectRepository.findByIdAndGroup(id, group)
@@ -106,7 +97,7 @@ public class ProjectService {
     // unberührt.
     @Transactional
     public ResponseEntity<Void> deleteProject(UUID groupId, UUID id) {
-        User currentUser = getCurrentUser();
+        User currentUser = currentUserService.get();
         TaskGroup group = requireMembership(groupId, currentUser);
         requireAdmin(group, currentUser);
         Project project = projectRepository.findByIdAndGroup(id, group)
@@ -116,7 +107,9 @@ public class ProjectService {
             throw new ProjectNotArchivedException();
         }
 
-        taskRepository.deleteByProjectIn(List.of(project));
+        // Muss vor dem Löschen des Projekts passieren (siehe TaskService's
+        // @EventListener) - group darf task's Repository nicht direkt aufrufen.
+        eventPublisher.publishEvent(new ProjectsDeletedEvent(List.of(project.getId())));
         projectRepository.delete(project);
 
         return ResponseEntity.ok().build();

@@ -77,7 +77,9 @@ public class OAuth2UserAttributeResolver {
         User savedUser = userRepository.save(user);
 
         if (isNewUser) {
-            emailService.sendWelcomeEmail(savedUser);
+            emailService.send(savedUser.getEmail(), "Willkommen bei Recur",
+                    "Hallo " + savedUser.getFirstName() + ",\n\n"
+                            + "willkommen bei Recur! Dein Konto wurde erfolgreich über Google erstellt.");
         }
 
         return savedUser;

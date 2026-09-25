@@ -14,17 +14,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-
 
 import ch.noseryoung.domain.recur.task.dto.CreateTaskRequest;
 import ch.noseryoung.domain.recur.task.dto.PatchTaskRequest;
@@ -36,10 +33,9 @@ import ch.noseryoung.domain.recur.task.model.Task;
 import ch.noseryoung.domain.recur.task.repository.TaskRepository;
 import ch.noseryoung.domain.recur.task.repository.TaskReminderOverrideRepository;
 import ch.noseryoung.domain.recur.user.model.User;
-import ch.noseryoung.domain.recur.auth.security.CustomUserDetails;
+import ch.noseryoung.domain.recur.user.service.CurrentUserService;
 import ch.noseryoung.domain.recur.user.service.UserVisibilityService;
 import ch.noseryoung.domain.recur.group.repository.ProjectRepository;
-import ch.noseryoung.domain.recur.notification.service.NotificationDispatchService;
 
 /**
  * Deckt die zentralen Business-Regeln von TaskService ab, wie sie in
@@ -62,7 +58,10 @@ class TaskServiceTest {
     private UserVisibilityService visibilityService;
 
     @Mock
-    private NotificationDispatchService notificationDispatchService;
+    private CurrentUserService currentUserService;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
 
     @Mock
     private TaskReminderOverrideRepository taskReminderOverrideRepository;
@@ -73,18 +72,10 @@ class TaskServiceTest {
     @BeforeEach
     void setUp() {
         taskService = new TaskService(taskRepository, projectRepository, new TaskUtil(), visibilityService,
-                notificationDispatchService, taskReminderOverrideRepository);
+                currentUserService, eventPublisher, taskReminderOverrideRepository);
 
         owner = User.builder().id(UUID.randomUUID()).email("owner@example.com").build();
-        CustomUserDetails principal = new CustomUserDetails(owner);
-        var authentication = new UsernamePasswordAuthenticationToken(
-                principal, null, principal.getAuthorities());
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-    }
-
-    @AfterEach
-    void tearDown() {
-        SecurityContextHolder.clearContext();
+        when(currentUserService.get()).thenReturn(owner);
     }
 
     @Test

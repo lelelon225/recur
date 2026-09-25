@@ -20,14 +20,11 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import ch.noseryoung.domain.recur.auth.model.PasswordResetToken;
 import ch.noseryoung.domain.recur.user.model.User;
-import ch.noseryoung.domain.recur.task.repository.TaskRepository;
-import ch.noseryoung.domain.recur.user.repository.UserPrivacySettingsRepository;
 import ch.noseryoung.domain.recur.user.repository.UserRepository;
 import ch.noseryoung.domain.recur.auth.repository.VerificationTokenRepository;
 import ch.noseryoung.domain.recur.auth.repository.PasswordResetTokenRepository;
 import ch.noseryoung.domain.recur.auth.security.jwt.JwtService;
 import ch.noseryoung.domain.recur.auth.security.jwt.RefreshTokenService;
-import ch.noseryoung.domain.recur.notification.repository.NotificationSettingsRepository;
 import ch.noseryoung.domain.recur.shared.service.EmailService;
 import ch.noseryoung.domain.recur.auth.dto.LoginRequest;
 import ch.noseryoung.domain.recur.auth.dto.RegisterRequest;
@@ -50,19 +47,10 @@ class AuthServiceTest {
     private UserRepository userRepository;
 
     @Mock
-    private UserPrivacySettingsRepository privacySettingsRepository;
-
-    @Mock
-    private NotificationSettingsRepository notificationSettingsRepository;
-
-    @Mock
     private VerificationTokenRepository verificationTokenRepository;
 
     @Mock
     private PasswordResetTokenRepository passwordResetTokenRepository;
-
-    @Mock
-    private TaskRepository taskRepository;
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -83,9 +71,8 @@ class AuthServiceTest {
 
     @org.junit.jupiter.api.BeforeEach
     void setUp() {
-        authService = new AuthService(userRepository, privacySettingsRepository, notificationSettingsRepository,
-                verificationTokenRepository, passwordResetTokenRepository, taskRepository, passwordEncoder,
-                jwtService, refreshTokenService, emailService);
+        authService = new AuthService(userRepository, verificationTokenRepository, passwordResetTokenRepository,
+                passwordEncoder, jwtService, refreshTokenService, emailService);
         ReflectionTestUtils.setField(authService, "frontendUrl", "http://localhost:3000");
         ReflectionTestUtils.setField(authService, "verificationExpiryHours", 24L);
         ReflectionTestUtils.setField(authService, "resendCooldownSeconds", 60L);
@@ -127,7 +114,7 @@ class AuthServiceTest {
         assertThat(savedUser.getEmailVerified()).isTrue();
 
         verify(verificationTokenRepository, never()).save(any());
-        verify(emailService, never()).sendVerificationEmail(any(), anyString());
+        verify(emailService, never()).send(anyString(), anyString(), anyString());
     }
 
     @Test
@@ -212,7 +199,7 @@ class AuthServiceTest {
         authService.forgotPassword("google@example.com");
 
         verify(passwordResetTokenRepository, never()).save(any());
-        verify(emailService, never()).sendPasswordResetEmail(any(), anyString());
+        verify(emailService, never()).send(anyString(), anyString(), anyString());
     }
 
     @Test
@@ -227,7 +214,7 @@ class AuthServiceTest {
         authService.forgotPassword("unverified@example.com");
 
         verify(passwordResetTokenRepository, never()).save(any());
-        verify(emailService, never()).sendPasswordResetEmail(any(), anyString());
+        verify(emailService, never()).send(anyString(), anyString(), anyString());
     }
 
     @Test
@@ -237,7 +224,7 @@ class AuthServiceTest {
         authService.forgotPassword("ghost@example.com");
 
         verify(passwordResetTokenRepository, never()).save(any());
-        verify(emailService, never()).sendPasswordResetEmail(any(), anyString());
+        verify(emailService, never()).send(anyString(), anyString(), anyString());
     }
 
     @Test
@@ -255,7 +242,7 @@ class AuthServiceTest {
 
         verify(passwordResetTokenRepository).deleteByUserId(user.getId());
         verify(passwordResetTokenRepository).save(any());
-        verify(emailService).sendPasswordResetEmail(eq(user), anyString());
+        verify(emailService).send(eq(user.getEmail()), anyString(), anyString());
     }
 
     @Test

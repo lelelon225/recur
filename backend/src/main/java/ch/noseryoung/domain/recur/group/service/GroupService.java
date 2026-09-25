@@ -7,16 +7,15 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import ch.noseryoung.domain.recur.task.repository.TaskRepository;
 import ch.noseryoung.domain.recur.user.model.User;
 import ch.noseryoung.domain.recur.group.dto.CreateGroupRequest;
 import ch.noseryoung.domain.recur.group.dto.GroupInvitePreview;
+import ch.noseryoung.domain.recur.group.event.ProjectsDeletedEvent;
 import ch.noseryoung.domain.recur.group.exceptions.AdminSuccessorRequiredException;
 import ch.noseryoung.domain.recur.group.exceptions.CannotRemoveAdminException;
 import ch.noseryoung.domain.recur.group.exceptions.GroupNotFoundException;
@@ -27,7 +26,7 @@ import ch.noseryoung.domain.recur.group.model.Project;
 import ch.noseryoung.domain.recur.group.model.TaskGroup;
 import ch.noseryoung.domain.recur.group.repository.ProjectRepository;
 import ch.noseryoung.domain.recur.group.repository.TaskGroupRepository;
-import ch.noseryoung.domain.recur.auth.security.CustomUserDetails;
+import ch.noseryoung.domain.recur.user.service.CurrentUserService;
 import ch.noseryoung.domain.recur.user.service.UserVisibilityService;
 
 @Service
@@ -38,15 +37,18 @@ public class GroupService {
 
     private final TaskGroupRepository taskGroupRepository;
     private final ProjectRepository projectRepository;
-    private final TaskRepository taskRepository;
+    private final CurrentUserService currentUserService;
+    private final ApplicationEventPublisher eventPublisher;
     private final UserVisibilityService visibilityService;
     private final SecureRandom random = new SecureRandom();
 
     public GroupService(TaskGroupRepository taskGroupRepository, ProjectRepository projectRepository,
-            TaskRepository taskRepository, UserVisibilityService visibilityService) {
+            CurrentUserService currentUserService, ApplicationEventPublisher eventPublisher,
+            UserVisibilityService visibilityService) {
         this.taskGroupRepository = taskGroupRepository;
         this.projectRepository = projectRepository;
-        this.taskRepository = taskRepository;
+        this.currentUserService = currentUserService;
+        this.eventPublisher = eventPublisher;
         this.visibilityService = visibilityService;
     }
 
@@ -57,16 +59,6 @@ public class GroupService {
                 .members(visibilityService.maskIfHidden(group.getMembers(), viewer))
                 .createdBy(visibilityService.maskIfHidden(group.getCreatedBy(), viewer))
                 .build();
-    }
-
-    private User getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !(authentication.getPrincipal() instanceof CustomUserDetails userDetails)) {
-            throw new IllegalStateException("Kein authentifizierter User im SecurityContext gefunden");
-        }
-
-        return userDetails.getUser();
     }
 
     private String generateUniqueInviteCode() {
@@ -103,7 +95,7 @@ public class GroupService {
     }
 
     public ResponseEntity<TaskGroup> createGroup(CreateGroupRequest request) {
-        User currentUser = getCurrentUser();
+        User currentUser = currentUserService.get();
 
         TaskGroup newGroup = TaskGroup.builder()
                 .name(request.name())
@@ -118,14 +110,14 @@ public class GroupService {
     }
 
     public ResponseEntity<Collection<TaskGroup>> getMyGroups() {
-        User currentUser = getCurrentUser();
+        User currentUser = currentUserService.get();
         List<TaskGroup> groups = taskGroupRepository.findByMembersContaining(currentUser);
         List<TaskGroup> masked = groups.stream().map(group -> maskMembers(group, currentUser)).toList();
         return ResponseEntity.ok(masked);
     }
 
     public ResponseEntity<TaskGroup> getGroup(UUID id) {
-        User currentUser = getCurrentUser();
+        User currentUser = currentUserService.get();
         TaskGroup group = requireMembership(id, currentUser);
         return ResponseEntity.ok(maskMembers(group, currentUser));
     }
@@ -135,7 +127,7 @@ public class GroupService {
     // diesen Endpunkt wäre das N+1 Requests pro Poll).
     @Transactional(readOnly = true)
     public ResponseEntity<Map<UUID, List<Project>>> getProjectsForMyGroups() {
-        List<TaskGroup> groups = taskGroupRepository.findByMembersContaining(getCurrentUser());
+        List<TaskGroup> groups = taskGroupRepository.findByMembersContaining(currentUserService.get());
         List<Project> projects = projectRepository.findByGroupIn(groups);
 
         Map<UUID, List<Project>> projectsByGroupId = projects.stream()
@@ -152,11 +144,11 @@ public class GroupService {
         TaskGroup group = taskGroupRepository.findByInviteCode(inviteCode)
                 .orElseThrow(() -> new GroupNotFoundException(inviteCode));
 
-        return ResponseEntity.ok(GroupInvitePreview.of(group, getCurrentUser()));
+        return ResponseEntity.ok(GroupInvitePreview.of(group, currentUserService.get()));
     }
 
     public ResponseEntity<TaskGroup> joinGroup(String inviteCode) {
-        User currentUser = getCurrentUser();
+        User currentUser = currentUserService.get();
         TaskGroup group = taskGroupRepository.findByInviteCode(inviteCode)
                 .orElseThrow(() -> new GroupNotFoundException(inviteCode));
 
@@ -171,7 +163,7 @@ public class GroupService {
     // Nachfolger bestimmen, sonst bliebe die Gruppe führungslos zurück.
     @Transactional
     public ResponseEntity<Void> leaveGroup(UUID groupId, UUID successorId) {
-        User currentUser = getCurrentUser();
+        User currentUser = currentUserService.get();
         TaskGroup group = requireMembership(groupId, currentUser);
 
         if (isAdmin(group, currentUser)) {
@@ -207,7 +199,7 @@ public class GroupService {
     // darüber nicht entfernt werden - dafür gibt es leaveGroup (mit Nachfolger)
     // bzw. transferAdmin.
     public ResponseEntity<Void> removeMember(UUID groupId, UUID memberId) {
-        User currentUser = getCurrentUser();
+        User currentUser = currentUserService.get();
         TaskGroup group = requireMembership(groupId, currentUser);
         requireAdmin(group, currentUser);
 
@@ -224,7 +216,7 @@ public class GroupService {
     // Der Admin kann die Rolle jederzeit frei an ein anderes Mitglied
     // übergeben, unabhängig vom Verlassen der Gruppe.
     public ResponseEntity<TaskGroup> transferAdmin(UUID groupId, UUID newAdminId) {
-        User currentUser = getCurrentUser();
+        User currentUser = currentUserService.get();
         TaskGroup group = requireMembership(groupId, currentUser);
         requireAdmin(group, currentUser);
 
@@ -245,7 +237,7 @@ public class GroupService {
     // Aufruf.
     @Transactional
     public ResponseEntity<Void> deleteGroup(UUID groupId) {
-        User currentUser = getCurrentUser();
+        User currentUser = currentUserService.get();
         TaskGroup group = requireMembership(groupId, currentUser);
         requireAdmin(group, currentUser);
 
@@ -257,7 +249,10 @@ public class GroupService {
     private void deleteGroupInternal(TaskGroup group) {
         List<Project> projects = projectRepository.findByGroup(group);
         if (!projects.isEmpty()) {
-            taskRepository.deleteByProjectIn(projects);
+            // Muss vor dem Löschen der Projekte passieren (siehe TaskService's
+            // @EventListener) - group darf task's Repository nicht direkt
+            // aufrufen.
+            eventPublisher.publishEvent(new ProjectsDeletedEvent(projects.stream().map(Project::getId).toList()));
             projectRepository.deleteByGroup(group);
         }
 

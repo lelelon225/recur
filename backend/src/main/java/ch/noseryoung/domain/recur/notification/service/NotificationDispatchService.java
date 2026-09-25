@@ -3,8 +3,10 @@ package ch.noseryoung.domain.recur.notification.service;
 import ch.noseryoung.domain.recur.shared.service.EmailService;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
+import ch.noseryoung.domain.recur.task.event.ProjectTaskCreatedEvent;
 import ch.noseryoung.domain.recur.task.model.Task;
 import ch.noseryoung.domain.recur.notification.model.NotificationSettings;
 import ch.noseryoung.domain.recur.user.model.User;
@@ -51,7 +53,10 @@ public class NotificationDispatchService {
     public void sendReminder(User recipient, Task task) {
         NotificationSettings settings = settingsFor(recipient);
         if (emailNotificationsEnabled && Boolean.TRUE.equals(settings.getEmailEnabled())) {
-            emailService.sendTaskReminderEmail(recipient, task);
+            emailService.send(recipient.getEmail(), "Erinnerung: \"" + task.getName() + "\" ist bald fällig",
+                    "Hallo " + recipient.getFirstName() + ",\n\n"
+                            + "dein Task \"" + task.getName() + "\" ist bald fällig.\n\n"
+                            + "Viel Erfolg!");
         }
         if (Boolean.TRUE.equals(settings.getPushEnabled())) {
             pushNotificationService.sendToUser(recipient, "Bald fällig",
@@ -62,7 +67,10 @@ public class NotificationDispatchService {
     public void sendOverdue(User recipient, Task task) {
         NotificationSettings settings = settingsFor(recipient);
         if (emailNotificationsEnabled && Boolean.TRUE.equals(settings.getEmailEnabled())) {
-            emailService.sendTaskOverdueEmail(recipient, task);
+            emailService.send(recipient.getEmail(), "Überfällig: \"" + task.getName() + "\"",
+                    "Hallo " + recipient.getFirstName() + ",\n\n"
+                            + "dein Task \"" + task.getName() + "\" ist überfällig und noch nicht erledigt.\n\n"
+                            + "Du kannst ihn in Recur abschliessen oder archivieren.");
         }
         if (Boolean.TRUE.equals(settings.getPushEnabled())) {
             pushNotificationService.sendToUser(recipient, "Überfällig",
@@ -70,10 +78,20 @@ public class NotificationDispatchService {
         }
     }
 
-    public void sendProjectTaskCreated(User recipient, Task task, User creator) {
+    // Läuft über ein Event, da task (Aufrufer: TaskService) nicht von
+    // notification abhängen darf (siehe ProjectTaskCreatedEvent).
+    @EventListener
+    public void onProjectTaskCreated(ProjectTaskCreatedEvent event) {
+        event.recipients().forEach(recipient -> sendProjectTaskCreated(recipient, event.task(), event.creator()));
+    }
+
+    private void sendProjectTaskCreated(User recipient, Task task, User creator) {
         NotificationSettings settings = settingsFor(recipient);
         if (emailNotificationsEnabled && Boolean.TRUE.equals(settings.getEmailEnabled())) {
-            emailService.sendProjectTaskCreatedEmail(recipient, task, creator);
+            emailService.send(recipient.getEmail(), "Neuer Task in eurem Projekt: \"" + task.getName() + "\"",
+                    "Hallo " + recipient.getFirstName() + ",\n\n"
+                            + creator.getFirstName() + " hat den Task \"" + task.getName()
+                            + "\" für euer gemeinsames Projekt erstellt.");
         }
         if (Boolean.TRUE.equals(settings.getPushEnabled())) {
             pushNotificationService.sendToUser(recipient, "Neuer Projekt-Task",
