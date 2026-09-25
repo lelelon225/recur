@@ -18,13 +18,13 @@ Frontend (`frontend/`, package manager is **yarn**):
 Backend (`backend/`, Gradle wrapper):
 - `./gradlew bootRun` — run (Windows: `gradlew.bat bootRun`)
 - `./gradlew build`
-- `./gradlew test` — **currently broken**: `RecurApplicationTests` lives in package `ch.noseryoung.recur`, but the `@SpringBootApplication` class is in `ch.noseryoung.domain` (a sibling, not an ancestor), so Spring's context scan can't find it. If this test fails, it's likely this pre-existing issue, not your change.
+- `./gradlew test` — needs Postgres reachable (`docker compose up -d` in `database/`), since `RecurApplicationTests` boots the full Spring context; without it, only `contextLoads()` fails on a `JDBCConnectionException`, not a code issue.
 
 Full stack locally: `./start-dev.ps1` (Windows) starts Docker, backend, and frontend together — but it runs `docker start recur`, so a container/stack named `recur` must already exist (`docker compose up -d` once, first time).
 
 ## Architecture
 
-**Backend** package convention: `ch.noseryoung.domain.recur.{controllers,services,repositories,models,enums,dto,security,exceptions,utils}`. `Task` uses a `Task.OnCreate` validation group so `@NotBlank`/`@NotNull`/`@Future` only apply on POST, not PATCH (PATCH is a partial update — null means "don't change"). All Task queries are scoped by owner from `SecurityContextHolder`; deletion is only allowed for archived tasks.
+**Backend** package convention is domain-first: `ch.noseryoung.domain.recur.<domain>.{controller,service,repository,model,dto,enums,exceptions}`, one package per domain (`task`, `group`, `notification`, `auth` — `auth` additionally has `security/jwt` and `security/oauth2`). Cross-cutting code that isn't clearly owned by one domain stays at `ch.noseryoung.domain.recur` root: `exceptions/` (`GlobalExceptionHandler`, `ErrorResponse`), `security/` (`SecurityConfig`), `services/` (`EmailService`, used by both `auth` and `notification`). `Task` uses a `Task.OnCreate` validation group so `@NotBlank`/`@NotNull`/`@Future` only apply on POST, not PATCH (PATCH is a partial update — null means "don't change"). All Task queries are scoped by owner from `SecurityContextHolder`; deletion is only allowed for archived tasks.
 
 Auth is hybrid: stateless JWT (`jjwt`) for normal API calls via `JwtAuthenticationFilter`, plus Spring Security OAuth2/OIDC login for Google, sharing one `SecurityFilterChain` in `SecurityConfig`. Touch `SecurityConfig`/`JwtAuthenticationFilter`/OAuth2 handlers together when changing auth.
 

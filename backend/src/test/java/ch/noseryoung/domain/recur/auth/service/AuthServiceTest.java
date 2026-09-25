@@ -1,4 +1,4 @@
-package ch.noseryoung.domain.recur.services;
+package ch.noseryoung.domain.recur.auth.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -27,8 +27,8 @@ import ch.noseryoung.domain.recur.auth.repository.VerificationTokenRepository;
 import ch.noseryoung.domain.recur.auth.repository.PasswordResetTokenRepository;
 import ch.noseryoung.domain.recur.auth.security.jwt.JwtService;
 import ch.noseryoung.domain.recur.auth.security.jwt.RefreshTokenService;
-import ch.noseryoung.domain.recur.auth.service.AuthService;
 import ch.noseryoung.domain.recur.notification.repository.NotificationSettingsRepository;
+import ch.noseryoung.domain.recur.services.EmailService;
 import ch.noseryoung.domain.recur.auth.dto.LoginRequest;
 import ch.noseryoung.domain.recur.auth.dto.RegisterRequest;
 import ch.noseryoung.domain.recur.auth.enums.AuthProvider;

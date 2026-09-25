@@ -1,4 +1,4 @@
-package ch.noseryoung.domain.recur.security;
+package ch.noseryoung.domain.recur.auth.security.jwt;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import ch.noseryoung.domain.recur.auth.model.User;
-import ch.noseryoung.domain.recur.auth.security.jwt.JwtService;
 
 /**
  * Deckt Token-Ausstellung und -Validierung ab - das Fundament der
