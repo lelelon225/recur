@@ -20,7 +20,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import ch.noseryoung.domain.recur.task.enums.ReminderLeadTime;
-import ch.noseryoung.domain.recur.notification.model.NotificationLog;
 
 // toBuilder=true wird gebraucht, um für die Response eine transiente Kopie
 // mit maskierten Mitgliedern (siehe TaskService#maskMembers) zu bauen, ohne
@@ -192,16 +191,13 @@ public class Task {
         @JoinTable(name = "task_hidden_for", joinColumns = @JoinColumn(name = "task_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
         private Set<User> hiddenFor = new HashSet<>();
 
-        // Nur für den Cascade beim Löschen (#180): notification_log und
-        // task_reminder_override referenzieren task_id per FK (nullable=false),
-        // sonst scheitert jeder Delete-Pfad (deleteById, deleteByOwner,
-        // deleteByProjectIn) an der Constraint, sobald z.B. eine
-        // Überfällig-Benachrichtigung geloggt wurde.
-        @JsonIgnore
-        @Builder.Default
-        @OneToMany(mappedBy = "task", cascade = CascadeType.REMOVE)
-        private List<NotificationLog> notificationLogs = new ArrayList<>();
-
+        // Nur für den Cascade beim Löschen (#180): task_reminder_override
+        // referenziert task_id per FK (nullable=false), sonst scheitert jeder
+        // Delete-Pfad (deleteById, deleteByOwner, deleteByProjectIn) an der
+        // Constraint. notification_log wird nicht mehr über eine JPA-Relation
+        // hier mitgeräumt (task darf nicht von notification abhängen) -
+        // stattdessen räumt TasksDeletedEvent das in notification auf, siehe
+        // TaskService.
         @JsonIgnore
         @Builder.Default
         @OneToMany(mappedBy = "task", cascade = CascadeType.REMOVE)

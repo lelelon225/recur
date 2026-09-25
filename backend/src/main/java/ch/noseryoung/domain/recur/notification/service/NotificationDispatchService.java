@@ -7,9 +7,11 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import ch.noseryoung.domain.recur.task.event.ProjectTaskCreatedEvent;
+import ch.noseryoung.domain.recur.task.event.TasksDeletedEvent;
 import ch.noseryoung.domain.recur.task.model.Task;
 import ch.noseryoung.domain.recur.notification.model.NotificationSettings;
 import ch.noseryoung.domain.recur.user.model.User;
+import ch.noseryoung.domain.recur.notification.repository.NotificationLogRepository;
 import ch.noseryoung.domain.recur.notification.repository.NotificationSettingsRepository;
 
 // Bündelt Email-/Push-Versand hinter den beiden Empfänger-Toggles
@@ -19,6 +21,7 @@ import ch.noseryoung.domain.recur.notification.repository.NotificationSettingsRe
 public class NotificationDispatchService {
 
     private final NotificationSettingsRepository notificationSettingsRepository;
+    private final NotificationLogRepository notificationLogRepository;
     private final EmailService emailService;
     private final PushNotificationService pushNotificationService;
 
@@ -33,9 +36,11 @@ public class NotificationDispatchService {
 
     public NotificationDispatchService(
             NotificationSettingsRepository notificationSettingsRepository,
+            NotificationLogRepository notificationLogRepository,
             EmailService emailService,
             PushNotificationService pushNotificationService) {
         this.notificationSettingsRepository = notificationSettingsRepository;
+        this.notificationLogRepository = notificationLogRepository;
         this.emailService = emailService;
         this.pushNotificationService = pushNotificationService;
     }
@@ -83,6 +88,14 @@ public class NotificationDispatchService {
     @EventListener
     public void onProjectTaskCreated(ProjectTaskCreatedEvent event) {
         event.recipients().forEach(recipient -> sendProjectTaskCreated(recipient, event.task(), event.creator()));
+    }
+
+    // Ersetzt Task.notificationLogs (frühere JPA-Cascade REMOVE) - muss
+    // synchron laufen, bevor TaskService die Tasks selbst löscht, sonst
+    // schlägt die FK-Constraint von notification_log.task_id fehl.
+    @EventListener
+    public void onTasksDeleted(TasksDeletedEvent event) {
+        notificationLogRepository.deleteByTaskIdIn(event.taskIds());
     }
 
     private void sendProjectTaskCreated(User recipient, Task task, User creator) {

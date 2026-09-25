@@ -3,7 +3,7 @@ package ch.noseryoung.domain.recur.task.controller;
 import ch.noseryoung.domain.recur.task.dto.CreateTaskRequest;
 import ch.noseryoung.domain.recur.task.dto.PatchTaskRequest;
 import ch.noseryoung.domain.recur.task.dto.ReminderLeadTimeRequest;
-import ch.noseryoung.domain.recur.task.model.Task;
+import ch.noseryoung.domain.recur.task.dto.TaskResponse;
 import ch.noseryoung.domain.recur.task.service.TaskService;
 
 import java.time.LocalDate;
@@ -29,18 +29,18 @@ public class TaskController {
         }
 
         @GetMapping({ "", "/" })
-        public ResponseEntity<Collection<Task>> getTasks(@RequestParam(required = false) Boolean archived,
+        public ResponseEntity<Collection<TaskResponse>> getTasks(@RequestParam(required = false) Boolean archived,
                         @RequestParam(required = false) Boolean favorite) {
                 return taskService.getTasks(archived, favorite);
         };
 
         @GetMapping({ "/{id}", "/{id}/" })
-        public ResponseEntity<Task> getTask(@PathVariable UUID id) {
+        public ResponseEntity<TaskResponse> getTask(@PathVariable UUID id) {
                 return taskService.getTask(id);
         };
 
         @PostMapping({ "", "/" })
-        public ResponseEntity<Task> createTask(@Valid @RequestBody CreateTaskRequest request) {
+        public ResponseEntity<TaskResponse> createTask(@Valid @RequestBody CreateTaskRequest request) {
                 return taskService.createTask(request);
         };
 
@@ -50,7 +50,7 @@ public class TaskController {
         // Projekt-Tasks bestehen, die bewusst ausserhalb von #152 liegen (siehe
         // TaskService#addCompletion/removeCompletion, nur für persönliche Tasks).
         @PatchMapping({ "/{id}", "/{id}/" })
-        public ResponseEntity<Task> patchTask(@PathVariable UUID id, @Valid @RequestBody PatchTaskRequest request,
+        public ResponseEntity<TaskResponse> patchTask(@PathVariable UUID id, @Valid @RequestBody PatchTaskRequest request,
                         @RequestParam(required = false) Boolean resetProgress,
                         @RequestParam(required = false) Boolean favorite,
                         @RequestParam(required = false) Boolean archived,
@@ -64,24 +64,24 @@ public class TaskController {
         // Tasks (#152) - eigene Endpoints statt PATCH-Query-Params, da hier (anders
         // als amountDid) Backend-seitig echte Konflikt-/Datums-Validierung nötig ist.
         @PutMapping({ "/{id}/completions/{date}", "/{id}/completions/{date}/" })
-        public ResponseEntity<Task> addCompletion(@PathVariable UUID id,
+        public ResponseEntity<TaskResponse> addCompletion(@PathVariable UUID id,
                         @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
                 return taskService.addCompletion(id, date);
         }
 
         @DeleteMapping({ "/{id}/completions/{date}", "/{id}/completions/{date}/" })
-        public ResponseEntity<Task> removeCompletion(@PathVariable UUID id,
+        public ResponseEntity<TaskResponse> removeCompletion(@PathVariable UUID id,
                         @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
                 return taskService.removeCompletion(id, date);
         }
 
         @PostMapping({ "/{id}/assign", "/{id}/assign/" })
-        public ResponseEntity<Task> assignSelf(@PathVariable UUID id) {
+        public ResponseEntity<TaskResponse> assignSelf(@PathVariable UUID id) {
                 return taskService.assignSelf(id);
         }
 
         @PostMapping({ "/{id}/unassign", "/{id}/unassign/" })
-        public ResponseEntity<Task> unassignSelf(@PathVariable UUID id) {
+        public ResponseEntity<TaskResponse> unassignSelf(@PathVariable UUID id) {
                 return taskService.unassignSelf(id);
         }
 
@@ -89,18 +89,18 @@ public class TaskController {
         // (#102-Follow-up) - pro (task, user), nicht Teil von PatchTaskRequest,
         // siehe TaskService#setReminderLeadTime.
         @PutMapping({ "/{id}/reminder-lead-time", "/{id}/reminder-lead-time/" })
-        public ResponseEntity<Task> setReminderLeadTime(@PathVariable UUID id,
+        public ResponseEntity<TaskResponse> setReminderLeadTime(@PathVariable UUID id,
                         @RequestBody ReminderLeadTimeRequest request) {
                 return taskService.setReminderLeadTime(id, request.reminderLeadTime());
         }
 
         @DeleteMapping({ "/{id}", "/{id}/" })
-        public ResponseEntity<Task> deleteTask(@PathVariable UUID id) {
+        public ResponseEntity<TaskResponse> deleteTask(@PathVariable UUID id) {
                 return taskService.deleteTask(id);
         }
 
         @DeleteMapping({ "", "/" })
-        public ResponseEntity<Task> deleteAllTasks() {
+        public ResponseEntity<TaskResponse> deleteAllTasks() {
                 return taskService.deleteAllTasks();
         }
 }

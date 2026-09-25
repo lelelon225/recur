@@ -2,8 +2,10 @@ package ch.noseryoung.domain.recur.group.service;
 
 import java.security.SecureRandom;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -12,9 +14,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import ch.noseryoung.domain.recur.user.dto.UserSummary;
 import ch.noseryoung.domain.recur.user.model.User;
 import ch.noseryoung.domain.recur.group.dto.CreateGroupRequest;
 import ch.noseryoung.domain.recur.group.dto.GroupInvitePreview;
+import ch.noseryoung.domain.recur.group.dto.GroupResponse;
 import ch.noseryoung.domain.recur.group.event.ProjectsDeletedEvent;
 import ch.noseryoung.domain.recur.group.exceptions.AdminSuccessorRequiredException;
 import ch.noseryoung.domain.recur.group.exceptions.CannotRemoveAdminException;
@@ -52,13 +56,15 @@ public class GroupService {
         this.visibilityService = visibilityService;
     }
 
-    // Baut eine transiente Response-Kopie mit maskierten Mitgliedern/Admin -
-    // die verwaltete Entity bleibt unangetastet (siehe UserVisibilityService).
-    private TaskGroup maskMembers(TaskGroup group, User viewer) {
-        return group.toBuilder()
-                .members(visibilityService.maskIfHidden(group.getMembers(), viewer))
-                .createdBy(visibilityService.maskIfHidden(group.getCreatedBy(), viewer))
-                .build();
+    // Baut die Response mit maskierten Mitgliedern/Admin (siehe
+    // UserVisibilityService) als UserSummary statt vollem User-Objekt.
+    private GroupResponse toResponse(TaskGroup group, User viewer) {
+        Set<UserSummary> members = visibilityService.maskIfHidden(group.getMembers(), viewer).stream()
+                .map(UserSummary::from)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+        UserSummary createdBy = UserSummary.from(visibilityService.maskIfHidden(group.getCreatedBy(), viewer));
+
+        return GroupResponse.from(group, createdBy, members);
     }
 
     private String generateUniqueInviteCode() {
@@ -94,7 +100,7 @@ public class GroupService {
         }
     }
 
-    public ResponseEntity<TaskGroup> createGroup(CreateGroupRequest request) {
+    public ResponseEntity<GroupResponse> createGroup(CreateGroupRequest request) {
         User currentUser = currentUserService.get();
 
         TaskGroup newGroup = TaskGroup.builder()
@@ -106,20 +112,20 @@ public class GroupService {
 
         taskGroupRepository.save(newGroup);
 
-        return ResponseEntity.status(201).body(newGroup);
+        return ResponseEntity.status(201).body(toResponse(newGroup, currentUser));
     }
 
-    public ResponseEntity<Collection<TaskGroup>> getMyGroups() {
+    public ResponseEntity<Collection<GroupResponse>> getMyGroups() {
         User currentUser = currentUserService.get();
         List<TaskGroup> groups = taskGroupRepository.findByMembersContaining(currentUser);
-        List<TaskGroup> masked = groups.stream().map(group -> maskMembers(group, currentUser)).toList();
-        return ResponseEntity.ok(masked);
+        List<GroupResponse> responses = groups.stream().map(group -> toResponse(group, currentUser)).toList();
+        return ResponseEntity.ok(responses);
     }
 
-    public ResponseEntity<TaskGroup> getGroup(UUID id) {
+    public ResponseEntity<GroupResponse> getGroup(UUID id) {
         User currentUser = currentUserService.get();
         TaskGroup group = requireMembership(id, currentUser);
-        return ResponseEntity.ok(maskMembers(group, currentUser));
+        return ResponseEntity.ok(toResponse(group, currentUser));
     }
 
     // Projekte aller eigenen Gruppen in einem Rutsch statt einem Request pro
@@ -147,7 +153,7 @@ public class GroupService {
         return ResponseEntity.ok(GroupInvitePreview.of(group, currentUserService.get()));
     }
 
-    public ResponseEntity<TaskGroup> joinGroup(String inviteCode) {
+    public ResponseEntity<GroupResponse> joinGroup(String inviteCode) {
         User currentUser = currentUserService.get();
         TaskGroup group = taskGroupRepository.findByInviteCode(inviteCode)
                 .orElseThrow(() -> new GroupNotFoundException(inviteCode));
@@ -155,7 +161,7 @@ public class GroupService {
         group.getMembers().add(currentUser);
         taskGroupRepository.save(group);
 
-        return ResponseEntity.ok(maskMembers(group, currentUser));
+        return ResponseEntity.ok(toResponse(group, currentUser));
     }
 
     // Normales Mitglied: entfernt einfach sich selbst. Admin: muss - ausser er
@@ -215,7 +221,7 @@ public class GroupService {
 
     // Der Admin kann die Rolle jederzeit frei an ein anderes Mitglied
     // übergeben, unabhängig vom Verlassen der Gruppe.
-    public ResponseEntity<TaskGroup> transferAdmin(UUID groupId, UUID newAdminId) {
+    public ResponseEntity<GroupResponse> transferAdmin(UUID groupId, UUID newAdminId) {
         User currentUser = currentUserService.get();
         TaskGroup group = requireMembership(groupId, currentUser);
         requireAdmin(group, currentUser);
@@ -228,7 +234,7 @@ public class GroupService {
         group.setCreatedBy(newAdmin);
         taskGroupRepository.save(group);
 
-        return ResponseEntity.ok(maskMembers(group, currentUser));
+        return ResponseEntity.ok(toResponse(group, currentUser));
     }
 
     // Löscht die Gruppe komplett kaskadierend: erst alle Tasks der Projekte,

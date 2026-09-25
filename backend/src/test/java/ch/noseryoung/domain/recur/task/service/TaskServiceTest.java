@@ -25,6 +25,7 @@ import org.springframework.http.ResponseEntity;
 
 import ch.noseryoung.domain.recur.task.dto.CreateTaskRequest;
 import ch.noseryoung.domain.recur.task.dto.PatchTaskRequest;
+import ch.noseryoung.domain.recur.task.dto.TaskResponse;
 import ch.noseryoung.domain.recur.task.enums.Category;
 import ch.noseryoung.domain.recur.task.enums.Frequency;
 import ch.noseryoung.domain.recur.task.exceptions.InvalidCompletionException;
@@ -83,9 +84,9 @@ class TaskServiceTest {
         Task task = existingTask();
         when(taskRepository.findVisibleToUser(owner)).thenReturn(List.of(task));
 
-        ResponseEntity<java.util.Collection<Task>> response = taskService.getTasks(null, null);
+        ResponseEntity<java.util.Collection<TaskResponse>> response = taskService.getTasks(null, null);
 
-        assertThat(response.getBody()).containsExactly(task);
+        assertThat(response.getBody()).extracting(TaskResponse::id).containsExactly(task.getId());
     }
 
     @Test
@@ -102,9 +103,9 @@ class TaskServiceTest {
         Task task = existingTask();
         when(taskRepository.findById(task.getId())).thenReturn(Optional.of(task));
 
-        ResponseEntity<Task> response = taskService.getTask(task.getId());
+        ResponseEntity<TaskResponse> response = taskService.getTask(task.getId());
 
-        assertThat(response.getBody()).isEqualTo(task);
+        assertThat(response.getBody().id()).isEqualTo(task.getId());
     }
 
     @Test
@@ -128,10 +129,10 @@ class TaskServiceTest {
 
         when(taskRepository.findById(task.getId())).thenReturn(Optional.of(task));
 
-        ResponseEntity<Task> response = taskService.getTask(task.getId());
+        ResponseEntity<TaskResponse> response = taskService.getTask(task.getId());
 
-        assertThat(response.getBody().getAmountDid()).isEqualTo(1);
-        assertThat(response.getBody().getProgress()).isEqualTo(10.0);
+        assertThat(response.getBody().amountDid()).isEqualTo(1);
+        assertThat(response.getBody().progress()).isEqualTo(10.0);
     }
 
     @Test
@@ -139,11 +140,12 @@ class TaskServiceTest {
         CreateTaskRequest request = new CreateTaskRequest(
                 "Neu", Category.WORK, Frequency.DAILY, "Beschreibung", Instant.now(), null, null, null);
 
-        ResponseEntity<Task> response = taskService.createTask(request);
+        ResponseEntity<TaskResponse> response = taskService.createTask(request);
 
         assertThat(response.getStatusCode().value()).isEqualTo(201);
-        assertThat(response.getBody().getOwner()).isEqualTo(owner);
-        verify(taskRepository).save(any(Task.class));
+        var taskCaptor = org.mockito.ArgumentCaptor.forClass(Task.class);
+        verify(taskRepository).save(taskCaptor.capture());
+        assertThat(taskCaptor.getValue().getOwner()).isEqualTo(owner);
     }
 
     @Test
@@ -217,10 +219,10 @@ class TaskServiceTest {
         when(taskRepository.findByIdAndOwner(existing.getId(), owner)).thenReturn(Optional.of(existing));
 
         LocalDate today = LocalDate.now();
-        ResponseEntity<Task> response = taskService.addCompletion(existing.getId(), today);
+        ResponseEntity<TaskResponse> response = taskService.addCompletion(existing.getId(), today);
 
-        assertThat(response.getBody().getCompletions()).containsExactly(today);
-        assertThat(response.getBody().getAmountDid()).isEqualTo(1);
+        assertThat(response.getBody().completions()).containsExactly(today);
+        assertThat(response.getBody().amountDid()).isEqualTo(1);
         verify(taskRepository).save(existing);
     }
 
@@ -282,8 +284,8 @@ class TaskServiceTest {
                 .isInstanceOf(InvalidCompletionException.class);
 
         // Eine neue, noch nicht abgedeckte Woche funktioniert weiterhin.
-        ResponseEntity<Task> response = taskService.addCompletion(existing.getId(), LocalDate.now());
-        assertThat(response.getBody().getAmountDid()).isEqualTo(3);
+        ResponseEntity<TaskResponse> response = taskService.addCompletion(existing.getId(), LocalDate.now());
+        assertThat(response.getBody().amountDid()).isEqualTo(3);
     }
 
     @Test
@@ -294,10 +296,10 @@ class TaskServiceTest {
         existing.setAmountDid(1);
         when(taskRepository.findByIdAndOwner(existing.getId(), owner)).thenReturn(Optional.of(existing));
 
-        ResponseEntity<Task> response = taskService.removeCompletion(existing.getId(), today);
+        ResponseEntity<TaskResponse> response = taskService.removeCompletion(existing.getId(), today);
 
-        assertThat(response.getBody().getCompletions()).isEmpty();
-        assertThat(response.getBody().getAmountDid()).isEqualTo(0);
+        assertThat(response.getBody().completions()).isEmpty();
+        assertThat(response.getBody().amountDid()).isEqualTo(0);
         verify(taskRepository).save(existing);
     }
 
@@ -307,7 +309,7 @@ class TaskServiceTest {
         existing.setIsArchived(false);
         when(taskRepository.findById(existing.getId())).thenReturn(Optional.of(existing));
 
-        ResponseEntity<Task> response = taskService.deleteTask(existing.getId());
+        ResponseEntity<TaskResponse> response = taskService.deleteTask(existing.getId());
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
         verify(taskRepository, never()).deleteById(any());
@@ -319,7 +321,7 @@ class TaskServiceTest {
         existing.setIsArchived(true);
         when(taskRepository.findById(existing.getId())).thenReturn(Optional.of(existing));
 
-        ResponseEntity<Task> response = taskService.deleteTask(existing.getId());
+        ResponseEntity<TaskResponse> response = taskService.deleteTask(existing.getId());
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         verify(taskRepository).deleteById(existing.getId());
