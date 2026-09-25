@@ -1,17 +1,19 @@
 # Deployment compose for the self-hosted home server (reached from the
-# internet via a Cloudflare Tunnel pointed at the frontend containers'
-# published ports below - nothing else needs to be publicly reachable).
+# internet via a Cloudflare Tunnel container that sits on this compose
+# project's default network, recur_default, and reaches the frontends by
+# service name on their container port 3000, e.g. http://frontend-dev:3000
+# - no frontend needs a published host port for that).
 #
-# This represents /opt/recur/compose.yml, which .github/workflows/deploy.yml
+# This represents /srv/recur/compose.yml, which .github/workflows/deploy.yml
 # expects to already exist on the self-hosted runner and drives with:
-#   docker compose -f /opt/recur/compose.yml pull backend-dev frontend-dev db-dev
-#   docker compose -f /opt/recur/compose.yml up -d backend-dev frontend-dev db-dev
+#   docker compose -f /srv/recur/compose.yml pull backend-dev frontend-dev db-dev
+#   docker compose -f /srv/recur/compose.yml up -d backend-dev frontend-dev db-dev
 # (and the -prod equivalents on a version tag push). Service names below
 # match those exactly - do not rename them without also updating that
 # workflow. Until now that file only existed on the host itself, hand-
 # edited and un-reviewed; this brings it into version control as the
 # source of truth. Whoever manages the host needs to copy this file to
-# /opt/recur/compose.yml (or point the deploy workflow at a synced copy)
+# /srv/recur/compose.yml (or point the deploy workflow at a synced copy)
 # for it to actually take effect - this repo change alone doesn't do that.
 #
 # All three services (backend/frontend/db) are pre-built images pulled from
@@ -41,21 +43,18 @@
 # .env file fails loudly (missing required value) instead of silently
 # running with a guessable default.
 #
-# Ports are deliberately non-default and split per environment so dev and
-# prod can run side by side without colliding with each other or with any
-# other service on the same host:
-#   frontend-dev  -> host 3080  (container 3000)
-#   frontend-prod -> host 3081  (container 3000)
-#   frontend-www  -> host 3082  (container 3000)
-#   db-dev        -> host 5480  (container 5432, for direct psql/debugging)
-#   db-prod       -> host 5481  (container 5432, for direct psql/debugging)
-# backend-dev/backend-prod publish no host port at all - the frontend
-# containers are the only public-facing service; they reach their paired
-# backend purely over the internal compose network (see BACKEND_URL below),
-# and src/proxy.ts forwards /api, /oauth2, and /login/oauth2 to it from
-# there. Adjust the host ports here (and the Cloudflare Tunnel config,
-# which lives outside this repo) if they clash with something else already
-# running on the host.
+# No frontend publishes a host port - the Cloudflare Tunnel reaches all
+# three (frontend-dev/frontend-prod/frontend-www) by service name on their
+# container port 3000 over recur_default, so nothing frontend-facing needs
+# to be exposed on the host at all.
+# backend-dev/backend-prod likewise publish no host port - frontends reach
+# their paired backend purely over the internal compose network (see
+# BACKEND_URL below), and src/proxy.ts forwards /api, /oauth2, and
+# /login/oauth2 to it from there.
+# The databases are published on localhost only, for direct psql/debugging
+# from the host itself (not reachable from the internet or the tunnel):
+#   db-dev        -> 127.0.0.1:5480 (container 5432)
+#   db-prod       -> 127.0.0.1:5481 (container 5432)
 #
 # frontend-www is the public www./main placeholder: a frontend image with
 # COMING_SOON_MODE=true - proxy.ts then redirects every request (API/OAuth2
@@ -68,7 +67,7 @@
 services:
   backend-dev:
     image: ghcr.io/lelelon225/recur-backend:dev
-    container_name: recur-backend-dev
+    container_name: recur-dev-backend
     restart: unless-stopped
     environment:
       DB_URL: jdbc:postgresql://db-dev:5432/recur
@@ -88,32 +87,30 @@ services:
 
   frontend-dev:
     image: ghcr.io/lelelon225/recur-frontend:dev
-    container_name: recur-frontend-dev
+    container_name: recur-dev
     restart: unless-stopped
     environment:
       NEXT_PUBLIC_API_URL: /api
       BACKEND_URL: http://backend-dev:8080
-    ports:
-      - "3080:3000"
     depends_on:
       - backend-dev
 
   db-dev:
     image: ghcr.io/lelelon225/recur-db:dev
-    container_name: recur-db-dev
+    container_name: recur-dev-db
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${DEV_DB_PASSWORD:?DEV_DB_PASSWORD is required}
       POSTGRES_DB: recur
     ports:
-      - "5480:5432"
+      - "127.0.0.1:5480:5432"
     volumes:
       - recur-db-dev-data:/var/lib/postgresql/data
 
   backend-prod:
     image: ghcr.io/lelelon225/recur-backend:latest
-    container_name: recur-backend-prod
+    container_name: recur-prod-backend
     restart: unless-stopped
     environment:
       DB_URL: jdbc:postgresql://db-prod:5432/recur
@@ -133,26 +130,24 @@ services:
 
   frontend-prod:
     image: ghcr.io/lelelon225/recur-frontend:latest
-    container_name: recur-frontend-prod
+    container_name: recur-prod
     restart: unless-stopped
     environment:
       NEXT_PUBLIC_API_URL: /api
       BACKEND_URL: http://backend-prod:8080
-    ports:
-      - "3081:3000"
     depends_on:
       - backend-prod
 
   db-prod:
     image: ghcr.io/lelelon225/recur-db:latest
-    container_name: recur-db-prod
+    container_name: recur-prod-db
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${PROD_DB_PASSWORD:?PROD_DB_PASSWORD is required}
       POSTGRES_DB: recur
     ports:
-      - "5481:5432"
+      - "127.0.0.1:5481:5432"
     volumes:
       - recur-db-prod-data:/var/lib/postgresql/data
 
@@ -162,12 +157,10 @@ services:
     # since the underlying app version is moot while COMING_SOON_MODE gates
     # every route before it matters.
     image: ghcr.io/lelelon225/recur-frontend:coming-soon
-    container_name: recur-frontend-www
+    container_name: recur-www
     restart: unless-stopped
     environment:
       COMING_SOON_MODE: "true"
-    ports:
-      - "3082:3000"
 
 volumes:
   recur-db-dev-data:
