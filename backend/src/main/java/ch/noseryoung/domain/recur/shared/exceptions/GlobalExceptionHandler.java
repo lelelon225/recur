@@ -1,4 +1,4 @@
-package ch.noseryoung.domain.recur.exceptions;
+package ch.noseryoung.domain.recur.shared.exceptions;
 
 import java.util.HashMap;
 import java.util.Map;

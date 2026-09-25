@@ -29,7 +29,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import ch.noseryoung.domain.recur.exceptions.ErrorResponse;
+import ch.noseryoung.domain.recur.shared.exceptions.ErrorResponse;
 import ch.noseryoung.domain.recur.auth.security.CustomUserDetailsService;
 import ch.noseryoung.domain.recur.auth.security.jwt.JwtAuthenticationFilter;
 import ch.noseryoung.domain.recur.auth.security.oauth2.CustomOAuth2UserService;
