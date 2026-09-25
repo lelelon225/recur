@@ -87,8 +87,8 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - run: docker compose -f /opt/recur/compose.yml pull backend-dev frontend-dev db-dev
-      - run: docker compose -f /opt/recur/compose.yml up -d backend-dev frontend-dev db-dev
+      - run: docker compose -f /srv/recur/compose.yml pull backend-dev frontend-dev db-dev
+      - run: docker compose -f /srv/recur/compose.yml up -d backend-dev frontend-dev db-dev
 
   deploy-prod:
     needs: build
@@ -101,8 +101,8 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - run: docker compose -f /opt/recur/compose.yml pull backend-prod frontend-prod db-prod
-      - run: docker compose -f /opt/recur/compose.yml up -d backend-prod frontend-prod db-prod
+      - run: docker compose -f /srv/recur/compose.yml pull backend-prod frontend-prod db-prod
+      - run: docker compose -f /srv/recur/compose.yml up -d backend-prod frontend-prod db-prod
 
   deploy-www:
     needs: build
@@ -117,5 +117,5 @@ jobs:
       # frontend-www is COMING_SOON_MODE-gated (no real user data behind it),
       # so unlike deploy-prod this doesn't need manual approval - and it
       # needs no backend/db, see compose.deployment.yml.
-      - run: docker compose -f /opt/recur/compose.yml pull frontend-www
-      - run: docker compose -f /opt/recur/compose.yml up -d frontend-www
+      - run: docker compose -f /srv/recur/compose.yml pull frontend-www
+      - run: docker compose -f /srv/recur/compose.yml up -d frontend-www
