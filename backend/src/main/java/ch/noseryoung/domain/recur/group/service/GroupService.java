@@ -26,6 +26,7 @@ import ch.noseryoung.domain.recur.group.exceptions.GroupNotFoundException;
 import ch.noseryoung.domain.recur.group.exceptions.InvalidSuccessorException;
 import ch.noseryoung.domain.recur.group.exceptions.NotGroupAdminException;
 import ch.noseryoung.domain.recur.group.exceptions.NotGroupMemberException;
+import ch.noseryoung.domain.recur.group.exceptions.ProjectNotFoundException;
 import ch.noseryoung.domain.recur.group.model.Project;
 import ch.noseryoung.domain.recur.group.model.TaskGroup;
 import ch.noseryoung.domain.recur.group.repository.ProjectRepository;
@@ -250,6 +251,27 @@ public class GroupService {
         deleteGroupInternal(group);
 
         return ResponseEntity.ok().build();
+    }
+
+    // Löst eine vom Client mitgeschickte Projekt-Referenz auf und prüft dabei,
+    // dass der User Mitglied der zugehörigen Gruppe ist - task darf group's
+    // Repository nicht direkt aufrufen (siehe TaskService#resolveProjectForAssignment).
+    public Project requireProjectForMember(UUID projectId, User user) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ProjectNotFoundException(projectId));
+
+        if (project.getGroup() == null || !project.getGroup().getMembers().contains(user)) {
+            throw new NotGroupMemberException();
+        }
+
+        return project;
+    }
+
+    // Für TaskService's ProjectsDeletedEvent-Listener - lädt die Projekte, deren
+    // Tasks gelöscht werden müssen, ohne dass task group's Repository direkt
+    // aufrufen muss.
+    public List<Project> findProjectsByIds(Collection<UUID> projectIds) {
+        return projectRepository.findAllById(projectIds);
     }
 
     private void deleteGroupInternal(TaskGroup group) {

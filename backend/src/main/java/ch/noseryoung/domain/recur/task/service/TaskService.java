@@ -18,14 +18,12 @@ import ch.noseryoung.domain.recur.task.event.ProjectTaskCreatedEvent;
 import ch.noseryoung.domain.recur.task.event.TasksDeletedEvent;
 import ch.noseryoung.domain.recur.group.event.ProjectsDeletedEvent;
 import ch.noseryoung.domain.recur.group.exceptions.NotGroupAdminException;
-import ch.noseryoung.domain.recur.group.exceptions.NotGroupMemberException;
-import ch.noseryoung.domain.recur.group.exceptions.ProjectNotFoundException;
 import ch.noseryoung.domain.recur.group.model.Project;
+import ch.noseryoung.domain.recur.group.service.GroupService;
 import ch.noseryoung.domain.recur.user.dto.UserSummary;
 import ch.noseryoung.domain.recur.user.event.UserDeletedEvent;
 import ch.noseryoung.domain.recur.user.model.User;
 import ch.noseryoung.domain.recur.user.service.CurrentUserService;
-import ch.noseryoung.domain.recur.group.repository.ProjectRepository;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -42,20 +40,20 @@ import org.springframework.http.ResponseEntity;
 public class TaskService {
 
         private final TaskRepository taskRepository;
-        private final ProjectRepository projectRepository;
+        private final GroupService groupService;
         private final TaskUtil taskUtil;
         private final UserVisibilityService visibilityService;
         private final CurrentUserService currentUserService;
         private final ApplicationEventPublisher eventPublisher;
         private final TaskReminderOverrideRepository taskReminderOverrideRepository;
 
-        public TaskService(TaskRepository taskRepository, ProjectRepository projectRepository, TaskUtil taskUtil,
+        public TaskService(TaskRepository taskRepository, GroupService groupService, TaskUtil taskUtil,
                         UserVisibilityService visibilityService,
                         CurrentUserService currentUserService,
                         ApplicationEventPublisher eventPublisher,
                         TaskReminderOverrideRepository taskReminderOverrideRepository) {
                 this.taskRepository = taskRepository;
-                this.projectRepository = projectRepository;
+                this.groupService = groupService;
                 this.taskUtil = taskUtil;
                 this.visibilityService = visibilityService;
                 this.currentUserService = currentUserService;
@@ -76,17 +74,11 @@ public class TaskService {
         }
 
         // Löst eine vom Client mitgeschickte Projekt-Referenz (nur die id ist
-        // relevant) in das gemanagte Project auf und prüft dabei, dass der User
-        // Mitglied der zugehörigen Gruppe ist.
+        // relevant) auf und prüft dabei, dass der User Mitglied der zugehörigen
+        // Gruppe ist - über GroupService statt direktem Repository-Zugriff auf
+        // eine andere Domain.
         private Project resolveProjectForAssignment(UUID projectId, User user) {
-                Project managedProject = projectRepository.findById(projectId)
-                                .orElseThrow(() -> new ProjectNotFoundException(projectId));
-
-                if (managedProject.getGroup() == null || !managedProject.getGroup().getMembers().contains(user)) {
-                        throw new NotGroupMemberException();
-                }
-
-                return managedProject;
+                return groupService.requireProjectForMember(projectId, user);
         }
 
         // Baut die Response mit maskierten Mitgliedern (siehe UserVisibilityService)
@@ -363,7 +355,7 @@ public class TaskService {
         // group aus, da group nicht von task's Repository abhängen darf.
         @EventListener
         public void onProjectsDeleted(ProjectsDeletedEvent event) {
-                List<Project> projects = projectRepository.findAllById(event.projectIds());
+                List<Project> projects = groupService.findProjectsByIds(event.projectIds());
                 List<Task> tasks = taskRepository.findByProjectIn(projects);
 
                 if (!tasks.isEmpty()) {

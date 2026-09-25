@@ -36,7 +36,7 @@ import ch.noseryoung.domain.recur.task.repository.TaskReminderOverrideRepository
 import ch.noseryoung.domain.recur.user.model.User;
 import ch.noseryoung.domain.recur.user.service.CurrentUserService;
 import ch.noseryoung.domain.recur.user.service.UserVisibilityService;
-import ch.noseryoung.domain.recur.group.repository.ProjectRepository;
+import ch.noseryoung.domain.recur.group.service.GroupService;
 
 /**
  * Deckt die zentralen Business-Regeln von TaskService ab, wie sie in
@@ -53,7 +53,7 @@ class TaskServiceTest {
     private TaskRepository taskRepository;
 
     @Mock
-    private ProjectRepository projectRepository;
+    private GroupService groupService;
 
     @Mock
     private UserVisibilityService visibilityService;
@@ -72,7 +72,7 @@ class TaskServiceTest {
 
     @BeforeEach
     void setUp() {
-        taskService = new TaskService(taskRepository, projectRepository, new TaskUtil(), visibilityService,
+        taskService = new TaskService(taskRepository, groupService, new TaskUtil(), visibilityService,
                 currentUserService, eventPublisher, taskReminderOverrideRepository);
 
         owner = User.builder().id(UUID.randomUUID()).email("owner@example.com").build();
