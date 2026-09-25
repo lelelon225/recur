@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import ch.noseryoung.domain.recur.task.exceptions.InvalidCompletionException;
+import ch.noseryoung.domain.recur.task.exceptions.TaskNotFoundException;
 import ch.noseryoung.domain.recur.auth.exceptions.EmailAlreadyExistsException;
 import ch.noseryoung.domain.recur.auth.exceptions.EmailNotVerifiedException;
 import ch.noseryoung.domain.recur.auth.exceptions.InvalidCredentialsException;
@@ -29,8 +31,6 @@ import ch.noseryoung.domain.recur.group.exceptions.NotGroupAdminException;
 import ch.noseryoung.domain.recur.group.exceptions.NotGroupMemberException;
 import ch.noseryoung.domain.recur.group.exceptions.ProjectNotArchivedException;
 import ch.noseryoung.domain.recur.group.exceptions.ProjectNotFoundException;
-import ch.noseryoung.domain.recur.exceptions.task.InvalidCompletionException;
-import ch.noseryoung.domain.recur.exceptions.task.TaskNotFoundException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {

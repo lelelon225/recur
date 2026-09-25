@@ -1,9 +1,9 @@
-package ch.noseryoung.domain.recur.utils;
+package ch.noseryoung.domain.recur.task.service;
 
 import org.springframework.stereotype.Component;
 
-import ch.noseryoung.domain.recur.enums.task.Frequency;
-import ch.noseryoung.domain.recur.models.task.Task;
+import ch.noseryoung.domain.recur.task.enums.Frequency;
+import ch.noseryoung.domain.recur.task.model.Task;
 
 import java.time.Duration;
 import java.time.Instant;

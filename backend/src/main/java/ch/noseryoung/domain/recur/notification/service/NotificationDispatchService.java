@@ -5,8 +5,8 @@ import ch.noseryoung.domain.recur.services.EmailService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import ch.noseryoung.domain.recur.task.model.Task;
 import ch.noseryoung.domain.recur.notification.model.NotificationSettings;
-import ch.noseryoung.domain.recur.models.task.Task;
 import ch.noseryoung.domain.recur.auth.model.User;
 import ch.noseryoung.domain.recur.notification.repository.NotificationSettingsRepository;
 

@@ -1,4 +1,4 @@
-package ch.noseryoung.domain.recur.models.task;
+package ch.noseryoung.domain.recur.task.model;
 
 import ch.noseryoung.domain.recur.auth.model.User;
 import ch.noseryoung.domain.recur.group.model.Project;
@@ -10,14 +10,15 @@ import java.util.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import ch.noseryoung.domain.recur.task.enums.Category;
+import ch.noseryoung.domain.recur.task.enums.Frequency;
 import lombok.*;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-import ch.noseryoung.domain.recur.enums.task.Category;
-import ch.noseryoung.domain.recur.enums.task.Frequency;
 import ch.noseryoung.domain.recur.notification.enums.ReminderLeadTime;
 import ch.noseryoung.domain.recur.notification.model.NotificationLog;
 

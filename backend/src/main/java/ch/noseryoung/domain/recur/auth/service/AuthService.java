@@ -11,6 +11,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import ch.noseryoung.domain.recur.task.model.Task;
+import ch.noseryoung.domain.recur.task.repository.TaskRepository;
 import ch.noseryoung.domain.recur.auth.dto.AuthResponse;
 import ch.noseryoung.domain.recur.auth.dto.LoginRequest;
 import ch.noseryoung.domain.recur.auth.dto.RegisterRequest;
@@ -23,10 +25,8 @@ import ch.noseryoung.domain.recur.auth.exceptions.InvalidPasswordResetTokenExcep
 import ch.noseryoung.domain.recur.auth.model.PasswordResetToken;
 import ch.noseryoung.domain.recur.auth.model.User;
 import ch.noseryoung.domain.recur.auth.model.VerificationToken;
-import ch.noseryoung.domain.recur.models.task.Task;
 import ch.noseryoung.domain.recur.auth.repository.PasswordResetTokenRepository;
 import ch.noseryoung.domain.recur.notification.repository.NotificationSettingsRepository;
-import ch.noseryoung.domain.recur.repositories.task.TaskRepository;
 import ch.noseryoung.domain.recur.services.EmailService;
 import ch.noseryoung.domain.recur.auth.repository.UserPrivacySettingsRepository;
 import ch.noseryoung.domain.recur.auth.repository.UserRepository;

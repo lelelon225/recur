@@ -1,10 +1,9 @@
-package ch.noseryoung.domain.recur.services;
+package ch.noseryoung.domain.recur.task.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -26,19 +25,21 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import ch.noseryoung.domain.recur.dto.CreateTaskRequest;
-import ch.noseryoung.domain.recur.dto.PatchTaskRequest;
-import ch.noseryoung.domain.recur.enums.Category;
-import ch.noseryoung.domain.recur.enums.Frequency;
-import ch.noseryoung.domain.recur.exceptions.InvalidCompletionException;
-import ch.noseryoung.domain.recur.exceptions.TaskNotFoundException;
-import ch.noseryoung.domain.recur.models.Task;
+
+import ch.noseryoung.domain.recur.task.dto.CreateTaskRequest;
+import ch.noseryoung.domain.recur.task.dto.PatchTaskRequest;
+import ch.noseryoung.domain.recur.task.enums.Category;
+import ch.noseryoung.domain.recur.task.enums.Frequency;
+import ch.noseryoung.domain.recur.task.exceptions.InvalidCompletionException;
+import ch.noseryoung.domain.recur.task.exceptions.TaskNotFoundException;
+import ch.noseryoung.domain.recur.task.model.Task;
+import ch.noseryoung.domain.recur.task.repository.TaskRepository;
+import ch.noseryoung.domain.recur.task.repository.TaskReminderOverrideRepository;
 import ch.noseryoung.domain.recur.auth.model.User;
-import ch.noseryoung.domain.recur.repositories.ProjectRepository;
-import ch.noseryoung.domain.recur.repositories.TaskRepository;
-import ch.noseryoung.domain.recur.repositories.TaskReminderOverrideRepository;
 import ch.noseryoung.domain.recur.auth.security.CustomUserDetails;
-import ch.noseryoung.domain.recur.utils.TaskUtil;
+import ch.noseryoung.domain.recur.group.repository.ProjectRepository;
+import ch.noseryoung.domain.recur.group.service.GroupMemberVisibilityService;
+import ch.noseryoung.domain.recur.notification.service.NotificationDispatchService;
 
 /**
  * Deckt die zentralen Business-Regeln von TaskService ab, wie sie in

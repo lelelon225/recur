@@ -10,6 +10,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import ch.noseryoung.domain.recur.task.repository.TaskRepository;
 import ch.noseryoung.domain.recur.auth.model.User;
 import ch.noseryoung.domain.recur.group.dto.CreateProjectRequest;
 import ch.noseryoung.domain.recur.group.exceptions.GroupNotFoundException;
@@ -21,7 +22,6 @@ import ch.noseryoung.domain.recur.group.model.Project;
 import ch.noseryoung.domain.recur.group.model.TaskGroup;
 import ch.noseryoung.domain.recur.group.repository.ProjectRepository;
 import ch.noseryoung.domain.recur.group.repository.TaskGroupRepository;
-import ch.noseryoung.domain.recur.repositories.task.TaskRepository;
 import ch.noseryoung.domain.recur.auth.security.CustomUserDetails;
 
 @Service

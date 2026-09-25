@@ -1,4 +1,4 @@
-package ch.noseryoung.domain.recur.dto.task;
+package ch.noseryoung.domain.recur.task.dto;
 
 import java.util.UUID;
 

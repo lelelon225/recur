@@ -1,10 +1,10 @@
-package ch.noseryoung.domain.recur.controllers;
+package ch.noseryoung.domain.recur.task.controller;
 
-import ch.noseryoung.domain.recur.dto.task.CreateTaskRequest;
-import ch.noseryoung.domain.recur.dto.task.PatchTaskRequest;
-import ch.noseryoung.domain.recur.dto.task.ReminderLeadTimeRequest;
-import ch.noseryoung.domain.recur.models.task.Task;
-import ch.noseryoung.domain.recur.services.TaskService;
+import ch.noseryoung.domain.recur.task.dto.CreateTaskRequest;
+import ch.noseryoung.domain.recur.task.dto.PatchTaskRequest;
+import ch.noseryoung.domain.recur.task.dto.ReminderLeadTimeRequest;
+import ch.noseryoung.domain.recur.task.model.Task;
+import ch.noseryoung.domain.recur.task.service.TaskService;
 
 import java.time.LocalDate;
 import java.util.*;

@@ -9,17 +9,17 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import ch.noseryoung.domain.recur.task.model.Task;
+import ch.noseryoung.domain.recur.task.model.TaskReminderOverride;
+import ch.noseryoung.domain.recur.task.repository.TaskReminderOverrideRepository;
+import ch.noseryoung.domain.recur.task.repository.TaskRepository;
 import ch.noseryoung.domain.recur.notification.enums.NotificationType;
 import ch.noseryoung.domain.recur.notification.enums.ReminderLeadTime;
 import ch.noseryoung.domain.recur.notification.model.NotificationLog;
 import ch.noseryoung.domain.recur.notification.model.NotificationSettings;
-import ch.noseryoung.domain.recur.models.task.Task;
-import ch.noseryoung.domain.recur.models.task.TaskReminderOverride;
 import ch.noseryoung.domain.recur.auth.model.User;
 import ch.noseryoung.domain.recur.notification.repository.NotificationLogRepository;
 import ch.noseryoung.domain.recur.notification.repository.NotificationSettingsRepository;
-import ch.noseryoung.domain.recur.repositories.task.TaskReminderOverrideRepository;
-import ch.noseryoung.domain.recur.repositories.task.TaskRepository;
 
 // #102: erkennt Tasks, die sich ihrem dateUntil nähern oder es bereits
 // überschritten haben, und löst darüber Erinnerungs-/Überfällig-
