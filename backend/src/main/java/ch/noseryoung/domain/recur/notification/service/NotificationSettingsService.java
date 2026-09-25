@@ -4,11 +4,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import ch.noseryoung.domain.recur.auth.model.User;
+import ch.noseryoung.domain.recur.auth.repository.UserRepository;
 import ch.noseryoung.domain.recur.notification.dto.NotificationSettingsResponse;
 import ch.noseryoung.domain.recur.notification.model.NotificationSettings;
-import ch.noseryoung.domain.recur.models.User;
 import ch.noseryoung.domain.recur.notification.repository.NotificationSettingsRepository;
-import ch.noseryoung.domain.recur.repositories.UserRepository;
 
 @Service
 public class NotificationSettingsService {

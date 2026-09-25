@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 import ch.noseryoung.domain.recur.notification.model.NotificationSettings;
 import ch.noseryoung.domain.recur.models.task.Task;
-import ch.noseryoung.domain.recur.models.User;
+import ch.noseryoung.domain.recur.auth.model.User;
 import ch.noseryoung.domain.recur.notification.repository.NotificationSettingsRepository;
 
 // Bündelt Email-/Push-Versand hinter den beiden Empfänger-Toggles

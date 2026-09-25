@@ -9,8 +9,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import ch.noseryoung.domain.recur.auth.model.User;
 import ch.noseryoung.domain.recur.group.model.TaskGroup;
-import ch.noseryoung.domain.recur.models.User;
 
 @Repository
 public interface TaskGroupRepository extends JpaRepository<TaskGroup, UUID> {

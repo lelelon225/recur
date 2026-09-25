@@ -6,11 +6,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import ch.noseryoung.domain.recur.auth.model.User;
+import ch.noseryoung.domain.recur.auth.security.CustomUserDetails;
 import ch.noseryoung.domain.recur.notification.dto.PushSubscriptionRequest;
 import ch.noseryoung.domain.recur.notification.model.PushSubscription;
-import ch.noseryoung.domain.recur.models.User;
 import ch.noseryoung.domain.recur.notification.repository.PushSubscriptionRepository;
-import ch.noseryoung.domain.recur.security.CustomUserDetails;
 
 @Service
 public class PushSubscriptionService {

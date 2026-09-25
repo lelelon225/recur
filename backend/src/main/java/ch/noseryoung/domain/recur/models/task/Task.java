@@ -1,8 +1,7 @@
 package ch.noseryoung.domain.recur.models.task;
 
-import ch.noseryoung.domain.recur.models.User;
+import ch.noseryoung.domain.recur.auth.model.User;
 import ch.noseryoung.domain.recur.group.model.Project;
-import ch.noseryoung.domain.recur.models.notification.NotificationLog;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -10,17 +9,17 @@ import java.util.*;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import ch.noseryoung.domain.recur.enums.task.Category;
-import ch.noseryoung.domain.recur.enums.task.Frequency;
-import ch.noseryoung.domain.recur.notification.enums.ReminderLeadTime;
 import lombok.*;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+
+import ch.noseryoung.domain.recur.enums.task.Category;
+import ch.noseryoung.domain.recur.enums.task.Frequency;
+import ch.noseryoung.domain.recur.notification.enums.ReminderLeadTime;
+import ch.noseryoung.domain.recur.notification.model.NotificationLog;
 
 // toBuilder=true wird gebraucht, um für die Response eine transiente Kopie
 // mit maskierten Mitgliedern (siehe TaskService#maskMembers) zu bauen, ohne

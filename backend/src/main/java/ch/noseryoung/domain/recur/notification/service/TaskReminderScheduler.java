@@ -3,7 +3,6 @@ package ch.noseryoung.domain.recur.notification.service;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.springframework.scheduling.annotation.Scheduled;
@@ -16,7 +15,7 @@ import ch.noseryoung.domain.recur.notification.model.NotificationLog;
 import ch.noseryoung.domain.recur.notification.model.NotificationSettings;
 import ch.noseryoung.domain.recur.models.task.Task;
 import ch.noseryoung.domain.recur.models.task.TaskReminderOverride;
-import ch.noseryoung.domain.recur.models.User;
+import ch.noseryoung.domain.recur.auth.model.User;
 import ch.noseryoung.domain.recur.notification.repository.NotificationLogRepository;
 import ch.noseryoung.domain.recur.notification.repository.NotificationSettingsRepository;
 import ch.noseryoung.domain.recur.repositories.task.TaskReminderOverrideRepository;

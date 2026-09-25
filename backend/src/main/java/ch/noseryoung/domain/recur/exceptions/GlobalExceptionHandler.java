@@ -16,11 +16,11 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import ch.noseryoung.domain.recur.exceptions.auth.EmailAlreadyExistsException;
-import ch.noseryoung.domain.recur.exceptions.auth.EmailNotVerifiedException;
-import ch.noseryoung.domain.recur.exceptions.auth.InvalidCredentialsException;
-import ch.noseryoung.domain.recur.exceptions.auth.InvalidPasswordResetTokenException;
-import ch.noseryoung.domain.recur.exceptions.auth.InvalidRefreshTokenException;
+import ch.noseryoung.domain.recur.auth.exceptions.EmailAlreadyExistsException;
+import ch.noseryoung.domain.recur.auth.exceptions.EmailNotVerifiedException;
+import ch.noseryoung.domain.recur.auth.exceptions.InvalidCredentialsException;
+import ch.noseryoung.domain.recur.auth.exceptions.InvalidPasswordResetTokenException;
+import ch.noseryoung.domain.recur.auth.exceptions.InvalidRefreshTokenException;
 import ch.noseryoung.domain.recur.group.exceptions.AdminSuccessorRequiredException;
 import ch.noseryoung.domain.recur.group.exceptions.CannotRemoveAdminException;
 import ch.noseryoung.domain.recur.group.exceptions.GroupNotFoundException;
